@@ -1,0 +1,15 @@
+{
+	"fixed": {
+		"file_version": "1.0.0"
+	},
+	"info": {
+		"0000": {
+			"ProductVersion": "1.0.0",
+			"CompanyName": "Cyrene",
+			"FileDescription": "Cyrene Launcher",
+			"LegalCopyright": "@ 2025, Cyrene",
+			"ProductName": "Cyrene Launcher",
+			"Comments": "Cyrene Launcher"
+		}
+	}
+}

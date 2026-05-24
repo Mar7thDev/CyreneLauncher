@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package firefly;
+
+option go_package = "./firefly/pb";
+
+message ChunkProto {
+    repeated AssetChunkProperty assets = 1;
+}
+
+message AssetChunkProperty {
+    string asset_name = 1;
+    repeated AssetChunk asset_chunks = 2;
+    int32 asset_type = 3;
+    int64 asset_size = 4;
+    string asset_hash_md5 = 5;
+}
+
+message AssetChunk {
+    string chunk_name = 1;
+    string chunk_decompressed_hash_md5 = 2;
+    int64 chunk_on_file_offset = 3;
+    int64 chunk_size = 4;
+    int64 chunk_size_decompressed = 5;
+}
+
+
+message ManifestProto {
+    repeated AssetManifestProperty assets = 1;
+}
+
+message AssetManifestProperty {
+    string asset_name = 1;
+    int64 asset_size = 2;
+    string asset_hash_md5 = 3;
+    AssetManifestChunk asset_data = 4;
+}
+
+message AssetManifestChunk {
+    string latest_asset_version = 1;
+    repeated AssetManifest assets = 2;
+}
+
+message AssetManifest {
+    string chunk_file_name = 1;
+    string chunk_file_version = 2;
+    string chunk_file_node = 3;
+    int64 chunk_file_size = 4;
+    string chunk_file_md5 = 5;
+    int64 hdiff_file_in_chunk_offset = 6;
+    int64 hdiff_file_size = 7;
+    string original_file_path = 8;
+    int64 original_file_size = 9;
+    string original_file_md5 = 10;
+}

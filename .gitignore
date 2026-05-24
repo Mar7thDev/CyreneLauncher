@@ -1,0 +1,34 @@
+# Task runner
+.task
+
+# Build output
+bin/
+
+# Local dev dirs
+tests/
+server/
+proxy/
+temp/
+
+# Editor
+.history/
+.vscode/settings.json
+.idea/
+
+# Frontend
+frontend/dist
+frontend/node_modules
+frontend/.vite/
+
+# Build artifacts
+build/linux/appimage/build
+build/windows/nsis/MicrosoftEdgeWebview2Setup.exe
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Logs
+*.log

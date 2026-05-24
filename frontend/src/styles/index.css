@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@plugin "daisyui" {
+    exclude: properties;
+    themes: march7th --default;
+}
+
+@plugin "daisyui/theme" {
+    name: "march7th";
+    color-scheme: light;
+    --color-base-100: oklch(99% 0.005 340);
+    --color-base-200: oklch(95% 0.012 340);
+    --color-base-300: oklch(90% 0.018 340);
+    --color-base-content: oklch(22% 0.025 300);
+    --color-primary: oklch(68% 0.24 350);
+    --color-primary-content: oklch(100% 0 0);
+    --color-secondary: oklch(68% 0.18 220);
+    --color-secondary-content: oklch(100% 0 0);
+    --color-accent: oklch(68% 0.20 280);
+    --color-accent-content: oklch(100% 0 0);
+    --color-neutral: oklch(40% 0.02 300);
+    --color-neutral-content: oklch(98% 0 0);
+    --color-info: oklch(70% 0.14 240);
+    --color-info-content: oklch(100% 0 0);
+    --color-success: oklch(72% 0.17 165);
+    --color-success-content: oklch(100% 0 0);
+    --color-warning: oklch(78% 0.18 75);
+    --color-warning-content: oklch(20% 0 0);
+    --color-error: oklch(65% 0.22 25);
+    --color-error-content: oklch(100% 0 0);
+    --radius-selector: 0.75rem;
+    --radius-field: 0.5rem;
+    --radius-box: 1rem;
+}
