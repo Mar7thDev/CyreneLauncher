@@ -137,6 +137,16 @@ func (p *Proxy) shouldMITM(hostname string) bool {
 	return false
 }
 
+// isTextContent reports whether the Content-Type indicates a textual payload
+// (JSON, HTML, JS, plain text, …) that should be buffered for body patching.
+func isTextContent(contentType string) bool {
+	ct := strings.ToLower(contentType)
+	return strings.Contains(ct, "json") ||
+		strings.Contains(ct, "html") ||
+		strings.Contains(ct, "javascript") ||
+		strings.Contains(ct, "text")
+}
+
 // tunnel blindly copies bytes in both directions between conn and the upstream
 // address — used for domains we don't intercept.
 func (p *Proxy) tunnel(conn net.Conn, addr string) {
@@ -213,26 +223,26 @@ func (p *Proxy) mitm(conn net.Conn, hostname string) {
 			return
 		}
 
-		// RSA key patching: buffer text/JSON responses and replace known RSA
-		// public key fields with the target server's key. Binary responses
-		// (audio, video, game archives) are passed through as-is.
-		p.rsaMu.RLock()
-		serverKey := p.serverRSAKey
-		p.rsaMu.RUnlock()
-		if serverKey != "" {
-			ct := resp.Header.Get("Content-Type")
-			ctLow := strings.ToLower(ct)
-			if strings.Contains(ctLow, "json") || strings.Contains(ctLow, "text") {
-				raw, readErr := io.ReadAll(io.LimitReader(resp.Body, 4<<20)) // 4 MiB cap
-				resp.Body.Close()
-				if readErr == nil {
-					patched := patchRSAInBody(raw, ct, serverKey)
-					resp.Body = io.NopCloser(bytes.NewReader(patched))
-					resp.ContentLength = int64(len(patched))
-					resp.TransferEncoding = nil
-				} else {
-					resp.Body = io.NopCloser(bytes.NewReader(raw))
-				}
+		// Patch text/JSON response bodies:
+		//   • replace RSA public key fields with the target server's key
+		//   • rewrite redirect-domain URLs to point at the target server
+		// Binary responses (audio, game archives, images) pass through untouched.
+		ct := resp.Header.Get("Content-Type")
+		if isTextContent(ct) {
+			p.rsaMu.RLock()
+			serverKey := p.serverRSAKey
+			p.rsaMu.RUnlock()
+
+			raw, readErr := io.ReadAll(io.LimitReader(resp.Body, 4<<20)) // 4 MiB cap
+			resp.Body.Close()
+			if readErr == nil {
+				raw = patchRSAInBody(raw, ct, serverKey)
+				raw = patchURLsInBody(raw, ct, scheme, targetHost)
+				resp.Body = io.NopCloser(bytes.NewReader(raw))
+				resp.ContentLength = int64(len(raw))
+				resp.TransferEncoding = nil
+			} else {
+				resp.Body = io.NopCloser(bytes.NewReader(raw))
 			}
 		}
 
