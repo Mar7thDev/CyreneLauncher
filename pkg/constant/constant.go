@@ -78,7 +78,7 @@ func GetSourceConfig(name string) SourceConfig {
 const ProxyGitUrl = "https://git.kain.io.vn/api/v1/repos/Firefly-Shelter/FireflyGo_Proxy/releases"
 const ServerGitUrl = "https://git.kain.io.vn/api/v1/repos/Firefly-Shelter/FireflyGo_Local_Archive/releases"
 
-const CurrentLauncherVersion = "2.5.1"
+const CurrentLauncherVersion = "1.0.1"
 
 // === News module ===
 //
