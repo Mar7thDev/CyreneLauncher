@@ -3,12 +3,6 @@ package constant
 const AppName = "Cyrene Launcher"
 
 // === Launcher self-update ===
-//
-// The launcher and the patch DLLs share one GitHub release feed
-// (CyreneLauncher-Public). Each fetcher scans for the newest release that
-// actually carries its asset, so launcher and patch can be released
-// independently — see GitService.GetLatestLauncherVersion and
-// GitService.GetLatestPatchVersion.
 const LauncherGitUrl = "https://api.github.com/repos/Mar7thLover/CyreneLauncher-Public/releases"
 const LauncherFile = "cyrene-launcher.exe"
 
@@ -19,24 +13,12 @@ const ServerZipFile = "prebuild_win_x86.zip"
 const ProxyFile = "firefly-go-proxy.exe"
 const TempUrl = "./temp"
 
-// === March7thHoney patch DLL storage ===
+// === March7thHoney proxy mode ===
 //
-// The patch DLL is region-specific (RVAs differ between OS / CN builds of
-// StarRail). Cyrene downloads each region into its own filename so switching
-// regions doesn't clobber the other build.
-const PatchStorageUrl = "./patch"
-const PatchDllFileOS = "Astrolabe_OS.dll"
-const PatchDllFileCN = "Astrolabe_CN.dll"
-
-// PatchDllFileFor returns the on-disk DLL name for a given region. Unknown
-// regions fall back to the OS build — callers should ensure region is set
-// before reaching here.
-func PatchDllFileFor(region string) string {
-	if region == "cn" {
-		return PatchDllFileCN
-	}
-	return PatchDllFileOS
-}
+// The patch is implemented as a Go-native HTTPS MITM proxy (pkg/patch-proxy).
+// No DLL download or injection is required. The proxy intercepts miHoYo-domain
+// traffic and forwards it to DefaultPatchTargetURL (or a user-configured URL).
+const DefaultPatchTargetURL = "https://march7th.hoyotoon.com"
 
 // === Server source modes ===
 //
@@ -92,40 +74,7 @@ func GetSourceConfig(name string) SourceConfig {
 	}
 }
 
-// === March7thHoney patch source ===
-//
-// March7thHoney distributes only the Astrolabe.dll (NativeAOT-compiled patch)
-// via GitHub Releases. The launcher itself does the DLL injection — see
-// pkg/march7thhoney. No bundled .NET launcher / proxy is needed.
-//
-// Each release is expected to ship two assets named exactly:
-//   - Astrolabe_OS.dll  (Global / HoYoPlay builds)
-//   - Astrolabe_CN.dll  (国服 / miHoYo Launcher builds)
-type PatchSourceConfig struct {
-	Name        string
-	ReleasesUrl string // GitHub /releases endpoint (list, newest first)
-	AssetFileOS string
-	AssetFileCN string
-}
-
-// AssetFor returns the release asset filename for the given region, mirroring
-// PatchDllFileFor.
-func (c PatchSourceConfig) AssetFor(region string) string {
-	if region == "cn" {
-		return c.AssetFileCN
-	}
-	return c.AssetFileOS
-}
-
-// March7thHoneyConfig points to the public Cyrene patch DLL repo.
-var March7thHoneyConfig = PatchSourceConfig{
-	Name:        "March7thHoney",
-	ReleasesUrl: "https://api.github.com/repos/Mar7thLover/CyreneLauncher-Public/releases",
-	AssetFileOS: PatchDllFileOS,
-	AssetFileCN: PatchDllFileCN,
-}
-
-// Legacy constants for backward compatibility (used only by launcher self-update).
+// Legacy constants (used only by launcher self-update and fireflygo source).
 const ProxyGitUrl = "https://git.kain.io.vn/api/v1/repos/Firefly-Shelter/FireflyGo_Proxy/releases"
 const ServerGitUrl = "https://git.kain.io.vn/api/v1/repos/Firefly-Shelter/FireflyGo_Local_Archive/releases"
 

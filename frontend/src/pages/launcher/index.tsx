@@ -10,23 +10,25 @@ import useModalStore from '@/stores/modalStore';
 import useLauncherStore from '@/stores/launcherStore';
 import { motion } from 'motion/react';
 import { Link } from '@tanstack/react-router';
-import { CheckUpdateLauncher, CheckUpdatePatch, CheckUpdateProxy, CheckUpdateServer, sleep, UpdateLauncher, UpdatePatch, UpdateProxy, UpdateServer } from '@/helper';
+import { CheckUpdateLauncher, CheckUpdateProxy, CheckUpdateServer, sleep, UpdateLauncher, UpdateProxy, UpdateServer } from '@/helper';
 import UpdateModal from '@/components/updateModal';
 import { BackgroundSelector } from '@/components/backgroudModal';
 import { useTranslation } from 'react-i18next';
+
+const DEFAULT_PATCH_URL = "https://march7th.hoyotoon.com"
 
 export default function LauncherPage() {
     const {
         gamePath, setGamePath, setGameDir,
         serverPath, proxyPath, gameDir,
         serverVersion, proxyVersion, background,
-        launchMode, region, setRegion, patchDllPath, patchDllVersion,
+        launchMode, patchTargetUrl,
         setServerPath, setProxyPath,
     } = useSettingStore()
     const { t } = useTranslation()
     const {
-        isOpenDownloadDataModal, isOpenUpdateDataModal, isOpenSelfUpdateModal, isOpenRegionModal,
-        setIsOpenDownloadDataModal, setIsOpenUpdateDataModal, setIsOpenSelfUpdateModal, setIsOpenRegionModal,
+        isOpenDownloadDataModal, isOpenUpdateDataModal, isOpenSelfUpdateModal,
+        setIsOpenDownloadDataModal, setIsOpenUpdateDataModal, setIsOpenSelfUpdateModal,
     } = useModalStore()
     const {
         isLoading, downloadType, serverReady, proxyReady, patchReady, isDownloading,
@@ -47,11 +49,12 @@ export default function LauncherPage() {
         catch { window.open(url, "_blank") }
     }
 
+    // Check if server/proxy binaries exist on disk.
     useEffect(() => {
         const check = async () => {
             if (launchMode === "march7thhoney") {
-                if (!region || !patchDllVersion) { setPatchReady(false); return }
-                setPatchReady(await FSService.FileExists(patchDllPath))
+                // Proxy mode: no binary to check. Ready as long as game path is set.
+                setPatchReady(gamePath !== "")
                 return
             }
             if (!serverVersion || !proxyVersion) { setServerReady(false); setProxyReady(false); return }
@@ -59,38 +62,9 @@ export default function LauncherPage() {
             setProxyReady(await FSService.FileExists(proxyPath))
         }
         check()
-    }, [launchMode, serverPath, proxyPath, serverVersion, proxyVersion, patchDllPath, patchDllVersion, region])
+    }, [launchMode, serverPath, proxyPath, serverVersion, proxyVersion, gamePath])
 
-    // Region detection: whenever we're in march7thhoney mode and have a game
-    // directory but no region set, try to detect it from BinaryVersion.bytes.
-    // If detection is ambiguous, open the region picker modal.
-    useEffect(() => {
-        if (launchMode !== "march7thhoney") return
-        if (!gameDir) return
-        if (region) return
-        (async () => {
-            const detected = await March7thHoneyService.DetectRegion(gameDir)
-            if (detected === "os" || detected === "cn") {
-                setRegion(detected)
-                toast.success(t("home.toast_region_detected", { region: detected.toUpperCase() }))
-            } else {
-                setIsOpenRegionModal(true)
-            }
-        })()
-    }, [launchMode, gameDir, region])
-
-    // Gate march7thhoney actions on a known region. Returns true if we can
-    // proceed; otherwise opens the picker modal and returns false.
-    const ensureRegion = (): boolean => {
-        if (region) return true
-        if (!gameDir) {
-            toast.error(t("home.toast_region_needs_game"))
-            return false
-        }
-        setIsOpenRegionModal(true)
-        return false
-    }
-
+    // Startup: check launcher update, then server/proxy updates.
     useEffect(() => {
         const checkStartUp = async () => {
             const [_, version] = await AppService.GetCurrentLauncherVersion()
@@ -110,48 +84,34 @@ export default function LauncherPage() {
             const exitGame = await FSService.FileExists(gamePath)
             if (!exitGame) { setGameRunning(false); setGamePath(""); setGameDir("") }
 
-            // Auto-relink: if a previous install already dropped the server /
-            // proxy binaries at the default paths, restore them to settings so
-            // we don't ask the user to redownload what's already on disk.
-            // Version stays empty → an update modal may still pop (declinable),
-            // but the forced download modal won't.
-            let effServerPath = serverPath
-            let effProxyPath  = proxyPath
-            if (launchMode === "fireflygo") {
-                const defaultServer = "./server/firefly-go_win.exe"
-                const defaultProxy  = "./proxy/firefly-go-proxy.exe"
-                if (!effServerPath && await FSService.FileExists(defaultServer)) {
-                    effServerPath = defaultServer
-                    setServerPath(defaultServer)
-                }
-                if (!effProxyPath && await FSService.FileExists(defaultProxy)) {
-                    effProxyPath = defaultProxy
-                    setProxyPath(defaultProxy)
-                }
-            }
-
             if (launchMode === "march7thhoney") {
-                // Skip the patch check until we know the region — otherwise
-                // we'd pop the download modal for a DLL we can't choose yet.
-                if (!region) {
-                    setPatchReady(false)
-                    return
-                }
-                const patchData = await CheckUpdatePatch(region, patchDllPath, patchDllVersion)
+                // No asset to download or update check in proxy mode.
                 setUpdateData({
                     server: { isUpdate: false, isExists: true, version: "" },
-                    proxy: { isUpdate: false, isExists: true, version: "" },
-                    patch: patchData,
+                    proxy:  { isUpdate: false, isExists: true, version: "" },
+                    patch:  { isUpdate: false, isExists: true, version: "" },
                     launcher: launcherData,
                 })
-                if (!patchData.isExists) { setPatchReady(false); setIsOpenDownloadDataModal(true); return }
-                if (patchData.isUpdate)  { setPatchReady(true);  setIsOpenUpdateDataModal(true);  return }
-                setPatchReady(true)
+                setPatchReady(gamePath !== "")
                 return
             }
 
+            // FireflyGo: auto-relink if binaries exist at default paths.
+            let effServerPath = serverPath
+            let effProxyPath  = proxyPath
+            const defaultServer = "./server/firefly-go_win.exe"
+            const defaultProxy  = "./proxy/firefly-go-proxy.exe"
+            if (!effServerPath && await FSService.FileExists(defaultServer)) {
+                effServerPath = defaultServer
+                setServerPath(defaultServer)
+            }
+            if (!effProxyPath && await FSService.FileExists(defaultProxy)) {
+                effProxyPath = defaultProxy
+                setProxyPath(defaultProxy)
+            }
+
             const serverData = await CheckUpdateServer(effServerPath, serverVersion)
-            const proxyData = await CheckUpdateProxy(effProxyPath, proxyVersion)
+            const proxyData  = await CheckUpdateProxy(effProxyPath, proxyVersion)
             setUpdateData({
                 server: serverData,
                 proxy: proxyData,
@@ -167,7 +127,7 @@ export default function LauncherPage() {
             setServerReady(true); setProxyReady(true)
         }
         checkStartUp()
-    }, [launchMode, region]);
+    }, [launchMode]);
 
     const handlePickFile = async () => {
         try {
@@ -194,8 +154,8 @@ export default function LauncherPage() {
                     toast.error(t("home.toast_march7th_needs_starrail"))
                     return
                 }
-                if (!ensureRegion()) return
-                const [ok, err] = await March7thHoneyService.Start(gamePath, patchDllPath)
+                const target = patchTargetUrl || DEFAULT_PATCH_URL
+                const [ok, err] = await March7thHoneyService.Start(gamePath, target)
                 if (!ok) { toast.error(t("home.toast_start_game_failed") + err); return }
                 setGameRunning(true)
                 return
@@ -232,14 +192,8 @@ export default function LauncherPage() {
             setUpdateData({ ...updateData, launcher: { isUpdate: false, isExists: true, version: updateData.launcher.version } })
             setIsOpenSelfUpdateModal(true)
         }
-        if (launchMode === "march7thhoney") {
-            if (!ensureRegion()) { setDownloadType(""); setIsDownloading(false); return }
-            if (updateData.patch.isUpdate || !updateData.patch.isExists) {
-                await UpdatePatch(region, updateData.patch.version)
-                setPatchReady(true)
-                setUpdateData({ ...updateData, patch: { isUpdate: false, isExists: true, version: updateData.patch.version } })
-            }
-        } else {
+        // FireflyGo only — march7thhoney has no assets to download.
+        if (launchMode === "fireflygo") {
             if (updateData.server.isUpdate || !updateData.server.isExists) {
                 await UpdateServer(updateData.server.version)
                 setServerReady(true)
@@ -256,11 +210,15 @@ export default function LauncherPage() {
 
     useEffect(() => {
         const handleEscKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') { setIsOpenDownloadDataModal(false); setIsOpenUpdateDataModal(false); setIsOpenSelfUpdateModal(false); setIsOpenRegionModal(false) }
+            if (e.key === 'Escape') {
+                setIsOpenDownloadDataModal(false)
+                setIsOpenUpdateDataModal(false)
+                setIsOpenSelfUpdateModal(false)
+            }
         }
         window.addEventListener('keydown', handleEscKey)
         return () => window.removeEventListener('keydown', handleEscKey)
-    }, [isOpenDownloadDataModal, isOpenUpdateDataModal, isOpenSelfUpdateModal, isOpenRegionModal]);
+    }, [isOpenDownloadDataModal, isOpenUpdateDataModal, isOpenSelfUpdateModal]);
 
     return (
         <div className="relative min-h-fit overflow-hidden">
@@ -272,11 +230,11 @@ export default function LauncherPage() {
                 onError={(e) => { (e.currentTarget as HTMLImageElement).src = "bg-17.jpg" }}
             />
 
-            {/* Bottom vignette — only at the bottom for readability of action buttons */}
+            {/* Bottom vignette */}
             <div className="fixed inset-x-0 bottom-0 h-40 z-1 pointer-events-none
                             bg-linear-to-t from-black/55 to-transparent" />
 
-            {/* ── Right side panel: widget links + community + howto ── */}
+            {/* Right side panel */}
             <div className="hidden sm:flex fixed right-4 top-1/2 -translate-y-1/2 z-10 flex-col gap-2">
                 <div className="flex flex-col gap-1.5 bg-white/50 backdrop-blur-md border border-white/80 rounded-2xl p-1.5 shadow-lg shadow-pink-100/40">
                     {widgetLinks.map((link, idx) => (
@@ -292,7 +250,6 @@ export default function LauncherPage() {
 
                     <div className="w-full h-px bg-pink-200/40 my-0.5" />
 
-                    {/* Discord community */}
                     <div className="tooltip tooltip-left" data-tip="Join our Discord">
                         <button
                             onClick={() => openExternal("https://discord.gg/castoriceps")}
@@ -318,14 +275,13 @@ export default function LauncherPage() {
                 </div>
             </div>
 
-            {/* ── Background selector (always visible) ── */}
+            {/* Background selector */}
             <div className="hidden sm:flex fixed bottom-5 left-5 z-10">
                 <BackgroundSelector />
             </div>
 
-            {/* ── Bottom action bar (always visible) ── */}
+            {/* Bottom action bar */}
             <div className="fixed bottom-5 right-5 z-10 flex items-center gap-2">
-                {/* Menu */}
                 <div className="dropdown dropdown-top dropdown-end">
                     <motion.div
                         tabIndex={0}
@@ -338,32 +294,25 @@ export default function LauncherPage() {
                     </motion.div>
                     <ul tabIndex={0} className="dropdown-content menu bg-white/95 backdrop-blur-xl border border-pink-100 rounded-2xl z-20 w-52 p-2 shadow-xl shadow-pink-100/50 mb-2">
                         <li><button onClick={handlePickFile}>{t("home.menu_change_path")}</button></li>
-                        <li>
-                            <button onClick={async () => {
-                                if (launchMode === "march7thhoney") {
-                                    if (!ensureRegion()) return
-                                    const patchData = await CheckUpdatePatch(region, patchDllPath, patchDllVersion)
-                                    setUpdateData({ ...updateData, patch: patchData })
-                                    if (!patchData.isExists) { setIsOpenDownloadDataModal(true); return }
-                                    if (patchData.isUpdate)  { setIsOpenUpdateDataModal(true);  return }
+                        {launchMode === "fireflygo" && (
+                            <li>
+                                <button onClick={async () => {
+                                    const serverData = await CheckUpdateServer(serverPath, serverVersion)
+                                    const proxyData  = await CheckUpdateProxy(proxyPath, proxyVersion)
+                                    setUpdateData({ ...updateData, server: serverData, proxy: proxyData })
+                                    if (!serverData.isExists || !proxyData.isExists) { setIsOpenDownloadDataModal(true); return }
+                                    if (serverData.isUpdate || proxyData.isUpdate)   { setIsOpenUpdateDataModal(true); return }
                                     toast.success(t("home.no_updates"))
-                                    return
-                                }
-                                const serverData = await CheckUpdateServer(serverPath, serverVersion)
-                                const proxyData  = await CheckUpdateProxy(proxyPath, proxyVersion)
-                                setUpdateData({ ...updateData, server: serverData, proxy: proxyData })
-                                if (!serverData.isExists || !proxyData.isExists) { setIsOpenDownloadDataModal(true); return }
-                                if (serverData.isUpdate || proxyData.isUpdate)   { setIsOpenUpdateDataModal(true); return }
-                                toast.success(t("home.no_updates"))
-                            }}>{t("home.menu_check_update")}</button>
-                        </li>
+                                }}>{t("home.menu_check_update")}</button>
+                            </li>
+                        )}
                         <li><button disabled={!serverPath} onClick={() => serverPath && FSService.OpenFolder("./server")}>{t("home.menu_open_server")}</button></li>
                         <li><button disabled={!proxyPath}  onClick={() => proxyPath  && FSService.OpenFolder("./proxy")} >{t("home.menu_open_proxy")}</button></li>
                         <li><button disabled={!gameDir}    onClick={() => gameDir    && FSService.OpenFolder(gameDir + "/StarRail_Data/Persistent/Audio/AudioPackage/Windows")}>{t("home.menu_open_voice")}</button></li>
                     </ul>
                 </div>
 
-                {/* Primary action button — always visible, behavior depends on state */}
+                {/* Primary action button */}
                 {isDownloading ? (
                     <button
                         disabled
@@ -377,10 +326,10 @@ export default function LauncherPage() {
                         whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(244,114,182,0.45)' }}
                         whileTap={{ scale: 0.97 }}
                         className="btn btn-lg font-bold bg-linear-to-r from-pink-500 via-violet-500 to-sky-500 border-none text-white shadow-lg shadow-pink-300/50"
-                        onClick={() => setIsOpenDownloadDataModal(true)}
+                        onClick={launchMode === "march7thhoney" ? handlePickFile : () => setIsOpenDownloadDataModal(true)}
                     >
                         <FolderOpen className="w-5 h-5" />
-                        {t("home.btn_download")}
+                        {launchMode === "march7thhoney" ? t("home.btn_select_game") : t("home.btn_download")}
                     </motion.button>
                 ) : gamePath === "" ? (
                     <motion.button
@@ -405,8 +354,8 @@ export default function LauncherPage() {
                 )}
             </div>
 
-            {/* ── Download progress ── */}
-            {isDownloading && (
+            {/* Download progress (FireflyGo only) */}
+            {isDownloading && launchMode === "fireflygo" && (
                 updateData.proxy.isUpdate || updateData.server.isUpdate ||
                 !updateData.proxy.isExists || !updateData.server.isExists
             ) && (
@@ -454,7 +403,7 @@ export default function LauncherPage() {
                 </div>
             )}
 
-            {/* ── Modals ── */}
+            {/* Modals */}
             <UpdateModal
                 isOpen={isOpenUpdateDataModal}
                 onClose={() => setIsOpenUpdateDataModal(false)}
@@ -482,16 +431,6 @@ export default function LauncherPage() {
                 buttons={[
                     { text: t("home.btn_no"),  onClick: () => setIsOpenSelfUpdateModal(false), variant: "outline" },
                     { text: t("home.btn_yes"), onClick: async () => { setIsOpenSelfUpdateModal(false); await handlerUpdateData() }, variant: "primary" }
-                ]}
-            />
-            <UpdateModal
-                isOpen={isOpenRegionModal}
-                onClose={() => setIsOpenRegionModal(false)}
-                title={t("home.modal_region_title")}
-                message={t("home.modal_region_msg")}
-                buttons={[
-                    { text: t("home.btn_region_os"), onClick: () => { setRegion("os"); setIsOpenRegionModal(false); toast.success(t("home.toast_region_set", { region: "OS" })) }, variant: "primary" },
-                    { text: t("home.btn_region_cn"), onClick: () => { setRegion("cn"); setIsOpenRegionModal(false); toast.success(t("home.toast_region_set", { region: "CN" })) }, variant: "primary" },
                 ]}
             />
         </div>

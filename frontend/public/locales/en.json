@@ -65,10 +65,9 @@
     "launch_mode_switched": "Switched to {{name}}",
     "launch_mode_fireflygo": "FireflyGo",
     "launch_mode_march7thhoney": "March7thHoney",
-    "patch_label": "Patch",
-    "region_label": "Region",
-    "region_unset": "—",
-    "region_reset_hint": "Click to reset"
+    "patch_url_title": "Server URL",
+    "patch_url_desc": "The March7thHoney proxy will forward intercepted traffic here.",
+    "patch_url_hint": "Leave empty to use the default server (march7th.hoyotoon.com)"
   },
   "home": {
     "header_title": "Cyrene Launcher",
@@ -106,13 +105,6 @@
     "toast_start_game_failed": "Failed to start game: ",
     "toast_start_game_error": "Start game error: ",
     "toast_march7th_needs_starrail": "March7thHoney mode needs StarRail.exe, not the official launcher.",
-    "toast_region_detected": "Region: {{region}}",
-    "toast_region_set": "Region: {{region}}",
-    "toast_region_needs_game": "Pick the game first.",
-    "modal_region_title": "Pick Region",
-    "modal_region_msg": "Pick your client's region.",
-    "btn_region_os": "Global",
-    "btn_region_cn": "China"
   },
   "diff": {
     "header_title": "🎮 Game Update by Diff Tool",

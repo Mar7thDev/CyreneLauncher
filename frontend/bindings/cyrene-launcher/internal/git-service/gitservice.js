@@ -7,20 +7,6 @@
 import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
 /**
- * DownloadPatchProgress fetches the region-specific patch DLL asset for the
- * given version into constant.PatchStorageUrl, emitting "download:patch"
- * events as it streams.
- * 
- * region must be "os" or "cn"; anything else is treated as OS.
- * @param {string} region
- * @param {string} version
- * @returns {$CancellablePromise<[boolean, string]>}
- */
-export function DownloadPatchProgress(region, version) {
-    return $Call.ByID(2198816301, region, version);
-}
-
-/**
  * @param {string} source
  * @param {string} version
  * @returns {$CancellablePromise<[boolean, string]>}
@@ -43,16 +29,6 @@ export function DownloadServerProgress(source, version) {
  */
 export function GetLatestLauncherVersion() {
     return $Call.ByID(391023589);
-}
-
-/**
- * GetLatestPatchVersion returns the newest tag whose release ships the
- * patch DLLs. Walks releases newest-first so launcher-only releases (in the
- * same feed) are skipped instead of being mistaken for the latest patch.
- * @returns {$CancellablePromise<[boolean, string, string]>}
- */
-export function GetLatestPatchVersion() {
-    return $Call.ByID(3438359305);
 }
 
 /**

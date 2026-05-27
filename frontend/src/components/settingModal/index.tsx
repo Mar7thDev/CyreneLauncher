@@ -9,6 +9,7 @@ import { ExternalLink, Server, ServerCog, Rocket, Syringe } from "lucide-react"
 const PROJECT_NAME = "Cyrene Launcher"
 const PROJECT_AUTHOR = "Firefly Shelter (original) · Cyrene (fork)"
 const PROJECT_REPO_URL = "https://github.com/Mar7thDev/CyreneLauncher"
+const DEFAULT_PATCH_URL = "https://march7th.hoyotoon.com"
 
 export default function SettingModal({
     isOpen,
@@ -20,7 +21,13 @@ export default function SettingModal({
     if (!isOpen) return null
     const { t } = useTranslation()
     const { setIsOpenSelfUpdateModal } = useModalStore()
-    const { closingOption, setClosingOption, serverVersion, proxyVersion, serverSource, setServerSource, launchMode, setLaunchMode, region, setRegion, patchDllVersion } = useSettingStore()
+    const {
+        closingOption, setClosingOption,
+        serverVersion, proxyVersion,
+        serverSource, setServerSource,
+        launchMode, setLaunchMode,
+        patchTargetUrl, setPatchTargetUrl,
+    } = useSettingStore()
     const { setUpdateData, updateData, launcherVersion } = useLauncherStore()
 
     const handleSourceChange = (next: ServerSource) => {
@@ -66,9 +73,8 @@ export default function SettingModal({
                     </button>
                 </div>
 
-                {/* Content */}
                 <div className="flex flex-col gap-4">
-                    {/* Section -1: Launch Mode */}
+                    {/* Launch Mode */}
                     <div className="p-4 bg-base-200 rounded-xl border border-violet-200/50">
                         <h4 className="font-bold text-base mb-1">{t("setting.launch_mode_title")}</h4>
                         <p className="text-sm text-base-content/50 mb-3">{t("setting.launch_mode_desc")}</p>
@@ -92,10 +98,9 @@ export default function SettingModal({
                                 )
                             })}
                         </div>
-                        <p className="text-xs text-base-content/40 mt-2">{t("setting.launch_mode_hint")}</p>
                     </div>
 
-                    {/* Section 0: Server Source — only relevant in fireflygo mode */}
+                    {/* FireflyGo: Server Source */}
                     {launchMode === "fireflygo" && (
                     <div className="p-4 bg-base-200 rounded-xl border border-sky-200/50">
                         <h4 className="font-bold text-base mb-1">{t("setting.source_title")}</h4>
@@ -124,12 +129,26 @@ export default function SettingModal({
                     </div>
                     )}
 
-                    {/* Section 1: Launcher Update */}
+                    {/* March7thHoney: Server URL */}
+                    {launchMode === "march7thhoney" && (
+                    <div className="p-4 bg-base-200 rounded-xl border border-violet-200/50">
+                        <h4 className="font-bold text-base mb-1">{t("setting.patch_url_title")}</h4>
+                        <p className="text-sm text-base-content/50 mb-3">{t("setting.patch_url_desc")}</p>
+                        <input
+                            type="text"
+                            className="input input-sm w-full bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
+                            placeholder={DEFAULT_PATCH_URL}
+                            value={patchTargetUrl}
+                            onChange={e => setPatchTargetUrl(e.target.value)}
+                        />
+                        <p className="text-xs text-base-content/40 mt-2">{t("setting.patch_url_hint")}</p>
+                    </div>
+                    )}
+
+                    {/* Launcher Update */}
                     <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">
                         <h4 className="font-bold text-base mb-1">{t("setting.launcher_update_title")}</h4>
-                        <p className="text-sm text-base-content/50 mb-3">
-                            {t("setting.launcher_update_desc")}
-                        </p>
+                        <p className="text-sm text-base-content/50 mb-3">{t("setting.launcher_update_desc")}</p>
                         <button
                             className="btn btn-sm bg-linear-to-r from-pink-500 to-sky-500 border-none text-white shadow-sm hover:shadow-pink-200/60 transition-shadow"
                             onClick={CheckUpdate}
@@ -138,7 +157,7 @@ export default function SettingModal({
                         </button>
                     </div>
 
-                    {/* Section 2: Closing Option */}
+                    {/* Closing Option */}
                     <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">
                         <h4 className="font-bold text-base mb-3">{t("setting.closing_options_title")}</h4>
                         <label className="flex items-start gap-3 cursor-pointer select-none">
@@ -154,9 +173,7 @@ export default function SettingModal({
                                 }}
                             />
                             <div className="flex flex-col">
-                                <span className="text-sm font-medium">
-                                    {t("setting.set_dont_ask_again")}
-                                </span>
+                                <span className="text-sm font-medium">{t("setting.set_dont_ask_again")}</span>
                                 <span className="text-xs text-base-content/50 mt-0.5">
                                     {t('setting.closing_auto_desc', { action: closingOption.isMinimize ? t('setting.action_minimize') : t('setting.action_quit') })}
                                 </span>
@@ -164,11 +181,11 @@ export default function SettingModal({
                         </label>
                     </div>
 
-                    {/* Section 3: Version Info */}
+                    {/* Version Info */}
                     <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">
                         <h4 className="font-bold text-base mb-3">{t("setting.version_label")}</h4>
                         <div className="flex flex-wrap gap-2">
-                            {launchMode === "fireflygo" ? (
+                            {launchMode === "fireflygo" && (
                                 <>
                                     <span className="badge badge-outline badge-primary text-xs">
                                         {t("setting.server_label")}: {serverVersion}
@@ -177,22 +194,6 @@ export default function SettingModal({
                                         {t("setting.proxy_label")}: {proxyVersion}
                                     </span>
                                 </>
-                            ) : (
-                                <>
-                                    <span className="badge badge-outline badge-secondary text-xs">
-                                        {t("setting.patch_label")}: {patchDllVersion || "-"}
-                                    </span>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            if (region) { setRegion("") }
-                                        }}
-                                        title={t("setting.region_reset_hint") || ""}
-                                        className="badge badge-outline badge-info text-xs cursor-pointer hover:bg-info/10"
-                                    >
-                                        {t("setting.region_label")}: {region ? region.toUpperCase() : t("setting.region_unset")}
-                                    </button>
-                                </>
                             )}
                             <span className="badge badge-outline badge-accent text-xs">
                                 {t("setting.launcher_label")}: {launcherVersion}
@@ -200,7 +201,7 @@ export default function SettingModal({
                         </div>
                     </div>
 
-                    {/* Section 4: About / Credits */}
+                    {/* About */}
                     <div className="p-4 bg-base-200 rounded-xl border border-sky-200/50">
                         <h4 className="font-bold text-base mb-3">{t("setting.about_title")}</h4>
                         <div className="space-y-2 text-sm">

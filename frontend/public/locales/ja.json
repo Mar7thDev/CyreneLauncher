@@ -58,7 +58,15 @@
     "source_desc": "サーバーとプロキシのダウンロード元を選択",
     "source_switched": "{{name}} モードに切り替えました",
     "source_custom": "カスタムサーバー",
-    "source_firefly": "FireflyGo (デフォルト)"
+    "source_firefly": "FireflyGo (デフォルト)",
+    "launch_mode_title": "起動モード",
+    "launch_mode_desc": "ゲームの起動方法を選択",
+    "launch_mode_switched": "{{name}} に切り替えました",
+    "launch_mode_fireflygo": "FireflyGo",
+    "launch_mode_march7thhoney": "March7thHoney",
+    "patch_url_title": "サーバー URL",
+    "patch_url_desc": "プロキシが傍受したトラフィックをこの URL に転送します。",
+    "patch_url_hint": "空白のままにするとデフォルトサーバーを使用します (march7th.hoyotoon.com)"
   },
   "home": {
     "header_title": "Cyrene Launcher",

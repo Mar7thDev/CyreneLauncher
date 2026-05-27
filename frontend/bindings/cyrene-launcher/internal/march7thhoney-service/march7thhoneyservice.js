@@ -7,31 +7,15 @@
 import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
 /**
- * DetectRegion inspects gameDir/BinaryVersion.bytes to figure out whether the
- * installed StarRail client is the OS (global / HoYoPlay) build or the CN
- * (国服 / miHoYo Launcher) build. Returns one of "os", "cn", or "" when the
- * region can't be determined — in that case the frontend should prompt the
- * user to pick a region manually.
- * 
- * Region detection is conservative: we only return "os"/"cn" when the
- * BinaryVersion name contains the matching marker. Anything else (file
- * missing, parse error, unrecognised name) returns "".
- * @param {string} gameDir
- * @returns {$CancellablePromise<string>}
- */
-export function DetectRegion(gameDir) {
-    return $Call.ByID(821696099, gameDir);
-}
-
-/**
- * Start launches gamePath suspended, injects dllPath, and resumes the main
- * thread. Returns (ok, errMessage). Emits "game:exit" via the Wails event bus
- * when the patched game process terminates, matching the convention used by
- * FSService.StartApp.
+ * Start installs the MITM proxy, sets the system proxy, launches gamePath,
+ * and returns immediately. Returns (true, "") on success or (false, errMsg).
+ *
+ * targetURL is the private-server base URL (e.g. "https://march7th.hoyotoon.com").
+ * An empty string uses the built-in default.
  * @param {string} gamePath
- * @param {string} dllPath
+ * @param {string} targetURL
  * @returns {$CancellablePromise<[boolean, string]>}
  */
-export function Start(gamePath, dllPath) {
-    return $Call.ByID(3347991480, gamePath, dllPath);
+export function Start(gamePath, targetURL) {
+    return $Call.ByID(3347991480, gamePath, targetURL);
 }

@@ -58,7 +58,15 @@
     "source_desc": "Chọn nguồn tải xuống server và proxy",
     "source_switched": "Đã chuyển sang chế độ {{name}}",
     "source_custom": "Máy chủ tùy chỉnh",
-    "source_firefly": "FireflyGo (mặc định)"
+    "source_firefly": "FireflyGo (mặc định)",
+    "launch_mode_title": "Chế độ khởi chạy",
+    "launch_mode_desc": "Chọn cách launcher khởi động game",
+    "launch_mode_switched": "Đã chuyển sang {{name}}",
+    "launch_mode_fireflygo": "FireflyGo",
+    "launch_mode_march7thhoney": "March7thHoney",
+    "patch_url_title": "URL máy chủ",
+    "patch_url_desc": "Proxy sẽ chuyển tiếp lưu lượng bị chặn đến địa chỉ này.",
+    "patch_url_hint": "Để trống để dùng máy chủ mặc định (march7th.hoyotoon.com)"
   },
   "home": {
     "header_title": "Cyrene Launcher",

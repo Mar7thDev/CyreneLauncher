@@ -1,61 +1,83 @@
-// Package march7thhoneyService is the Wails-exposed surface for the
-// March7thHoney launch mode. It thinly wraps pkg/march7thhoney so the React
-// frontend can trigger a patched game launch (CreateProcess(SUSPENDED) +
-// CreateRemoteThread(LoadLibraryW) + ResumeThread).
+//go:build windows
+
+// Package march7thhoneyService is the Wails-exposed service for the
+// March7thHoney launch mode.
+//
+// The old approach (CreateProcess SUSPENDED + LoadLibraryW DLL injection) has
+// been replaced by a Go-native HTTPS MITM proxy:
+//
+//  1. A local proxy is started on a random loopback port. It intercepts HTTPS
+//     traffic to miHoYo domains and forwards it to the configured private server.
+//  2. The proxy root CA is installed in the Windows trusted root store so the
+//     game accepts our MITM TLS certificates.
+//  3. The Windows system HTTP/HTTPS proxy is pointed at the local listener.
+//  4. StarRail.exe is launched normally — no suspension or DLL needed.
+//  5. When the game process exits, the system proxy is restored and "game:exit"
+//     is emitted on the Wails event bus.
 package march7thhoneyService
 
 import (
-	"cyrene-launcher/pkg/march7thhoney"
-	"cyrene-launcher/pkg/models"
+	"cyrene-launcher/pkg/constant"
+	patchproxy "cyrene-launcher/pkg/patch-proxy"
+	"fmt"
+	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
-	"golang.org/x/sys/windows"
 )
 
 type March7thHoneyService struct{}
 
-// DetectRegion inspects gameDir/BinaryVersion.bytes to figure out whether the
-// installed StarRail client is the OS (global / HoYoPlay) build or the CN
-// (国服 / miHoYo Launcher) build. Returns one of "os", "cn", or "" when the
-// region can't be determined — in that case the frontend should prompt the
-// user to pick a region manually.
+// Start patches the system proxy, launches gamePath, and returns immediately.
 //
-// Region detection is conservative: we only return "os"/"cn" when the
-// BinaryVersion name contains the matching marker. Anything else (file
-// missing, parse error, unrecognised name) returns "".
-func (m *March7thHoneyService) DetectRegion(gameDir string) string {
-	if gameDir == "" {
-		return ""
+// targetURL is the private-server base URL (e.g. "https://march7th.hoyotoon.com").
+// An empty string uses constant.DefaultPatchTargetURL.
+//
+// Returns (true, "") on success, (false, errMsg) on failure.
+func (m *March7thHoneyService) Start(gamePath, targetURL string) (bool, string) {
+	if targetURL == "" {
+		targetURL = constant.DefaultPatchTargetURL
 	}
-	bv, err := models.ParseBinaryVersion(filepath.Join(gameDir, "BinaryVersion.bytes"))
-	if err != nil {
-		return ""
-	}
-	name := strings.ToUpper(bv.Name)
-	if strings.Contains(name, "CN") {
-		return "cn"
-	}
-	if strings.Contains(name, "OS") {
-		return "os"
-	}
-	return ""
-}
 
-// Start launches gamePath suspended, injects dllPath, and resumes the main
-// thread. Returns (ok, errMessage). Emits "game:exit" via the Wails event bus
-// when the patched game process terminates, matching the convention used by
-// FSService.StartApp.
-func (m *March7thHoneyService) Start(gamePath, dllPath string) (bool, string) {
-	hProcess, _, err := march7thhoney.LaunchAndInject(gamePath, dllPath)
+	proxy, err := patchproxy.New(targetURL)
 	if err != nil {
-		return false, err.Error()
+		return false, "proxy init: " + err.Error()
+	}
+
+	// Best-effort: install the CA cert. Non-fatal — the cert may already be
+	// trusted from a previous session, or certutil might not be on PATH.
+	_ = proxy.CA().InstallTrust()
+
+	port, err := proxy.Start()
+	if err != nil {
+		return false, "proxy start: " + err.Error()
+	}
+
+	prev := patchproxy.SaveState()
+	if err := patchproxy.SetProxy(fmt.Sprintf("127.0.0.1:%d", port)); err != nil {
+		proxy.Stop()
+		return false, "set system proxy: " + err.Error()
+	}
+
+	absGame, err := filepath.Abs(gamePath)
+	if err != nil {
+		proxy.Stop()
+		patchproxy.RestoreState(prev)
+		return false, "resolve game path: " + err.Error()
+	}
+
+	cmd := exec.Command(absGame)
+	cmd.Dir = filepath.Dir(absGame)
+	if err := cmd.Start(); err != nil {
+		proxy.Stop()
+		patchproxy.RestoreState(prev)
+		return false, "launch game: " + err.Error()
 	}
 
 	go func() {
-		windows.WaitForSingleObject(hProcess, windows.INFINITE)
-		windows.CloseHandle(hProcess)
+		_ = cmd.Wait()
+		proxy.Stop()
+		patchproxy.RestoreState(prev)
 		application.Get().Event.Emit("game:exit")
 	}()
 

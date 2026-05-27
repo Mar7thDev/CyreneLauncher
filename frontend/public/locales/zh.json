@@ -65,10 +65,9 @@
     "launch_mode_switched": "已切换到「{{name}}」",
     "launch_mode_fireflygo": "FireflyGo",
     "launch_mode_march7thhoney": "March7thHoney",
-    "patch_label": "补丁",
-    "region_label": "区服",
-    "region_unset": "—",
-    "region_reset_hint": "点击重置"
+    "patch_url_title": "服务器地址",
+    "patch_url_desc": "March7thHoney 代理将把流量转发到该地址。",
+    "patch_url_hint": "留空则使用默认服务器 (march7th.hoyotoon.com)"
   },
   "home": {
     "header_title": "Cyrene Launcher",
@@ -105,14 +104,7 @@
     "toast_start_server_failed": "启动服务器失败: ",
     "toast_start_game_failed": "启动游戏失败: ",
     "toast_start_game_error": "启动游戏错误: ",
-    "toast_march7th_needs_starrail": "March7thHoney 模式需要选择 StarRail.exe，不是官方启动器。",
-    "toast_region_detected": "区服：{{region}}",
-    "toast_region_set": "区服：{{region}}",
-    "toast_region_needs_game": "请先选择游戏。",
-    "modal_region_title": "选择区服",
-    "modal_region_msg": "请选择你的游戏区服。",
-    "btn_region_os": "国际服",
-    "btn_region_cn": "国服"
+    "toast_march7th_needs_starrail": "March7thHoney 模式需要选择 StarRail.exe，不是官方启动器。"
   },
   "diff": {
     "header_title": "🎮 使用 Diff Tool 更新游戏",
