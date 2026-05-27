@@ -21,6 +21,7 @@ export default function LauncherPage() {
         serverPath, proxyPath, gameDir,
         serverVersion, proxyVersion, background,
         launchMode, region, setRegion, patchDllPath, patchDllVersion,
+        setServerPath, setProxyPath,
     } = useSettingStore()
     const { t } = useTranslation()
     const {
@@ -109,6 +110,26 @@ export default function LauncherPage() {
             const exitGame = await FSService.FileExists(gamePath)
             if (!exitGame) { setGameRunning(false); setGamePath(""); setGameDir("") }
 
+            // Auto-relink: if a previous install already dropped the server /
+            // proxy binaries at the default paths, restore them to settings so
+            // we don't ask the user to redownload what's already on disk.
+            // Version stays empty → an update modal may still pop (declinable),
+            // but the forced download modal won't.
+            let effServerPath = serverPath
+            let effProxyPath  = proxyPath
+            if (launchMode === "fireflygo") {
+                const defaultServer = "./server/firefly-go_win.exe"
+                const defaultProxy  = "./proxy/firefly-go-proxy.exe"
+                if (!effServerPath && await FSService.FileExists(defaultServer)) {
+                    effServerPath = defaultServer
+                    setServerPath(defaultServer)
+                }
+                if (!effProxyPath && await FSService.FileExists(defaultProxy)) {
+                    effProxyPath = defaultProxy
+                    setProxyPath(defaultProxy)
+                }
+            }
+
             if (launchMode === "march7thhoney") {
                 // Skip the patch check until we know the region — otherwise
                 // we'd pop the download modal for a DLL we can't choose yet.
@@ -129,8 +150,8 @@ export default function LauncherPage() {
                 return
             }
 
-            const serverData = await CheckUpdateServer(serverPath, serverVersion)
-            const proxyData = await CheckUpdateProxy(proxyPath, proxyVersion)
+            const serverData = await CheckUpdateServer(effServerPath, serverVersion)
+            const proxyData = await CheckUpdateProxy(effProxyPath, proxyVersion)
             setUpdateData({
                 server: serverData,
                 proxy: proxyData,
