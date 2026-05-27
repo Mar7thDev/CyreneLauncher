@@ -17,7 +17,8 @@ export async function CheckUpdateLauncher(): Promise<{ isUpdate: boolean; isExis
         return { isUpdate: false, isExists: true, version: currentVersion }
     }
 
-    const isUpdate = latestVersion !== currentVersion
+    const normalize = (v: string) => v.replace(/^v/i, "")
+    const isUpdate = normalize(latestVersion) !== normalize(currentVersion)
     return { isUpdate, isExists: true, version: latestVersion }
 }
 
@@ -28,11 +29,10 @@ export async function UpdateLauncher(launcherVersion: string) : Promise<void> {
     const [ok, error] = await GitService.UpdateLauncherProgress(launcherVersion)
     if (ok) {
         setDownloadType("update:launcher:success")
-
+        AppService.CloseAppAfterTimeout(5)
+        await sleep(5000)
     } else {
         toast.error(error)
         setDownloadType("update:launcher:failed")
     }
-    AppService.CloseAppAfterTimeout(5)
-    await sleep(5000)
 }

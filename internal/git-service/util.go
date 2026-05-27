@@ -190,6 +190,9 @@ func (g *GitService) getLatestReleaseTagWithAsset(url, fileName string) (string,
 	}
 
 	for _, release := range releases {
+		if release.Draft || release.Prerelease {
+			continue
+		}
 		for _, asset := range release.Assets {
 			if asset.Name == fileName {
 				return release.TagName, true
