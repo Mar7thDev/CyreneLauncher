@@ -1,4 +1,4 @@
-# 🚀 Firefly Launcher
+# 🚀 Cyrene Launcher
 
 A lightweight and modern launcher for Anime game — designed to make launching, updating, and customizing your game easy and efficient.
 

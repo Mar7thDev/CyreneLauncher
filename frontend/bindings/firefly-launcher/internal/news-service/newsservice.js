@@ -6,22 +6,35 @@
 // @ts-ignore: Unused imports
 import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as $models from "./models.js";
+
 /**
- * Fetch official Star Rail launcher content (banners + posts).
- * Returns all 3 types (notice/event/info) in one call; frontend filters by NewsItem.type.
- *
- * @param {string} lang
- * @returns {$CancellablePromise<[boolean, Array<{id:string,title:string,intro:string,image:string,url:string,time:string,timestamp:number,type:string}>, string]>}
+ * GetCustomNews fetches the user-configured AnnouncementUrl.
+ * Auto-detects between Gitea release format and []NewsItem format.
+ * @returns {$CancellablePromise<[boolean, $models.NewsItem[], string]>}
  */
-export function GetOfficialNews(lang) {
-    return $Call.ByID(2016417425, lang);
+export function GetCustomNews() {
+    return $Call.ByID(826433463).then(/** @type {($result: any) => any} */(($result) => {
+        $result[1] = $$createType1($result[1]);
+        return $result;
+    }));
 }
 
 /**
- * Fetch the server announcements from AnnouncementUrl.
- *
- * @returns {$CancellablePromise<[boolean, Array<{id:string,title:string,intro:string,image:string,url:string,time:string,timestamp:number,type:string}>, string]>}
+ * GetOfficialNews fetches the HoYoPlay content for HSR (banners + 3-type posts)
+ * in a single HTTP request. Frontend filters posts by type for each tab.
+ * @param {string} lang
+ * @returns {$CancellablePromise<[boolean, $models.NewsItem[], string]>}
  */
-export function GetCustomNews() {
-    return $Call.ByID(826433463);
+export function GetOfficialNews(lang) {
+    return $Call.ByID(2016417425, lang).then(/** @type {($result: any) => any} */(($result) => {
+        $result[1] = $$createType1($result[1]);
+        return $result;
+    }));
 }
+
+// Private type creation functions
+const $$createType0 = $models.NewsItem.createFrom;
+const $$createType1 = $Create.Array($$createType0);

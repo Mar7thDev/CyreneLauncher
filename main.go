@@ -9,6 +9,7 @@ import (
 	fsService "firefly-launcher/internal/fs-service"
 	gitService "firefly-launcher/internal/git-service"
 	languageService "firefly-launcher/internal/language-service"
+	march7thHoneyService "firefly-launcher/internal/march7thhoney-service"
 	newsService "firefly-launcher/internal/news-service"
 
 	"firefly-launcher/pkg/constant"
@@ -82,6 +83,7 @@ func main() {
 			application.NewService(&diffService.DiffService{}),
 			application.NewService(&appService.AppService{}),
 			application.NewService(&newsService.NewsService{}),
+			application.NewService(&march7thHoneyService.March7thHoneyService{}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),

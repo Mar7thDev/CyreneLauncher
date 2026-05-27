@@ -50,16 +50,16 @@ export function MinimizeApp() {
 }
 
 /**
- * @returns {$CancellablePromise<[boolean, string]>}
- */
-export function RestoreApp() {
-    return $Call.ByID(3115625834);
-}
-
-/**
  * @param {string} url
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function OpenURL(url) {
     return $Call.ByID(1592090092, url);
+}
+
+/**
+ * @returns {$CancellablePromise<[boolean, string]>}
+ */
+export function RestoreApp() {
+    return $Call.ByID(3115625834);
 }

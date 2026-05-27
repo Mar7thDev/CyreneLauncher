@@ -58,7 +58,17 @@
     "source_desc": "选择服务端与代理的下载来源",
     "source_switched": "已切换到「{{name}}」模式",
     "source_custom": "自定义服务器",
-    "source_firefly": "FireflyGo (默认)"
+    "source_firefly": "FireflyGo (默认)",
+    "launch_mode_title": "启动模式",
+    "launch_mode_desc": "选择启动器拉起游戏的方式",
+    "launch_mode_hint": "March7thHoney 模式直接把 Astrolabe.dll 注入到 StarRail.exe，无需代理/服务端。补丁 DLL 从 GitHub Releases 拉取。",
+    "launch_mode_switched": "已切换到「{{name}}」模式",
+    "launch_mode_fireflygo": "FireflyGo（代理 + 服务端）",
+    "launch_mode_march7thhoney": "March7thHoney（DLL 注入）",
+    "patch_label": "补丁DLL",
+    "region_label": "区服",
+    "region_unset": "未设置",
+    "region_reset_hint": "点击清除并重新检测"
   },
   "home": {
     "header_title": "Firefly GO",
@@ -94,7 +104,15 @@
     "toast_start_proxy_failed": "启动代理失败: ",
     "toast_start_server_failed": "启动服务器失败: ",
     "toast_start_game_failed": "启动游戏失败: ",
-    "toast_start_game_error": "启动游戏错误: "
+    "toast_start_game_error": "启动游戏错误: ",
+    "toast_march7th_needs_starrail": "March7thHoney 模式需要直接选择 StarRail.exe，而不是 launcher.exe",
+    "toast_region_detected": "已自动识别游戏区服：{{region}}",
+    "toast_region_set": "区服已设为 {{region}}",
+    "toast_region_needs_game": "请先选择游戏可执行文件，再让启动器识别区服",
+    "modal_region_title": "选择游戏区服",
+    "modal_region_msg": "Cyrene 无法自动判断当前客户端是国际服 (OS) 还是国服 (CN)。请手动选择匹配的区服——选错 DLL 会让游戏崩溃。",
+    "btn_region_os": "国际服 (OS)",
+    "btn_region_cn": "国服 (CN)"
   },
   "diff": {
     "header_title": "🎮 使用 Diff Tool 更新游戏",

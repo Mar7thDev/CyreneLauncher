@@ -7,7 +7,21 @@
 import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
 /**
- * @param {string} source  "firefly" | "custom"
+ * DownloadPatchProgress fetches the region-specific patch DLL asset for the
+ * given version into constant.PatchStorageUrl, emitting "download:patch"
+ * events as it streams.
+ * 
+ * region must be "os" or "cn"; anything else is treated as OS.
+ * @param {string} region
+ * @param {string} version
+ * @returns {$CancellablePromise<[boolean, string]>}
+ */
+export function DownloadPatchProgress(region, version) {
+    return $Call.ByID(703911776, region, version);
+}
+
+/**
+ * @param {string} source
  * @param {string} version
  * @returns {$CancellablePromise<[boolean, string]>}
  */
@@ -16,7 +30,7 @@ export function DownloadProxyProgress(source, version) {
 }
 
 /**
- * @param {string} source  "firefly" | "custom"
+ * @param {string} source
  * @param {string} version
  * @returns {$CancellablePromise<[boolean, string]>}
  */
@@ -32,7 +46,17 @@ export function GetLatestLauncherVersion() {
 }
 
 /**
- * @param {string} source  "firefly" | "custom"
+ * GetLatestPatchVersion returns the newest tag of the March7thHoney patch DLL
+ * from its configured GitHub release feed. The response schema matches Gitea,
+ * so the rest of the download pipeline is unchanged.
+ * @returns {$CancellablePromise<[boolean, string, string]>}
+ */
+export function GetLatestPatchVersion() {
+    return $Call.ByID(2984284252);
+}
+
+/**
+ * @param {string} source
  * @returns {$CancellablePromise<[boolean, string, string]>}
  */
 export function GetLatestProxyVersion(source) {
@@ -40,7 +64,7 @@ export function GetLatestProxyVersion(source) {
 }
 
 /**
- * @param {string} source  "firefly" | "custom"
+ * @param {string} source
  * @returns {$CancellablePromise<[boolean, string, string]>}
  */
 export function GetLatestServerVersion(source) {

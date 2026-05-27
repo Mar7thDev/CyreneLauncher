@@ -13,6 +13,25 @@ const ServerZipFile = "prebuild_win_x86.zip"
 const ProxyFile = "firefly-go-proxy.exe"
 const TempUrl = "./temp"
 
+// === March7thHoney patch DLL storage ===
+//
+// The patch DLL is region-specific (RVAs differ between OS / CN builds of
+// StarRail). Cyrene downloads each region into its own filename so switching
+// regions doesn't clobber the other build.
+const PatchStorageUrl = "./patch"
+const PatchDllFileOS = "Astrolabe_OS.dll"
+const PatchDllFileCN = "Astrolabe_CN.dll"
+
+// PatchDllFileFor returns the on-disk DLL name for a given region. Unknown
+// regions fall back to the OS build — callers should ensure region is set
+// before reaching here.
+func PatchDllFileFor(region string) string {
+	if region == "cn" {
+		return PatchDllFileCN
+	}
+	return PatchDllFileOS
+}
+
 // === Server source modes ===
 //
 // The launcher supports switching between download sources for the server +
@@ -25,6 +44,10 @@ const (
 
 // SourceConfig is the per-source URL + filename bundle.
 // Empty URLs are treated by GitService as "not configured".
+//
+// Both Gitea and GitHub releases APIs return the same JSON shape
+// (tag_name, assets[].browser_download_url, assets[].name), so the same
+// SourceConfig + downloader code works for either backend.
 type SourceConfig struct {
 	Name          string // for logging
 	ServerGitUrl  string
@@ -63,6 +86,39 @@ func GetSourceConfig(name string) SourceConfig {
 	}
 }
 
+// === March7thHoney patch source ===
+//
+// March7thHoney distributes only the Astrolabe.dll (NativeAOT-compiled patch)
+// via GitHub Releases. The launcher itself does the DLL injection — see
+// pkg/march7thhoney. No bundled .NET launcher / proxy is needed.
+//
+// Each release is expected to ship two assets named exactly:
+//   - Astrolabe_OS.dll  (Global / HoYoPlay builds)
+//   - Astrolabe_CN.dll  (国服 / miHoYo Launcher builds)
+type PatchSourceConfig struct {
+	Name        string
+	ReleasesUrl string // GitHub /releases endpoint (list, newest first)
+	AssetFileOS string
+	AssetFileCN string
+}
+
+// AssetFor returns the release asset filename for the given region, mirroring
+// PatchDllFileFor.
+func (c PatchSourceConfig) AssetFor(region string) string {
+	if region == "cn" {
+		return c.AssetFileCN
+	}
+	return c.AssetFileOS
+}
+
+// March7thHoneyConfig points to the public Cyrene patch DLL repo.
+var March7thHoneyConfig = PatchSourceConfig{
+	Name:        "March7thHoney",
+	ReleasesUrl: "https://api.github.com/repos/Mar7thLover/CyreneLauncher-Public/releases",
+	AssetFileOS: PatchDllFileOS,
+	AssetFileCN: PatchDllFileCN,
+}
+
 // Legacy constants for backward compatibility (used only by launcher self-update).
 const ProxyGitUrl = "https://git.kain.io.vn/api/v1/repos/Firefly-Shelter/FireflyGo_Proxy/releases"
 const ServerGitUrl = "https://git.kain.io.vn/api/v1/repos/Firefly-Shelter/FireflyGo_Local_Archive/releases"
@@ -85,9 +141,11 @@ const (
 
 // AnnouncementUrl is the URL for the "Server" tab in the News page.
 // Set to empty string to show "not configured" state.
-// Currently points to the launcher's Gitea releases feed as a placeholder;
-// the news service auto-detects Gitea release format and maps it to NewsItem.
-const AnnouncementUrl = LauncherGitUrl
+//
+// Points at the March7thHoney public repo so that each patch release's body
+// (Markdown changelog) becomes an announcement card. GitHub's release schema
+// matches Gitea, so news-service's auto-detector picks it up unchanged.
+const AnnouncementUrl = "https://api.github.com/repos/Mar7thLover/CyreneLauncher-Public/releases"
 
 // Project metadata for the About section
 const ProjectName = "Cyrene Launcher"

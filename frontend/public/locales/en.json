@@ -58,7 +58,17 @@
     "source_desc": "Choose where the server and proxy are downloaded from",
     "source_switched": "Switched to {{name}} mode",
     "source_custom": "Custom server",
-    "source_firefly": "FireflyGo (default)"
+    "source_firefly": "FireflyGo (default)",
+    "launch_mode_title": "Launch Mode",
+    "launch_mode_desc": "Pick how the launcher starts the game",
+    "launch_mode_hint": "March7thHoney injects Astrolabe.dll directly into StarRail.exe — no proxy/server bundled. The patch DLL is fetched from GitHub Releases.",
+    "launch_mode_switched": "Switched to {{name}} mode",
+    "launch_mode_fireflygo": "FireflyGo (proxy + server)",
+    "launch_mode_march7thhoney": "March7thHoney (DLL inject)",
+    "patch_label": "Patch DLL",
+    "region_label": "Region",
+    "region_unset": "not set",
+    "region_reset_hint": "Click to clear and re-detect"
   },
   "home": {
     "header_title": "Firefly GO",
@@ -94,7 +104,15 @@
     "toast_start_proxy_failed": "Failed to start proxy: ",
     "toast_start_server_failed": "Failed to start server: ",
     "toast_start_game_failed": "Failed to start game: ",
-    "toast_start_game_error": "Start game error: "
+    "toast_start_game_error": "Start game error: ",
+    "toast_march7th_needs_starrail": "March7thHoney mode requires picking StarRail.exe directly, not launcher.exe",
+    "toast_region_detected": "Detected game region: {{region}}",
+    "toast_region_set": "Region set to {{region}}",
+    "toast_region_needs_game": "Pick the game executable first so we can detect the region",
+    "modal_region_title": "Pick Game Region",
+    "modal_region_msg": "Cyrene couldn't auto-detect whether this is the Global (OS) or China (CN) build. Pick the matching region — the wrong DLL will crash the game.",
+    "btn_region_os": "Global (OS)",
+    "btn_region_cn": "China (CN)"
   },
   "diff": {
     "header_title": "🎮 Game Update by Diff Tool",

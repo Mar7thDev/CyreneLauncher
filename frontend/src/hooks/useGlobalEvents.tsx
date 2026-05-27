@@ -43,6 +43,7 @@ export function useGlobalEvents() {
 
         Events.On("download:server", onDownload);
         Events.On("download:proxy", onDownload);
+        Events.On("download:patch", onDownload);
         Events.On("game:exit", onGameExit);
         Events.On("server:exit", onServerExit);
         Events.On("proxy:exit", onProxyExit);
@@ -71,6 +72,7 @@ export function useGlobalEvents() {
         return () => {
             Events.Off("download:server");
             Events.Off("download:proxy");
+            Events.Off("download:patch");
             Events.Off("game:exit");
             Events.Off("server:exit");
             Events.Off("proxy:exit");

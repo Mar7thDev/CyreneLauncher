@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Play, Menu, FolderOpen, MessageCircleQuestionMark } from 'lucide-react';
 import { AppService } from '@bindings/firefly-launcher/internal/app-service';
 import { FSService } from '@bindings/firefly-launcher/internal/fs-service';
+import { March7thHoneyService } from '@bindings/firefly-launcher/internal/march7thhoney-service';
 import { toast } from 'react-toastify';
 import path from 'path-browserify'
 import useSettingStore from '@/stores/settingStore';
@@ -9,7 +10,7 @@ import useModalStore from '@/stores/modalStore';
 import useLauncherStore from '@/stores/launcherStore';
 import { motion } from 'motion/react';
 import { Link } from '@tanstack/react-router';
-import { CheckUpdateLauncher, CheckUpdateProxy, CheckUpdateServer, sleep, UpdateLauncher, UpdateProxy, UpdateServer } from '@/helper';
+import { CheckUpdateLauncher, CheckUpdatePatch, CheckUpdateProxy, CheckUpdateServer, sleep, UpdateLauncher, UpdatePatch, UpdateProxy, UpdateServer } from '@/helper';
 import UpdateModal from '@/components/updateModal';
 import { BackgroundSelector } from '@/components/backgroudModal';
 import { useTranslation } from 'react-i18next';
@@ -18,18 +19,19 @@ export default function LauncherPage() {
     const {
         gamePath, setGamePath, setGameDir,
         serverPath, proxyPath, gameDir,
-        serverVersion, proxyVersion, background
+        serverVersion, proxyVersion, background,
+        launchMode, region, setRegion, patchDllPath, patchDllVersion,
     } = useSettingStore()
     const { t } = useTranslation()
     const {
-        isOpenDownloadDataModal, isOpenUpdateDataModal, isOpenSelfUpdateModal,
-        setIsOpenDownloadDataModal, setIsOpenUpdateDataModal, setIsOpenSelfUpdateModal
+        isOpenDownloadDataModal, isOpenUpdateDataModal, isOpenSelfUpdateModal, isOpenRegionModal,
+        setIsOpenDownloadDataModal, setIsOpenUpdateDataModal, setIsOpenSelfUpdateModal, setIsOpenRegionModal,
     } = useModalStore()
     const {
-        isLoading, downloadType, serverReady, proxyReady, isDownloading,
+        isLoading, downloadType, serverReady, proxyReady, patchReady, isDownloading,
         serverRunning, proxyRunning, gameRunning, progressDownload, downloadSpeed,
         updateData, setLauncherVersion, setIsLoading, setDownloadType,
-        setServerReady, setProxyReady, setIsDownloading,
+        setServerReady, setProxyReady, setPatchReady, setIsDownloading,
         setServerRunning, setProxyRunning, setGameRunning, setUpdateData,
     } = useLauncherStore()
 
@@ -46,12 +48,47 @@ export default function LauncherPage() {
 
     useEffect(() => {
         const check = async () => {
+            if (launchMode === "march7thhoney") {
+                if (!region || !patchDllVersion) { setPatchReady(false); return }
+                setPatchReady(await FSService.FileExists(patchDllPath))
+                return
+            }
             if (!serverVersion || !proxyVersion) { setServerReady(false); setProxyReady(false); return }
             setServerReady(await FSService.FileExists(serverPath))
             setProxyReady(await FSService.FileExists(proxyPath))
         }
         check()
-    }, [serverPath, proxyPath, serverVersion, proxyVersion])
+    }, [launchMode, serverPath, proxyPath, serverVersion, proxyVersion, patchDllPath, patchDllVersion, region])
+
+    // Region detection: whenever we're in march7thhoney mode and have a game
+    // directory but no region set, try to detect it from BinaryVersion.bytes.
+    // If detection is ambiguous, open the region picker modal.
+    useEffect(() => {
+        if (launchMode !== "march7thhoney") return
+        if (!gameDir) return
+        if (region) return
+        (async () => {
+            const detected = await March7thHoneyService.DetectRegion(gameDir)
+            if (detected === "os" || detected === "cn") {
+                setRegion(detected)
+                toast.success(t("home.toast_region_detected", { region: detected.toUpperCase() }))
+            } else {
+                setIsOpenRegionModal(true)
+            }
+        })()
+    }, [launchMode, gameDir, region])
+
+    // Gate march7thhoney actions on a known region. Returns true if we can
+    // proceed; otherwise opens the picker modal and returns false.
+    const ensureRegion = (): boolean => {
+        if (region) return true
+        if (!gameDir) {
+            toast.error(t("home.toast_region_needs_game"))
+            return false
+        }
+        setIsOpenRegionModal(true)
+        return false
+    }
 
     useEffect(() => {
         const checkStartUp = async () => {
@@ -59,15 +96,47 @@ export default function LauncherPage() {
             setLauncherVersion(version)
             const launcherData = await CheckUpdateLauncher()
             if (launcherData.isUpdate) {
-                setUpdateData({ server: { isUpdate: false, isExists: false, version: "" }, proxy: { isUpdate: false, isExists: false, version: "" }, launcher: launcherData })
+                setUpdateData({
+                    server: { isUpdate: false, isExists: false, version: "" },
+                    proxy: { isUpdate: false, isExists: false, version: "" },
+                    patch: { isUpdate: false, isExists: false, version: "" },
+                    launcher: launcherData,
+                })
                 setIsOpenSelfUpdateModal(true)
                 return
             }
-            const serverData = await CheckUpdateServer(serverPath, serverVersion)
-            const proxyData = await CheckUpdateProxy(proxyPath, proxyVersion)
-            setUpdateData({ server: serverData, proxy: proxyData, launcher: launcherData })
+
             const exitGame = await FSService.FileExists(gamePath)
             if (!exitGame) { setGameRunning(false); setGamePath(""); setGameDir("") }
+
+            if (launchMode === "march7thhoney") {
+                // Skip the patch check until we know the region — otherwise
+                // we'd pop the download modal for a DLL we can't choose yet.
+                if (!region) {
+                    setPatchReady(false)
+                    return
+                }
+                const patchData = await CheckUpdatePatch(region, patchDllPath, patchDllVersion)
+                setUpdateData({
+                    server: { isUpdate: false, isExists: true, version: "" },
+                    proxy: { isUpdate: false, isExists: true, version: "" },
+                    patch: patchData,
+                    launcher: launcherData,
+                })
+                if (!patchData.isExists) { setPatchReady(false); setIsOpenDownloadDataModal(true); return }
+                if (patchData.isUpdate)  { setPatchReady(true);  setIsOpenUpdateDataModal(true);  return }
+                setPatchReady(true)
+                return
+            }
+
+            const serverData = await CheckUpdateServer(serverPath, serverVersion)
+            const proxyData = await CheckUpdateProxy(proxyPath, proxyVersion)
+            setUpdateData({
+                server: serverData,
+                proxy: proxyData,
+                patch: { isUpdate: false, isExists: false, version: "" },
+                launcher: launcherData,
+            })
             if (!serverData.isExists || !proxyData.isExists) {
                 setServerReady(false); setProxyReady(false); setIsOpenDownloadDataModal(true); return
             }
@@ -77,7 +146,7 @@ export default function LauncherPage() {
             setServerReady(true); setProxyReady(true)
         }
         checkStartUp()
-    }, []);
+    }, [launchMode, region]);
 
     const handlePickFile = async () => {
         try {
@@ -98,6 +167,19 @@ export default function LauncherPage() {
         if (!gamePath || gameRunning) return
         try {
             setIsLoading(true)
+
+            if (launchMode === "march7thhoney") {
+                if (gamePath.endsWith("launcher.exe")) {
+                    toast.error(t("home.toast_march7th_needs_starrail"))
+                    return
+                }
+                if (!ensureRegion()) return
+                const [ok, err] = await March7thHoneyService.Start(gamePath, patchDllPath)
+                if (!ok) { toast.error(t("home.toast_start_game_failed") + err); return }
+                setGameRunning(true)
+                return
+            }
+
             if (!proxyRunning && !gamePath.endsWith("launcher.exe")) {
                 const [ok, err] = await FSService.StartWithConsole(proxyPath)
                 if (!ok) { toast.error(t("home.toast_start_proxy_failed") + err); return }
@@ -129,26 +211,35 @@ export default function LauncherPage() {
             setUpdateData({ ...updateData, launcher: { isUpdate: false, isExists: true, version: updateData.launcher.version } })
             setIsOpenSelfUpdateModal(true)
         }
-        if (updateData.server.isUpdate || !updateData.server.isExists) {
-            await UpdateServer(updateData.server.version)
-            setServerReady(true)
-            setUpdateData({ ...updateData, server: { isUpdate: false, isExists: true, version: updateData.server.version } })
-        }
-        if (updateData.proxy.isUpdate || !updateData.proxy.isExists) {
-            await UpdateProxy(updateData.proxy.version)
-            setProxyReady(true)
-            setUpdateData({ ...updateData, proxy: { isUpdate: false, isExists: true, version: updateData.proxy.version } })
+        if (launchMode === "march7thhoney") {
+            if (!ensureRegion()) { setDownloadType(""); setIsDownloading(false); return }
+            if (updateData.patch.isUpdate || !updateData.patch.isExists) {
+                await UpdatePatch(region, updateData.patch.version)
+                setPatchReady(true)
+                setUpdateData({ ...updateData, patch: { isUpdate: false, isExists: true, version: updateData.patch.version } })
+            }
+        } else {
+            if (updateData.server.isUpdate || !updateData.server.isExists) {
+                await UpdateServer(updateData.server.version)
+                setServerReady(true)
+                setUpdateData({ ...updateData, server: { isUpdate: false, isExists: true, version: updateData.server.version } })
+            }
+            if (updateData.proxy.isUpdate || !updateData.proxy.isExists) {
+                await UpdateProxy(updateData.proxy.version)
+                setProxyReady(true)
+                setUpdateData({ ...updateData, proxy: { isUpdate: false, isExists: true, version: updateData.proxy.version } })
+            }
         }
         setDownloadType(""); setIsDownloading(false)
     }
 
     useEffect(() => {
         const handleEscKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') { setIsOpenDownloadDataModal(false); setIsOpenUpdateDataModal(false); setIsOpenSelfUpdateModal(false) }
+            if (e.key === 'Escape') { setIsOpenDownloadDataModal(false); setIsOpenUpdateDataModal(false); setIsOpenSelfUpdateModal(false); setIsOpenRegionModal(false) }
         }
         window.addEventListener('keydown', handleEscKey)
         return () => window.removeEventListener('keydown', handleEscKey)
-    }, [isOpenDownloadDataModal, isOpenUpdateDataModal, isOpenSelfUpdateModal]);
+    }, [isOpenDownloadDataModal, isOpenUpdateDataModal, isOpenSelfUpdateModal, isOpenRegionModal]);
 
     return (
         <div className="relative min-h-fit overflow-hidden">
@@ -228,9 +319,18 @@ export default function LauncherPage() {
                         <li><button onClick={handlePickFile}>{t("home.menu_change_path")}</button></li>
                         <li>
                             <button onClick={async () => {
+                                if (launchMode === "march7thhoney") {
+                                    if (!ensureRegion()) return
+                                    const patchData = await CheckUpdatePatch(region, patchDllPath, patchDllVersion)
+                                    setUpdateData({ ...updateData, patch: patchData })
+                                    if (!patchData.isExists) { setIsOpenDownloadDataModal(true); return }
+                                    if (patchData.isUpdate)  { setIsOpenUpdateDataModal(true);  return }
+                                    toast.success(t("home.no_updates"))
+                                    return
+                                }
                                 const serverData = await CheckUpdateServer(serverPath, serverVersion)
                                 const proxyData  = await CheckUpdateProxy(proxyPath, proxyVersion)
-                                setUpdateData({ server: serverData, proxy: proxyData, launcher: updateData.launcher })
+                                setUpdateData({ ...updateData, server: serverData, proxy: proxyData })
                                 if (!serverData.isExists || !proxyData.isExists) { setIsOpenDownloadDataModal(true); return }
                                 if (serverData.isUpdate || proxyData.isUpdate)   { setIsOpenUpdateDataModal(true); return }
                                 toast.success(t("home.no_updates"))
@@ -251,7 +351,7 @@ export default function LauncherPage() {
                         <Play className="w-5 h-5" />
                         {t("home.status_wait")}
                     </button>
-                ) : (!serverReady || !proxyReady) ? (
+                ) : (launchMode === "march7thhoney" ? !patchReady : (!serverReady || !proxyReady)) ? (
                     <motion.button
                         whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(244,114,182,0.45)' }}
                         whileTap={{ scale: 0.97 }}
@@ -361,6 +461,16 @@ export default function LauncherPage() {
                 buttons={[
                     { text: t("home.btn_no"),  onClick: () => setIsOpenSelfUpdateModal(false), variant: "outline" },
                     { text: t("home.btn_yes"), onClick: async () => { setIsOpenSelfUpdateModal(false); await handlerUpdateData() }, variant: "primary" }
+                ]}
+            />
+            <UpdateModal
+                isOpen={isOpenRegionModal}
+                onClose={() => setIsOpenRegionModal(false)}
+                title={t("home.modal_region_title")}
+                message={t("home.modal_region_msg")}
+                buttons={[
+                    { text: t("home.btn_region_os"), onClick: () => { setRegion("os"); setIsOpenRegionModal(false); toast.success(t("home.toast_region_set", { region: "OS" })) }, variant: "primary" },
+                    { text: t("home.btn_region_cn"), onClick: () => { setRegion("cn"); setIsOpenRegionModal(false); toast.success(t("home.toast_region_set", { region: "CN" })) }, variant: "primary" },
                 ]}
             />
         </div>

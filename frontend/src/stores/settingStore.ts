@@ -3,6 +3,16 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type ServerSource = "firefly" | "custom"
 
+// LaunchMode picks how the launcher starts the game:
+//   - "fireflygo"     → local proxy + server (current behaviour)
+//   - "march7thhoney" → CreateProcess(SUSPENDED) + Astrolabe.dll injection,
+//                       no bundled proxy/server (the DLL's own hooks handle it)
+export type LaunchMode = "fireflygo" | "march7thhoney"
+
+// GameRegion is "" when we haven't (or can't) detected which client this is.
+// In that case the launcher prompts the user before downloading a patch DLL.
+export type GameRegion = "os" | "cn" | ""
+
 interface SettingState {
     locale: string;
     gamePath: string;
@@ -12,6 +22,10 @@ interface SettingState {
     serverVersion: string;
     proxyVersion: string;
     serverSource: ServerSource;
+    launchMode: LaunchMode;
+    region: GameRegion;
+    patchDllPath: string;
+    patchDllVersion: string;
     closingOption: {
         isMinimize: boolean;
         isAsk: boolean;
@@ -29,6 +43,10 @@ interface SettingState {
     setServerVersion: (newServerVersion: string) => void;
     setProxyVersion: (newProxyVersion: string) => void;
     setServerSource: (newSource: ServerSource) => void;
+    setLaunchMode: (newMode: LaunchMode) => void;
+    setRegion: (newRegion: GameRegion) => void;
+    setPatchDllPath: (newPath: string) => void;
+    setPatchDllVersion: (newVersion: string) => void;
 }
 
 const useSettingStore = create<SettingState>()(
@@ -42,6 +60,10 @@ const useSettingStore = create<SettingState>()(
             serverVersion: "",
             proxyVersion: "",
             serverSource: "firefly",
+            launchMode: "fireflygo",
+            region: "",
+            patchDllPath: "",
+            patchDllVersion: "",
             closingOption: {
                 isMinimize: false,
                 isAsk: true,
@@ -67,6 +89,16 @@ const useSettingStore = create<SettingState>()(
                 serverVersion: "",
                 proxyVersion: "",
             }),
+            setLaunchMode: (newMode: LaunchMode) => set({ launchMode: newMode }),
+            // Switching region invalidates the cached patch so the launcher
+            // re-downloads the matching DLL.
+            setRegion: (newRegion: GameRegion) => set({
+                region: newRegion,
+                patchDllPath: "",
+                patchDllVersion: "",
+            }),
+            setPatchDllPath: (newPath: string) => set({ patchDllPath: newPath }),
+            setPatchDllVersion: (newVersion: string) => set({ patchDllVersion: newVersion }),
         }),
         {
             name: 'setting-storage',

@@ -1,10 +1,10 @@
 import { CheckUpdateLauncher } from "@/helper"
 import useModalStore from "@/stores/modalStore"
-import useSettingStore, { type ServerSource } from "@/stores/settingStore"
+import useSettingStore, { type ServerSource, type LaunchMode } from "@/stores/settingStore"
 import useLauncherStore from "@/stores/launcherStore"
 import { toast } from "react-toastify"
 import { useTranslation } from "react-i18next"
-import { ExternalLink, Server, ServerCog } from "lucide-react"
+import { ExternalLink, Server, ServerCog, Rocket, Syringe } from "lucide-react"
 
 const PROJECT_NAME = "Cyrene Launcher"
 const PROJECT_AUTHOR = "Firefly Shelter (original) · Cyrene (fork)"
@@ -20,13 +20,19 @@ export default function SettingModal({
     if (!isOpen) return null
     const { t } = useTranslation()
     const { setIsOpenSelfUpdateModal } = useModalStore()
-    const { closingOption, setClosingOption, serverVersion, proxyVersion, serverSource, setServerSource } = useSettingStore()
+    const { closingOption, setClosingOption, serverVersion, proxyVersion, serverSource, setServerSource, launchMode, setLaunchMode, region, setRegion, patchDllVersion } = useSettingStore()
     const { setUpdateData, updateData, launcherVersion } = useLauncherStore()
 
     const handleSourceChange = (next: ServerSource) => {
         if (next === serverSource) return
         setServerSource(next)
         toast.success(t("setting.source_switched", { name: t(`setting.source_${next}`) }))
+    }
+
+    const handleLaunchModeChange = (next: LaunchMode) => {
+        if (next === launchMode) return
+        setLaunchMode(next)
+        toast.success(t("setting.launch_mode_switched", { name: t(`setting.launch_mode_${next}`) }))
     }
 
     const CheckUpdate = async () => {
@@ -38,6 +44,7 @@ export default function SettingModal({
         setUpdateData({
             server: updateData.server,
             proxy: updateData.proxy,
+            patch: updateData.patch,
             launcher: launcherData
         })
         setIsOpenSelfUpdateModal(true)
@@ -61,7 +68,35 @@ export default function SettingModal({
 
                 {/* Content */}
                 <div className="flex flex-col gap-4">
-                    {/* Section 0: Server Source */}
+                    {/* Section -1: Launch Mode */}
+                    <div className="p-4 bg-base-200 rounded-xl border border-violet-200/50">
+                        <h4 className="font-bold text-base mb-1">{t("setting.launch_mode_title")}</h4>
+                        <p className="text-sm text-base-content/50 mb-3">{t("setting.launch_mode_desc")}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                            {(["fireflygo", "march7thhoney"] as LaunchMode[]).map(opt => {
+                                const isActive = launchMode === opt
+                                const Icon = opt === "fireflygo" ? Rocket : Syringe
+                                return (
+                                    <button
+                                        key={opt}
+                                        onClick={() => handleLaunchModeChange(opt)}
+                                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all text-left ${
+                                            isActive
+                                                ? "bg-linear-to-r from-violet-500 to-pink-500 text-white border-transparent shadow-md shadow-violet-200/50"
+                                                : "bg-white hover:bg-violet-50 border-violet-200/60 text-base-content/70 hover:text-violet-500"
+                                        }`}
+                                    >
+                                        <Icon size={16} />
+                                        <span className="flex-1">{t(`setting.launch_mode_${opt}`)}</span>
+                                    </button>
+                                )
+                            })}
+                        </div>
+                        <p className="text-xs text-base-content/40 mt-2">{t("setting.launch_mode_hint")}</p>
+                    </div>
+
+                    {/* Section 0: Server Source — only relevant in fireflygo mode */}
+                    {launchMode === "fireflygo" && (
                     <div className="p-4 bg-base-200 rounded-xl border border-sky-200/50">
                         <h4 className="font-bold text-base mb-1">{t("setting.source_title")}</h4>
                         <p className="text-sm text-base-content/50 mb-3">{t("setting.source_desc")}</p>
@@ -87,6 +122,7 @@ export default function SettingModal({
                         </div>
                         <p className="text-xs text-base-content/40 mt-2">{t("setting.source_hint")}</p>
                     </div>
+                    )}
 
                     {/* Section 1: Launcher Update */}
                     <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">
@@ -132,12 +168,32 @@ export default function SettingModal({
                     <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">
                         <h4 className="font-bold text-base mb-3">{t("setting.version_label")}</h4>
                         <div className="flex flex-wrap gap-2">
-                            <span className="badge badge-outline badge-primary text-xs">
-                                {t("setting.server_label")}: {serverVersion}
-                            </span>
-                            <span className="badge badge-outline badge-secondary text-xs">
-                                {t("setting.proxy_label")}: {proxyVersion}
-                            </span>
+                            {launchMode === "fireflygo" ? (
+                                <>
+                                    <span className="badge badge-outline badge-primary text-xs">
+                                        {t("setting.server_label")}: {serverVersion}
+                                    </span>
+                                    <span className="badge badge-outline badge-secondary text-xs">
+                                        {t("setting.proxy_label")}: {proxyVersion}
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="badge badge-outline badge-secondary text-xs">
+                                        {t("setting.patch_label")}: {patchDllVersion || "-"}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (region) { setRegion("") }
+                                        }}
+                                        title={t("setting.region_reset_hint") || ""}
+                                        className="badge badge-outline badge-info text-xs cursor-pointer hover:bg-info/10"
+                                    >
+                                        {t("setting.region_label")}: {region ? region.toUpperCase() : t("setting.region_unset")}
+                                    </button>
+                                </>
+                            )}
                             <span className="badge badge-outline badge-accent text-xs">
                                 {t("setting.launcher_label")}: {launcherVersion}
                             </span>
