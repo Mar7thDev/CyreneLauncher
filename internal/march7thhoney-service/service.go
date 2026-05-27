@@ -33,13 +33,16 @@ type March7thHoneyService struct{}
 // targetURL is the private-server base URL (e.g. "https://march7th.hoyotoon.com").
 // An empty string uses constant.DefaultPatchTargetURL.
 //
+// opts controls optional body patching. Zero value disables all patching;
+// use patchproxy.DefaultPatchOptions() for the recommended defaults.
+//
 // Returns (true, "") on success, (false, errMsg) on failure.
-func (m *March7thHoneyService) Start(gamePath, targetURL string) (bool, string) {
+func (m *March7thHoneyService) Start(gamePath, targetURL string, opts patchproxy.PatchOptions) (bool, string) {
 	if targetURL == "" {
 		targetURL = constant.DefaultPatchTargetURL
 	}
 
-	proxy, err := patchproxy.New(targetURL)
+	proxy, err := patchproxy.New(targetURL, opts)
 	if err != nil {
 		return false, "proxy init: " + err.Error()
 	}

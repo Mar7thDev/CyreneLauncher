@@ -67,7 +67,11 @@
     "launch_mode_march7thhoney": "March7thHoney",
     "patch_url_title": "Server URL",
     "patch_url_desc": "The March7thHoney proxy will forward intercepted traffic here.",
-    "patch_url_hint": "Leave empty to use the default server (march7th.hoyotoon.com)"
+    "patch_url_hint": "Leave empty to use the default server (march7th.hoyotoon.com)",
+    "rsa_patch_title": "RSA Key Patch",
+    "rsa_key_hint": "Leave empty to use the built-in default key",
+    "web_redirect_title": "Webpage URL Redirect",
+    "web_hosts_hint": "One host per line or comma-separated; leave empty for default list"
   },
   "home": {
     "header_title": "Cyrene Launcher",

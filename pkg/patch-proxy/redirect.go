@@ -5,37 +5,48 @@ package patchproxy
 import (
 	"regexp"
 	"strings"
+	"sync"
 )
 
-// redirectURLRE matches any http(s) URL whose host is (or is a subdomain of)
-// a redirect domain.
-//
-//	Group 1 — scheme ("http" or "https")
-//	Group 2 — host (including any subdomain)            ← replaced by target host
-//	Group 3 — path + query + fragment (may be empty)    ← preserved as-is
-var redirectURLRE = buildRedirectURLRE()
+// webHostsRE caches compiled regexps keyed by the sorted host list string
+// so we don't recompile on every request.
+var (
+	reMu    sync.Mutex
+	reCache = map[string]*regexp.Regexp{}
+)
 
-func buildRedirectURLRE() *regexp.Regexp {
-	escaped := make([]string, len(redirectDomains))
-	for i, d := range redirectDomains {
-		escaped[i] = regexp.QuoteMeta(d)
+// urlREForHosts returns a compiled regexp that matches http(s):// URLs whose
+// host is exactly one of the provided hosts (case-insensitive).
+//
+//	Group 1 — scheme
+//	Group 2 — host (exact match)
+//	Group 3 — path + query + fragment (may be empty)
+func urlREForHosts(hosts []string) *regexp.Regexp {
+	key := strings.Join(hosts, "|")
+	reMu.Lock()
+	defer reMu.Unlock()
+	if re, ok := reCache[key]; ok {
+		return re
 	}
-	// (?:[a-zA-Z0-9-]+\.)* — zero or more subdomain labels, each ending in "."
-	// The anchored domain pattern ensures e.g. "fakemihoyo.com" doesn't match.
-	hostPat := `(?:[a-zA-Z0-9-]+\.)*(?:` + strings.Join(escaped, "|") + `)`
-	// Path/query/fragment: everything that can legally follow a host in a URL,
-	// up to a whitespace or typical delimiter character.
-	pathPat := `(/[^\s"'<>]*)?`
-	return regexp.MustCompile(`(https?)://` + `(` + hostPat + `)` + pathPat)
+	escaped := make([]string, len(hosts))
+	for i, h := range hosts {
+		escaped[i] = regexp.QuoteMeta(strings.ToLower(h))
+	}
+	// Exact host match (no subdomain wildcard — mirrors reference project).
+	// Path allows any non-whitespace / non-delimiter character.
+	re := regexp.MustCompile(`(?i)(https?)://(` + strings.Join(escaped, "|") + `)(/[^\s"'<>]*)?`)
+	reCache[key] = re
+	return re
 }
 
-// patchURLsInBody rewrites URLs in body that point to a redirect domain so
-// they instead point to targetScheme://targetHost (path preserved).
-//
-// Applied to text/html, text/javascript, application/json, and similar textual
-// content types; binary responses are returned unchanged.
-// URLs that already point to targetHost are left alone.
-func patchURLsInBody(body []byte, contentType, targetScheme, targetHost string) []byte {
+// patchURLsInBody rewrites URLs in body whose host is in webHosts so they
+// point at targetScheme://targetHost (path preserved).
+// Only operates on text/html/js/json content; binary responses are unchanged.
+// URLs already pointing to targetHost are left alone.
+func patchURLsInBody(body []byte, contentType, targetScheme, targetHost string, webHosts []string) []byte {
+	if len(webHosts) == 0 {
+		return body
+	}
 	ct := strings.ToLower(contentType)
 	if !strings.Contains(ct, "json") &&
 		!strings.Contains(ct, "html") &&
@@ -43,19 +54,16 @@ func patchURLsInBody(body []byte, contentType, targetScheme, targetHost string) 
 		!strings.Contains(ct, "text") {
 		return body
 	}
-
-	return redirectURLRE.ReplaceAllFunc(body, func(match []byte) []byte {
-		// Extract the captured groups.
-		sub := redirectURLRE.FindSubmatch(match)
+	re := urlREForHosts(webHosts)
+	targetLow := strings.ToLower(targetHost)
+	return re.ReplaceAllFunc(body, func(match []byte) []byte {
+		sub := re.FindSubmatch(match)
 		if sub == nil {
 			return match
 		}
-		host := string(sub[2])
-		// Don't rewrite URLs that already point to the target.
-		if strings.EqualFold(host, targetHost) {
-			return match
+		if strings.ToLower(string(sub[2])) == targetLow {
+			return match // already points at target
 		}
-		path := sub[3]
-		return append([]byte(targetScheme+"://"+targetHost), path...)
+		return append([]byte(targetScheme+"://"+targetHost), sub[3]...)
 	})
 }

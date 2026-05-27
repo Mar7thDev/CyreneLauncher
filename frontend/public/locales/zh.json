@@ -67,7 +67,11 @@
     "launch_mode_march7thhoney": "March7thHoney",
     "patch_url_title": "服务器地址",
     "patch_url_desc": "March7thHoney 代理将把流量转发到该地址。",
-    "patch_url_hint": "留空则使用默认服务器 (march7th.hoyotoon.com)"
+    "patch_url_hint": "留空则使用默认服务器 (march7th.hoyotoon.com)",
+    "rsa_patch_title": "RSA 密钥替换",
+    "rsa_key_hint": "留空使用内置默认密钥",
+    "web_redirect_title": "网页 URL 重定向",
+    "web_hosts_hint": "每行或逗号分隔一个域名，留空使用默认列表"
   },
   "home": {
     "header_title": "Cyrene Launcher",

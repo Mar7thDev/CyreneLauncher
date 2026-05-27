@@ -21,6 +21,11 @@ interface SettingState {
     // March7thHoney: target server URL for the MITM proxy.
     // Empty → use the built-in default (march7th.hoyotoon.com).
     patchTargetUrl: string;
+    // March7thHoney patch options. Defaults match the reference project.
+    rsaPatch: boolean;
+    rsaKey: string;        // empty → use built-in default key
+    webRedirect: boolean;
+    webHosts: string;      // newline/comma-separated; empty → built-in default
     closingOption: {
         isMinimize: boolean;
         isAsk: boolean;
@@ -40,6 +45,10 @@ interface SettingState {
     setServerSource: (newSource: ServerSource) => void;
     setLaunchMode: (newMode: LaunchMode) => void;
     setPatchTargetUrl: (url: string) => void;
+    setRsaPatch: (v: boolean) => void;
+    setRsaKey: (v: string) => void;
+    setWebRedirect: (v: boolean) => void;
+    setWebHosts: (v: string) => void;
 }
 
 const useSettingStore = create<SettingState>()(
@@ -55,6 +64,10 @@ const useSettingStore = create<SettingState>()(
             serverSource: "firefly",
             launchMode: "fireflygo",
             patchTargetUrl: "",
+            rsaPatch: true,
+            rsaKey: "",
+            webRedirect: true,
+            webHosts: "",
             closingOption: {
                 isMinimize: false,
                 isAsk: true,
@@ -82,6 +95,10 @@ const useSettingStore = create<SettingState>()(
             }),
             setLaunchMode: (newMode: LaunchMode) => set({ launchMode: newMode }),
             setPatchTargetUrl: (url: string) => set({ patchTargetUrl: url }),
+            setRsaPatch: (v: boolean) => set({ rsaPatch: v }),
+            setRsaKey: (v: string) => set({ rsaKey: v }),
+            setWebRedirect: (v: boolean) => set({ webRedirect: v }),
+            setWebHosts: (v: string) => set({ webHosts: v }),
         }),
         {
             name: 'setting-storage',

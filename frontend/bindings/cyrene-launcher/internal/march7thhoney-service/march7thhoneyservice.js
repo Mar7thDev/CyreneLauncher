@@ -12,10 +12,13 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
  *
  * targetURL is the private-server base URL (e.g. "https://march7th.hoyotoon.com").
  * An empty string uses the built-in default.
+ *
+ * opts controls optional body patching (RSA key replacement, URL rewriting).
  * @param {string} gamePath
  * @param {string} targetURL
+ * @param {{ rsaPatch: boolean, rsaKey: string, webRedirect: boolean, webHosts: string }} opts
  * @returns {$CancellablePromise<[boolean, string]>}
  */
-export function Start(gamePath, targetURL) {
-    return $Call.ByID(3347991480, gamePath, targetURL);
+export function Start(gamePath, targetURL, opts) {
+    return $Call.ByID(3347991480, gamePath, targetURL, opts);
 }

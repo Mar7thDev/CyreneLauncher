@@ -23,6 +23,7 @@ export default function LauncherPage() {
         serverPath, proxyPath, gameDir,
         serverVersion, proxyVersion, background,
         launchMode, patchTargetUrl,
+        rsaPatch, rsaKey, webRedirect, webHosts,
         setServerPath, setProxyPath,
     } = useSettingStore()
     const { t } = useTranslation()
@@ -155,7 +156,9 @@ export default function LauncherPage() {
                     return
                 }
                 const target = patchTargetUrl || DEFAULT_PATCH_URL
-                const [ok, err] = await March7thHoneyService.Start(gamePath, target)
+                const [ok, err] = await March7thHoneyService.Start(gamePath, target, {
+                    rsaPatch, rsaKey, webRedirect, webHosts,
+                })
                 if (!ok) { toast.error(t("home.toast_start_game_failed") + err); return }
                 setGameRunning(true)
                 return

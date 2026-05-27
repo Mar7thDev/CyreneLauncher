@@ -27,6 +27,8 @@ export default function SettingModal({
         serverSource, setServerSource,
         launchMode, setLaunchMode,
         patchTargetUrl, setPatchTargetUrl,
+        rsaPatch, setRsaPatch, rsaKey, setRsaKey,
+        webRedirect, setWebRedirect, webHosts, setWebHosts,
     } = useSettingStore()
     const { setUpdateData, updateData, launcherVersion } = useLauncherStore()
 
@@ -129,19 +131,66 @@ export default function SettingModal({
                     </div>
                     )}
 
-                    {/* March7thHoney: Server URL */}
+                    {/* March7thHoney options */}
                     {launchMode === "march7thhoney" && (
-                    <div className="p-4 bg-base-200 rounded-xl border border-violet-200/50">
-                        <h4 className="font-bold text-base mb-1">{t("setting.patch_url_title")}</h4>
-                        <p className="text-sm text-base-content/50 mb-3">{t("setting.patch_url_desc")}</p>
-                        <input
-                            type="text"
-                            className="input input-sm w-full bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
-                            placeholder={DEFAULT_PATCH_URL}
-                            value={patchTargetUrl}
-                            onChange={e => setPatchTargetUrl(e.target.value)}
-                        />
-                        <p className="text-xs text-base-content/40 mt-2">{t("setting.patch_url_hint")}</p>
+                    <div className="p-4 bg-base-200 rounded-xl border border-violet-200/50 flex flex-col gap-4">
+                        {/* Server URL */}
+                        <div>
+                            <h4 className="font-bold text-base mb-1">{t("setting.patch_url_title")}</h4>
+                            <p className="text-sm text-base-content/50 mb-2">{t("setting.patch_url_desc")}</p>
+                            <input
+                                type="text"
+                                className="input input-sm w-full bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
+                                placeholder={DEFAULT_PATCH_URL}
+                                value={patchTargetUrl}
+                                onChange={e => setPatchTargetUrl(e.target.value)}
+                            />
+                            <p className="text-xs text-base-content/40 mt-1">{t("setting.patch_url_hint")}</p>
+                        </div>
+
+                        {/* RSA Patch */}
+                        <div>
+                            <label className="flex items-center gap-2 cursor-pointer select-none mb-2">
+                                <input
+                                    type="checkbox"
+                                    className="toggle toggle-xs toggle-primary"
+                                    checked={rsaPatch}
+                                    onChange={e => setRsaPatch(e.target.checked)}
+                                />
+                                <span className="text-sm font-medium">{t("setting.rsa_patch_title")}</span>
+                            </label>
+                            {rsaPatch && (
+                                <textarea
+                                    className="textarea textarea-sm w-full bg-white border border-violet-200/60 rounded-lg text-xs font-mono focus:outline-none focus:border-violet-400 resize-none"
+                                    rows={3}
+                                    placeholder={t("setting.rsa_key_hint")}
+                                    value={rsaKey}
+                                    onChange={e => setRsaKey(e.target.value)}
+                                />
+                            )}
+                        </div>
+
+                        {/* Webpage Redirect */}
+                        <div>
+                            <label className="flex items-center gap-2 cursor-pointer select-none mb-2">
+                                <input
+                                    type="checkbox"
+                                    className="toggle toggle-xs toggle-primary"
+                                    checked={webRedirect}
+                                    onChange={e => setWebRedirect(e.target.checked)}
+                                />
+                                <span className="text-sm font-medium">{t("setting.web_redirect_title")}</span>
+                            </label>
+                            {webRedirect && (
+                                <textarea
+                                    className="textarea textarea-sm w-full bg-white border border-violet-200/60 rounded-lg text-xs font-mono focus:outline-none focus:border-violet-400 resize-none"
+                                    rows={4}
+                                    placeholder={t("setting.web_hosts_hint")}
+                                    value={webHosts}
+                                    onChange={e => setWebHosts(e.target.value)}
+                                />
+                            )}
+                        </div>
                     </div>
                     )}
 

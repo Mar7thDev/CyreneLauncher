@@ -66,7 +66,11 @@
     "launch_mode_march7thhoney": "March7thHoney",
     "patch_url_title": "서버 URL",
     "patch_url_desc": "프록시가 가로챈 트래픽을 이 주소로 전달합니다.",
-    "patch_url_hint": "비워두면 기본 서버를 사용합니다 (march7th.hoyotoon.com)"
+    "patch_url_hint": "비워두면 기본 서버를 사용합니다 (march7th.hoyotoon.com)",
+    "rsa_patch_title": "RSA 키 패치",
+    "rsa_key_hint": "비워두면 내장 기본 키를 사용합니다",
+    "web_redirect_title": "웹페이지 URL 리다이렉트",
+    "web_hosts_hint": "줄 바꿈 또는 쉼표로 구분 입력. 비워두면 기본 목록 사용"
   },
   "home": {
     "header_title": "Cyrene Launcher",

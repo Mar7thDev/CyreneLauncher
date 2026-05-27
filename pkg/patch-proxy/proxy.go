@@ -34,19 +34,16 @@ var redirectDomains = []string{
 type Proxy struct {
 	target   *url.URL
 	ca       *caState
+	opts     PatchOptions
 	ln       net.Listener
 	stopOnce sync.Once
 	wg       sync.WaitGroup
-
-	// serverRSAKey is the RSA public key served by the target server.
-	// Fetched asynchronously on Start(); used to patch response bodies.
-	serverRSAKey string
-	rsaMu        sync.RWMutex
 }
 
 // New creates a Proxy that forwards intercepted traffic to targetURL.
 // targetURL must be an absolute URL with a host (e.g. "https://march7th.hoyotoon.com").
-func New(targetURL string) (*Proxy, error) {
+// opts controls optional RSA key patching and webpage URL rewriting.
+func New(targetURL string, opts PatchOptions) (*Proxy, error) {
 	u, err := url.Parse(targetURL)
 	if err != nil || u.Host == "" {
 		return nil, fmt.Errorf("invalid target URL %q", targetURL)
@@ -55,30 +52,19 @@ func New(targetURL string) (*Proxy, error) {
 	if err != nil {
 		return nil, fmt.Errorf("CA setup: %w", err)
 	}
-	return &Proxy{target: u, ca: ca}, nil
+	return &Proxy{target: u, ca: ca, opts: opts}, nil
 }
 
 // CA exposes the proxy root CA so the caller can install it in the OS trust store.
 func (p *Proxy) CA() *caState { return p.ca }
 
 // Start begins listening on a random loopback port and returns that port.
-// It also launches a background probe to fetch the target server's RSA public
-// key; response-body patching activates once the key is available.
 func (p *Proxy) Start() (int, error) {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		return 0, fmt.Errorf("listen: %w", err)
 	}
 	p.ln = ln
-
-	go func() {
-		if key := fetchServerRSAKey(p.target.String()); key != "" {
-			p.rsaMu.Lock()
-			p.serverRSAKey = key
-			p.rsaMu.Unlock()
-		}
-	}()
-
 	go p.accept()
 	return ln.Addr().(*net.TCPAddr).Port, nil
 }
@@ -138,7 +124,7 @@ func (p *Proxy) shouldMITM(hostname string) bool {
 }
 
 // isTextContent reports whether the Content-Type indicates a textual payload
-// (JSON, HTML, JS, plain text, …) that should be buffered for body patching.
+// (JSON, HTML, JS, plain text, …) that may be buffered for body patching.
 func isTextContent(contentType string) bool {
 	ct := strings.ToLower(contentType)
 	return strings.Contains(ct, "json") ||
@@ -147,8 +133,7 @@ func isTextContent(contentType string) bool {
 		strings.Contains(ct, "text")
 }
 
-// tunnel blindly copies bytes in both directions between conn and the upstream
-// address — used for domains we don't intercept.
+// tunnel blindly copies bytes in both directions — used for domains we don't intercept.
 func (p *Proxy) tunnel(conn net.Conn, addr string) {
 	up, err := net.Dial("tcp", addr)
 	if err != nil {
@@ -165,8 +150,8 @@ func (p *Proxy) tunnel(conn net.Conn, addr string) {
 }
 
 // mitm performs a TLS man-in-the-middle on conn for hostname. It presents a
-// leaf cert signed by our CA, reads HTTP requests, and forwards each to the
-// configured target server.
+// leaf cert signed by our CA, reads HTTP requests, forwards them to the target,
+// and optionally patches response bodies (RSA keys, URL rewrites).
 func (p *Proxy) mitm(conn net.Conn, hostname string) {
 	cert, err := p.ca.leafCert(hostname)
 	if err != nil {
@@ -193,6 +178,16 @@ func (p *Proxy) mitm(conn net.Conn, hostname string) {
 		CheckRedirect: func(*http.Request, []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
+	}
+
+	// Resolve patch settings once per connection.
+	rsaKey := ""
+	if p.opts.RSAPatch {
+		rsaKey = p.opts.ResolvedRSAKey()
+	}
+	webHosts := []string(nil)
+	if p.opts.WebRedirect {
+		webHosts = p.opts.ResolvedWebHosts()
 	}
 
 	br := bufio.NewReader(tlsConn)
@@ -223,21 +218,21 @@ func (p *Proxy) mitm(conn net.Conn, hostname string) {
 			return
 		}
 
-		// Patch text/JSON response bodies:
-		//   • replace RSA public key fields with the target server's key
-		//   • rewrite redirect-domain URLs to point at the target server
-		// Binary responses (audio, game archives, images) pass through untouched.
+		// For text/JSON responses, buffer and apply body patches:
+		//   • RSA public key replacement (if RSAPatch enabled)
+		//   • URL rewriting for web hosts (if WebRedirect enabled)
+		// Binary responses pass through as-is.
 		ct := resp.Header.Get("Content-Type")
-		if isTextContent(ct) {
-			p.rsaMu.RLock()
-			serverKey := p.serverRSAKey
-			p.rsaMu.RUnlock()
-
+		if (rsaKey != "" || len(webHosts) > 0) && isTextContent(ct) {
 			raw, readErr := io.ReadAll(io.LimitReader(resp.Body, 4<<20)) // 4 MiB cap
 			resp.Body.Close()
 			if readErr == nil {
-				raw = patchRSAInBody(raw, ct, serverKey)
-				raw = patchURLsInBody(raw, ct, scheme, targetHost)
+				if rsaKey != "" {
+					raw = patchRSAInBody(raw, ct, rsaKey)
+				}
+				if len(webHosts) > 0 {
+					raw = patchURLsInBody(raw, ct, scheme, targetHost, webHosts)
+				}
 				resp.Body = io.NopCloser(bytes.NewReader(raw))
 				resp.ContentLength = int64(len(raw))
 				resp.TransferEncoding = nil

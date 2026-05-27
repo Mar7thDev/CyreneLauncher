@@ -66,7 +66,11 @@
     "launch_mode_march7thhoney": "March7thHoney",
     "patch_url_title": "サーバー URL",
     "patch_url_desc": "プロキシが傍受したトラフィックをこの URL に転送します。",
-    "patch_url_hint": "空白のままにするとデフォルトサーバーを使用します (march7th.hoyotoon.com)"
+    "patch_url_hint": "空白のままにするとデフォルトサーバーを使用します (march7th.hoyotoon.com)",
+    "rsa_patch_title": "RSA キー置換",
+    "rsa_key_hint": "空白のままにすると内蔵デフォルトキーを使用します",
+    "web_redirect_title": "ウェブ URL リダイレクト",
+    "web_hosts_hint": "1 行または カンマ区切りで入力。空白の場合はデフォルトリストを使用"
   },
   "home": {
     "header_title": "Cyrene Launcher",

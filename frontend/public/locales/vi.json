@@ -66,7 +66,11 @@
     "launch_mode_march7thhoney": "March7thHoney",
     "patch_url_title": "URL máy chủ",
     "patch_url_desc": "Proxy sẽ chuyển tiếp lưu lượng bị chặn đến địa chỉ này.",
-    "patch_url_hint": "Để trống để dùng máy chủ mặc định (march7th.hoyotoon.com)"
+    "patch_url_hint": "Để trống để dùng máy chủ mặc định (march7th.hoyotoon.com)",
+    "rsa_patch_title": "Thay thế khóa RSA",
+    "rsa_key_hint": "Để trống để dùng khóa mặc định tích hợp",
+    "web_redirect_title": "Chuyển hướng URL trang web",
+    "web_hosts_hint": "Mỗi dòng hoặc phân cách bằng dấu phẩy; để trống để dùng danh sách mặc định"
   },
   "home": {
     "header_title": "Cyrene Launcher",
