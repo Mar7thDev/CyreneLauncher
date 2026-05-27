@@ -1,40 +1,54 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import useSettingStore from '@/stores/settingStore';
+import { Rocket, Syringe } from 'lucide-react';
 
 export default function HowToPage() {
     const { t } = useTranslation();
+    const { launchMode } = useSettingStore();
+    const isM7H = launchMode === "march7thhoney";
 
     return (
         <div className="min-h-screen bg-base-200 flex items-center justify-center p-6">
-            <div className=" w-full bg-base-100 shadow-xl rounded-2xl p-8 space-y-8">
-                <h1 className="text-4xl font-bold text-primary text-center">{t("howto.title")}</h1>
+            <div className="w-full bg-base-100 shadow-xl rounded-2xl p-8 space-y-8">
+                <div className="flex flex-col items-center gap-3">
+                    <h1 className="text-4xl font-bold text-primary text-center">{t("howto.title")}</h1>
+                    {/* Active mode badge */}
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border ${
+                        isM7H
+                            ? "bg-violet-50 border-violet-200 text-violet-700"
+                            : "bg-sky-50 border-sky-200 text-sky-700"
+                    }`}>
+                        {isM7H ? <Syringe size={14} /> : <Rocket size={14} />}
+                        <span>{t(`setting.launch_mode_${launchMode}`)}</span>
+                    </div>
+                </div>
 
-                {/* Section 1: Launcher Features */}
+                {/* ── Section 1: General features ── */}
                 <div className="bg-green-50 border-l-4 border-green-400 p-6 rounded-r-lg">
                     <h2 className="text-2xl font-bold text-green-800 flex items-center gap-2 mb-4">
                         <span>🚀</span>
                         <span>{t("howto.sect1_title")}</span>
                     </h2>
                     <div className="space-y-3 text-green-700">
-                        <div className="flex items-start gap-3">
-                            <div className="text-green-600 text-lg">🔄</div>
-                            <p>{t("howto.sect1_auto_update_pre")} <span className="font-semibold text-amber-600">Firefly Go</span> {t("howto.sect1_auto_update_post")}</p>
-                        </div>
+                        {!isM7H && (
+                            <div className="flex items-start gap-3">
+                                <div className="text-green-600 text-lg">🔄</div>
+                                <p>{t("howto.sect1_auto_update_pre")} <span className="font-semibold text-amber-600">Firefly Go</span> {t("howto.sect1_auto_update_post")}</p>
+                            </div>
+                        )}
                         <div className="flex items-start gap-3">
                             <div className="text-green-600 text-lg">🎮</div>
                             <p>{t("howto.sect1_launch_game")}</p>
                         </div>
                         <div className="flex items-start gap-3">
                             <div className="text-green-600 text-lg">🌐</div>
-                            <p>{t("howto.sect1_lang_pre")} <Link to="/language" className="link link-info font-mono">{t("howto.sect1_lang_link")}</Link>
-                            </p>
+                            <p>{t("howto.sect1_lang_pre")} <Link to="/language" className="link link-info font-mono">{t("howto.sect1_lang_link")}</Link></p>
                         </div>
                         <div className="flex items-start gap-3">
                             <div className="text-green-600 text-2xl">📦</div>
                             <div>
-                                <p className="text-green-800 font-semibold">
-                                    {t("howto.sect1_patch_title")}
-                                </p>
+                                <p className="text-green-800 font-semibold">{t("howto.sect1_patch_title")}</p>
                                 <p className="text-green-700">
                                     {t("howto.sect1_patch_desc_1_pre")} <Link to="/diff" className="link link-info font-mono">{t("howto.sect1_patch_desc_1_link")}</Link> {t("howto.sect1_patch_desc_1_post")}
                                 </p>
@@ -46,7 +60,8 @@ export default function HowToPage() {
                     </div>
                 </div>
 
-                {/* Section 2: FireflyGo Commands */}
+                {/* ── Section 2a: FireflyGo commands ── */}
+                {!isM7H && (
                 <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
                     <h2 className="text-2xl font-bold text-blue-800 flex items-center gap-2 mb-4">
                         <span>📜</span>
@@ -57,7 +72,6 @@ export default function HowToPage() {
                         {t("howto.sect2_desc_pre")} <span className="font-semibold text-accent">{t("howto.sect2_desc_bold")}</span>{t("howto.sect2_desc_post")}
                     </p>
 
-                    {/* Theorycraft Mode Warning */}
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                         <div className="flex items-start gap-3">
                             <div className="text-red-600 text-xl">🔒</div>
@@ -78,192 +92,164 @@ export default function HowToPage() {
                             <div className="text-blue-600 text-lg">✨</div>
                             <div className="flex-1">
                                 <h4 className="font-semibold text-blue-800 mb-1">{t("howto.sect2_extra_title")}</h4>
-
                                 <div className="space-y-4 text-blue-700 text-sm">
-
                                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                        <h5 className="font-semibold text-blue-800 flex items-center gap-2">
-                                            🎭 {t("howto.sect2_hidden_ui_title")}
-                                        </h5>
-                                        <p className="mt-1">
-                                            {t("howto.sect2_hidden_ui_desc")}
-                                        </p>
+                                        <h5 className="font-semibold text-blue-800 flex items-center gap-2">🎭 {t("howto.sect2_hidden_ui_title")}</h5>
+                                        <p className="mt-1">{t("howto.sect2_hidden_ui_desc")}</p>
                                     </div>
-
                                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                        <h5 className="font-semibold text-blue-800 flex items-center gap-2">
-                                            🚫 {t("howto.sect2_censor_title")}
-                                        </h5>
-                                        <p className="mt-1">
-                                            {t("howto.sect2_censor_desc")}
-                                        </p>
+                                        <h5 className="font-semibold text-blue-800 flex items-center gap-2">🚫 {t("howto.sect2_censor_title")}</h5>
+                                        <p className="mt-1">{t("howto.sect2_censor_desc")}</p>
                                     </div>
-
                                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                        <h5 className="font-semibold text-blue-800 flex items-center gap-2">
-                                            🧪 {t("howto.sect2_tc_title")}
-                                        </h5>
-                                        <p className="mt-1">
-                                            {t("howto.sect2_tc_desc")}
-                                        </p>
+                                        <h5 className="font-semibold text-blue-800 flex items-center gap-2">🧪 {t("howto.sect2_tc_title")}</h5>
+                                        <p className="mt-1">{t("howto.sect2_tc_desc")}</p>
                                     </div>
                                 </div>
-
-
-                                <div className="mt-4 aspect-w-16 aspect-h-9">
+                                <div className="mt-4">
                                     <iframe
                                         src="https://www.youtube.com/embed/uiKdFrvn9NQ"
                                         title="Extra Settings Tutorial"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
                                         className="rounded-lg w-full h-75"
-                                    ></iframe>
+                                    />
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Commands List */}
                     <div className="space-y-4 mt-4">
                         <h3 className="text-lg font-semibold text-blue-800">{t("howto.sect2_cmd_title")}</h3>
 
-                        {/* Theorycraft Toggle */}
-                        <div className="bg-white border border-blue-200 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                                <div className="text-blue-600 text-lg">⚙️</div>
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-blue-800 mb-1">{t("howto.sect2_cmd_tc")}</h4>
-                                    <div className="space-y-1 text-blue-700">
-                                        <p><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/theorycraft 1</code> {t("howto.sect2_cmd_tc_enable")}</p>
-                                        <p><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/theorycraft 0</code> {t("howto.sect2_cmd_tc_disable")}</p>
+                        {[
+                            { icon: "⚙️", title: t("howto.sect2_cmd_tc"), items: [
+                                <p key="a"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/theorycraft 1</code> {t("howto.sect2_cmd_tc_enable")}</p>,
+                                <p key="b"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/theorycraft 0</code> {t("howto.sect2_cmd_tc_disable")}</p>,
+                            ]},
+                            { icon: "🔄", title: <>{t("howto.sect2_cmd_cycle")} <span className="text-red-600 text-sm">{t("howto.sect2_cmd_tc_only")}</span></>, items: [
+                                <p key="a"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/cycle N</code> {t("howto.sect2_cmd_cycle_desc")}</p>,
+                                <p key="b" className="text-sm">{t("howto.sect2_cmd_cycle_ex1_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/cycle 30</code> {t("howto.sect2_cmd_cycle_ex1_post")}</p>,
+                                <p key="c" className="text-sm"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/cycle 0</code> {t("howto.sect2_cmd_cycle_ex2_post")}</p>,
+                            ]},
+                            { icon: "❤️", title: <>{t("howto.sect2_cmd_hp")} <span className="text-red-600 text-sm">{t("howto.sect2_cmd_tc_only")}</span></>, items: [
+                                <p key="a" className="text-sm"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/hp N</code> {t("howto.sect2_cmd_hp_desc1")}</p>,
+                                <p key="b" className="text-sm"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/hp 0</code> {t("howto.sect2_cmd_hp_desc2")}</p>,
+                                <p key="c" className="text-sm"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/hp Wave V1 V2 ...</code> {t("howto.sect2_cmd_hp_desc3")}</p>,
+                                <p key="d" className="text-sm ml-4">{t("howto.sect2_cmd_hp_ex_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/hp 1 2000000 3000000</code> {t("howto.sect2_cmd_hp_ex_post")}</p>,
+                            ]},
+                            { icon: "📝", title: <>{t("howto.sect2_cmd_log")} <span className="text-red-600 text-sm">{t("howto.sect2_cmd_tc_only")}</span></>, items: [
+                                <p key="a"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/log 1</code> {t("howto.sect2_cmd_log_desc1")}</p>,
+                                <p key="b"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/log 0</code> {t("howto.sect2_cmd_log_desc2")}</p>,
+                                <p key="c" className="text-sm">{t("howto.sect2_cmd_log_out_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">.json</code></p>,
+                            ]},
+                            { icon: "⏭️", title: t("howto.sect2_cmd_skip"), items: [
+                                <p key="a"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/skip N</code> {t("howto.sect2_cmd_skip_desc")}</p>,
+                                <p key="b" className="text-sm">{t("howto.sect2_cmd_skip_ex1_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/skip 2</code> {t("howto.sect2_cmd_skip_ex1_post")}</p>,
+                                <p key="c" className="text-sm"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/skip 0</code> {t("howto.sect2_cmd_skip_ex2_post")}</p>,
+                            ]},
+                            { icon: "🔀", title: t("howto.sect2_cmd_id"), items: [
+                                <p key="a"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/id CHAR_ID</code> {t("howto.sect2_cmd_id_desc")}</p>,
+                                <p key="b" className="text-sm">{t("howto.sect2_cmd_id_ex1_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/id 8008</code> {t("howto.sect2_cmd_id_ex1_post")}</p>,
+                                <p key="c" className="text-sm">{t("howto.sect2_cmd_id_ex2_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">8001 → 8008</code>, <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">1001 → 1224</code></p>,
+                            ]},
+                            { icon: "🔄", title: t("howto.sect2_cmd_update"), items: [
+                                <p key="a"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/update</code> {t("howto.sect2_cmd_update_desc_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">freesr-data.json</code></p>,
+                            ]},
+                        ].map((cmd, i) => (
+                            <div key={i} className="bg-white border border-blue-200 rounded-lg p-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="text-blue-600 text-lg">{cmd.icon}</div>
+                                    <div className="flex-1">
+                                        <h4 className="font-semibold text-blue-800 mb-1">{cmd.title}</h4>
+                                        <div className="space-y-1 text-blue-700 text-sm">{cmd.items}</div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        ))}
+                    </div>
+                </div>
+                )}
 
-                        {/* Cycle Command */}
-                        <div className="bg-white border border-blue-200 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                                <div className="text-blue-600 text-lg">🔄</div>
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-blue-800 mb-1">{t("howto.sect2_cmd_cycle")} <span className="text-red-600 text-sm">{t("howto.sect2_cmd_tc_only")}</span></h4>
-                                    <div className="space-y-1 text-blue-700">
-                                        <p><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/cycle N</code> {t("howto.sect2_cmd_cycle_desc")}</p>
-                                        <p className="text-sm">{t("howto.sect2_cmd_cycle_ex1_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/cycle 30</code> {t("howto.sect2_cmd_cycle_ex1_post")}</p>
-                                        <p className="text-sm"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/cycle 0</code> {t("howto.sect2_cmd_cycle_ex2_post")}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                {/* ── Section 2b: March7thHoney proxy guide ── */}
+                {isM7H && (
+                <div className="bg-violet-50 border-l-4 border-violet-400 p-6 rounded-r-lg">
+                    <h2 className="text-2xl font-bold text-violet-800 flex items-center gap-2 mb-4">
+                        <span>🛡️</span>
+                        <span>{t("howto.m7h_title")}</span>
+                    </h2>
 
-                        {/* HP Command */}
-                        <div className="bg-white border border-blue-200 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                                <div className="text-blue-600 text-lg">❤️</div>
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-blue-800 mb-1">
-                                        {t("howto.sect2_cmd_hp")} <span className="text-red-600 text-sm">{t("howto.sect2_cmd_tc_only")}</span>
-                                    </h4>
-                                    <div className="space-y-2 text-blue-700 text-sm">
-                                        <p>
-                                            <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/hp N</code> {t("howto.sect2_cmd_hp_desc1")}
-                                        </p>
-                                        <p>
-                                            <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/hp 0</code> {t("howto.sect2_cmd_hp_desc2")}
-                                        </p>
-                                        <p>
-                                            <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/hp Wave V1 V2 ...</code> {t("howto.sect2_cmd_hp_desc3")}
-                                        </p>
-                                        <p className="ml-4">
-                                            {t("howto.sect2_cmd_hp_ex_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/hp 1 2000000 3000000</code> {t("howto.sect2_cmd_hp_ex_post")}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <p className="text-violet-700 mb-6">{t("howto.m7h_desc")}</p>
 
-                        {/* Log Command */}
-                        <div className="bg-white border border-blue-200 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                                <div className="text-blue-600 text-lg">📝</div>
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-blue-800 mb-1">{t("howto.sect2_cmd_log")} <span className="text-red-600 text-sm">{t("howto.sect2_cmd_tc_only")}</span></h4>
-                                    <div className="space-y-1 text-blue-700">
-                                        <p><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/log 1</code> {t("howto.sect2_cmd_log_desc1")}</p>
-                                        <p><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/log 0</code> {t("howto.sect2_cmd_log_desc2")}</p>
-                                        <p className="text-sm">{t("howto.sect2_cmd_log_out_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">.json</code></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    {/* Setup steps */}
+                    <div className="bg-white border border-violet-200 rounded-lg p-4 mb-4">
+                        <h3 className="font-semibold text-violet-800 mb-3">📋 {t("howto.m7h_steps_title")}</h3>
+                        <ol className="space-y-2 text-violet-700 text-sm list-none">
+                            {[
+                                t("howto.m7h_step1"),
+                                t("howto.m7h_step2"),
+                                t("howto.m7h_step3"),
+                                t("howto.m7h_step4"),
+                            ].map((step, i) => (
+                                <li key={i} className="flex items-start gap-3">
+                                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-violet-100 text-violet-600 text-xs font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                                    <span>{step}</span>
+                                </li>
+                            ))}
+                        </ol>
+                    </div>
 
-                        {/* Skip Command */}
-                        <div className="bg-white border border-blue-200 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                                <div className="text-blue-600 text-lg">⏭️</div>
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-blue-800 mb-1">{t("howto.sect2_cmd_skip")}</h4>
-                                    <div className="space-y-1 text-blue-700">
-                                        <p><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/skip N</code> {t("howto.sect2_cmd_skip_desc")}</p>
-                                        <p className="text-sm">{t("howto.sect2_cmd_skip_ex1_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/skip 2</code> {t("howto.sect2_cmd_skip_ex1_post")}</p>
-                                        <p className="text-sm"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/skip 0</code> {t("howto.sect2_cmd_skip_ex2_post")}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    {/* Proxy feature list */}
+                    <div className="bg-white border border-violet-200 rounded-lg p-4 mb-4">
+                        <h3 className="font-semibold text-violet-800 mb-3">⚙️ {t("howto.m7h_proxy_title")}</h3>
+                        <ul className="space-y-2 text-violet-700 text-sm">
+                            {[
+                                { icon: "🔐", text: t("howto.m7h_proxy_ca") },
+                                { icon: "🔑", text: t("howto.m7h_proxy_rsa") },
+                                { icon: "🔗", text: t("howto.m7h_proxy_url") },
+                                { icon: "↩️", text: t("howto.m7h_proxy_restore") },
+                            ].map((item, i) => (
+                                <li key={i} className="flex items-start gap-2">
+                                    <span>{item.icon}</span>
+                                    <span>{item.text}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
 
-                        {/* ID Command */}
-                        <div className="bg-white border border-blue-200 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                                <div className="text-blue-600 text-lg">🔄</div>
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-blue-800 mb-1">{t("howto.sect2_cmd_id")}</h4>
-                                    <div className="space-y-1 text-blue-700">
-                                        <p><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/id CHAR_ID</code> {t("howto.sect2_cmd_id_desc")}</p>
-                                        <p className="text-sm">{t("howto.sect2_cmd_id_ex1_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/id 8008</code> {t("howto.sect2_cmd_id_ex1_post")}</p>
-                                        <p className="text-sm">{t("howto.sect2_cmd_id_ex2_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">8001 → 8008</code>, <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">1001 → 1224</code></p>
-                                    </div>
-                                </div>
-                            </div>
+                    {/* Notes */}
+                    <div className="space-y-3">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2 text-sm text-yellow-800">
+                            <span>⚠️</span>
+                            <span>{t("howto.m7h_note_admin")}</span>
                         </div>
-
-                        {/* Update Command */}
-                        <div className="bg-white border border-blue-200 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                                <div className="text-blue-600 text-lg">🔄</div>
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-blue-800 mb-1">{t("howto.sect2_cmd_update")}</h4>
-                                    <div className="space-y-1 text-blue-700">
-                                        <p><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/update</code> {t("howto.sect2_cmd_update_desc_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">freesr-data.json</code></p>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start gap-2 text-sm text-sky-800">
+                            <span>💡</span>
+                            <span>{t("howto.m7h_note_antivirus")}</span>
                         </div>
                     </div>
                 </div>
+                )}
 
-                {/* Section 3: Other Notes */}
+                {/* ── Section 3: Other notes ── */}
                 <div className="bg-gray-50 border-l-4 border-gray-400 p-6 rounded-r-lg">
                     <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2 mb-4">
                         <span>📌</span>
                         <span>{t("howto.sect3_title")}</span>
                     </h2>
-
                     <div className="space-y-4">
-                        {/* Administrator Note */}
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                             <div className="flex items-start gap-3">
                                 <div className="text-yellow-600 text-xl">⚠️</div>
                                 <div>
                                     <h3 className="font-semibold text-yellow-800 mb-1">{t("howto.sect3_admin_title")}</h3>
-                                    <p className="text-yellow-700">
-                                        {t("howto.sect3_admin_desc")}
-                                    </p>
+                                    <p className="text-yellow-700">{t("howto.sect3_admin_desc")}</p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Backup Note */}
+                        {!isM7H && (
+                        <>
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                             <div className="flex items-start gap-3">
                                 <div className="text-blue-600 text-xl">💾</div>
@@ -276,7 +262,6 @@ export default function HowToPage() {
                             </div>
                         </div>
 
-                        {/* Voice Pack Note */}
                         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                             <div className="flex items-start gap-3">
                                 <div className="text-green-600 text-xl">🎵</div>
@@ -301,6 +286,8 @@ export default function HowToPage() {
                                 </div>
                             </div>
                         </div>
+                        </>
+                        )}
                     </div>
                 </div>
 
