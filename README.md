@@ -16,7 +16,7 @@ A lightweight and modern launcher for Anime game — designed to make launching,
 ## 🧑‍💻 About the Developer
 
 Hi! We are **Firefly Shelter**, a developer team passionate about building simple and powerful tools.  
-Firefly Launcher is built with:
+Cyrene Launcher is built with:
 
 - ⚙️ **Go + Wails** for backend/frontend integration  
 - 🎨 **Tailwind CSS** + **DaisyUI** for a clean, responsive UI

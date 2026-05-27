@@ -1,7 +1,7 @@
 [Desktop Entry]
 Version=1.0
-Name=Firefly Launcher
-Comment=Firefly Launcher
+Name=Cyrene Launcher
+Comment=Cyrene Launcher
 # The Exec line includes %u to pass the URL to the application
 Exec=/usr/local/bin/cyrene-launcher %u
 Terminal=false

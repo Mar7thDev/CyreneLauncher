@@ -11,7 +11,7 @@
     !define INFO_COMPANYNAME "Firefly Shelter"
 !endif
 !ifndef INFO_PRODUCTNAME
-    !define INFO_PRODUCTNAME "Firefly Launcher"
+    !define INFO_PRODUCTNAME "Cyrene Launcher"
 !endif
 !ifndef INFO_PRODUCTVERSION
     !define INFO_PRODUCTVERSION "1.0.0"

@@ -8,7 +8,7 @@ import { ExternalLink, Server, ServerCog, Rocket, Syringe } from "lucide-react"
 
 const PROJECT_NAME = "Cyrene Launcher"
 const PROJECT_AUTHOR = "Firefly Shelter (original) · Cyrene (fork)"
-const PROJECT_REPO_URL = "https://git.kain.io.vn/Firefly-Shelter/Firefly_Launcher"
+const PROJECT_REPO_URL = "https://github.com/Mar7thDev/CyreneLauncher"
 
 export default function SettingModal({
     isOpen,

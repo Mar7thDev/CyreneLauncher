@@ -2,8 +2,8 @@ package constant
 
 const AppName = "Cyrene Launcher"
 
-// === Launcher self-update (always FireflyGo source) ===
-const LauncherGitUrl = "https://git.kain.io.vn/api/v1/repos/Firefly-Shelter/Firefly_Launcher/releases"
+// === Launcher self-update ===
+const LauncherGitUrl = "https://api.github.com/repos/Mar7thDev/CyreneLauncher/releases"
 const LauncherFile = "cyrene-launcher.exe"
 
 // === Server/Proxy storage ===
@@ -150,7 +150,7 @@ const AnnouncementUrl = "https://api.github.com/repos/Mar7thLover/CyreneLauncher
 // Project metadata for the About section
 const ProjectName = "Cyrene Launcher"
 const ProjectAuthor = "Firefly Shelter (original) · Cyrene (fork)"
-const ProjectRepoUrl = "https://git.kain.io.vn/Firefly-Shelter/Firefly_Launcher"
+const ProjectRepoUrl = "https://github.com/Mar7thDev/CyreneLauncher"
 
 type ToolFile string
 
