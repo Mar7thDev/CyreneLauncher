@@ -1,12 +1,8 @@
 package gitService
 
 import (
-	"encoding/json"
 	"cyrene-launcher/pkg/constant"
-	"cyrene-launcher/pkg/models"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"time"
@@ -14,31 +10,21 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-// GetLatestPatchVersion returns the newest tag of the March7thHoney patch DLL
-// from its configured GitHub release feed. The response schema matches Gitea,
-// so the rest of the download pipeline is unchanged.
+// GetLatestPatchVersion returns the newest tag whose release ships the
+// patch DLLs. Walks releases newest-first so launcher-only releases (in the
+// same feed) are skipped instead of being mistaken for the latest patch.
 func (g *GitService) GetLatestPatchVersion() (bool, string, string) {
 	url := constant.March7thHoneyConfig.ReleasesUrl
 	if url == "" {
 		return false, "", SourceNotConfigured
 	}
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return false, "", err.Error()
+	// Both OS + CN DLLs are expected to ship together (validate-release
+	// workflow enforces it), so checking for one is sufficient.
+	tag, ok := g.getLatestReleaseTagWithAsset(url, constant.PatchDllFileOS)
+	if !ok {
+		return false, "", "no release with " + constant.PatchDllFileOS + " found"
 	}
-	defer resp.Body.Close()
-
-	body, _ := io.ReadAll(resp.Body)
-
-	var releases []models.ReleaseType
-	if err := json.Unmarshal(body, &releases); err != nil {
-		return false, "", err.Error()
-	}
-	if len(releases) == 0 {
-		return false, "", "no releases found"
-	}
-	return true, releases[0].TagName, ""
+	return true, tag, ""
 }
 
 // DownloadPatchProgress fetches the region-specific patch DLL asset for the

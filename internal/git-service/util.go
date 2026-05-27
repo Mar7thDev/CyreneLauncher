@@ -172,6 +172,33 @@ func (g *GitService) getReleaseAsset(version, url, fileName string) (models.Asse
 	return models.AssetType{}, false
 }
 
+// getLatestReleaseTagWithAsset walks releases newest-first and returns the
+// tag of the first one that ships fileName. Used when one release feed mixes
+// multiple kinds of releases (launcher exe + patch DLLs) and we want each
+// fetcher to find its own latest without one missing asset masking the other.
+func (g *GitService) getLatestReleaseTagWithAsset(url, fileName string) (string, bool) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", false
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	var releases []*models.ReleaseType
+	if err := json.Unmarshal(body, &releases); err != nil {
+		return "", false
+	}
+
+	for _, release := range releases {
+		for _, asset := range release.Assets {
+			if asset.Name == fileName {
+				return release.TagName, true
+			}
+		}
+	}
+	return "", false
+}
+
 func (g *GitService) unzipParallel(src string, dest string) error {
 	numCPU := runtime.NumCPU()
 

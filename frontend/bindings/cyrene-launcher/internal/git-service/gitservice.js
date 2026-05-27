@@ -46,9 +46,9 @@ export function GetLatestLauncherVersion() {
 }
 
 /**
- * GetLatestPatchVersion returns the newest tag of the March7thHoney patch DLL
- * from its configured GitHub release feed. The response schema matches Gitea,
- * so the rest of the download pipeline is unchanged.
+ * GetLatestPatchVersion returns the newest tag whose release ships the
+ * patch DLLs. Walks releases newest-first so launcher-only releases (in the
+ * same feed) are skipped instead of being mistaken for the latest patch.
  * @returns {$CancellablePromise<[boolean, string, string]>}
  */
 export function GetLatestPatchVersion() {

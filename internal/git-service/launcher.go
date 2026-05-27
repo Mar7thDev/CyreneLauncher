@@ -1,38 +1,21 @@
 package gitService
 
 import (
-	"encoding/json"
 	"cyrene-launcher/pkg/constant"
-	"cyrene-launcher/pkg/models"
-	"io"
 	"net/http"
-	"github.com/minio/selfupdate"
 
+	"github.com/minio/selfupdate"
 )
 
 type GitService struct{}
 
 
 func (g *GitService) GetLatestLauncherVersion() (bool, string, string) {
-	resp, err := http.Get(constant.LauncherGitUrl)
-	if err != nil {
-		return false, "", err.Error()
+	tag, ok := g.getLatestReleaseTagWithAsset(constant.LauncherGitUrl, constant.LauncherFile)
+	if !ok {
+		return false, "", "no release with " + constant.LauncherFile + " found"
 	}
-	defer resp.Body.Close()
-
-	body, _ := io.ReadAll(resp.Body)
-
-	var releases []models.ReleaseType
-	err = json.Unmarshal(body, &releases)
-	if err != nil {
-		return false, "", err.Error()
-	}
-
-	if len(releases) == 0 {
-		return false, "", "no releases found"
-	}
-
-	return true, releases[0].TagName, ""
+	return true, tag, ""
 }
 
 

@@ -3,7 +3,13 @@ package constant
 const AppName = "Cyrene Launcher"
 
 // === Launcher self-update ===
-const LauncherGitUrl = "https://api.github.com/repos/Mar7thDev/CyreneLauncher/releases"
+//
+// The launcher and the patch DLLs share one GitHub release feed
+// (CyreneLauncher-Public). Each fetcher scans for the newest release that
+// actually carries its asset, so launcher and patch can be released
+// independently — see GitService.GetLatestLauncherVersion and
+// GitService.GetLatestPatchVersion.
+const LauncherGitUrl = "https://api.github.com/repos/Mar7thLover/CyreneLauncher-Public/releases"
 const LauncherFile = "cyrene-launcher.exe"
 
 // === Server/Proxy storage ===
