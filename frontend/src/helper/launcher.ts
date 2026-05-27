@@ -1,8 +1,8 @@
 import useLauncherStore from "@/stores/launcherStore";
-import { AppService,  } from "@bindings/firefly-launcher/internal/app-service";
+import { AppService,  } from "@bindings/cyrene-launcher/internal/app-service";
 import { toast } from "react-toastify";
 import { sleep } from "./sleep";
-import { GitService } from "@bindings/firefly-launcher/internal/git-service";
+import { GitService } from "@bindings/cyrene-launcher/internal/git-service";
 
 export async function CheckUpdateLauncher(): Promise<{ isUpdate: boolean; isExists: boolean; version: string }> {
     const [currentOk, currentVersion] = await AppService.GetCurrentLauncherVersion()

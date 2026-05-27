@@ -17,7 +17,7 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function DownloadPatchProgress(region, version) {
-    return $Call.ByID(703911776, region, version);
+    return $Call.ByID(2198816301, region, version);
 }
 
 /**
@@ -26,7 +26,7 @@ export function DownloadPatchProgress(region, version) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function DownloadProxyProgress(source, version) {
-    return $Call.ByID(3559275334, source, version);
+    return $Call.ByID(144810991, source, version);
 }
 
 /**
@@ -35,14 +35,14 @@ export function DownloadProxyProgress(source, version) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function DownloadServerProgress(source, version) {
-    return $Call.ByID(1954767259, source, version);
+    return $Call.ByID(779132168, source, version);
 }
 
 /**
  * @returns {$CancellablePromise<[boolean, string, string]>}
  */
 export function GetLatestLauncherVersion() {
-    return $Call.ByID(262637602);
+    return $Call.ByID(391023589);
 }
 
 /**
@@ -52,7 +52,7 @@ export function GetLatestLauncherVersion() {
  * @returns {$CancellablePromise<[boolean, string, string]>}
  */
 export function GetLatestPatchVersion() {
-    return $Call.ByID(2984284252);
+    return $Call.ByID(3438359305);
 }
 
 /**
@@ -60,7 +60,7 @@ export function GetLatestPatchVersion() {
  * @returns {$CancellablePromise<[boolean, string, string]>}
  */
 export function GetLatestProxyVersion(source) {
-    return $Call.ByID(289488362, source);
+    return $Call.ByID(2017476991, source);
 }
 
 /**
@@ -68,14 +68,14 @@ export function GetLatestProxyVersion(source) {
  * @returns {$CancellablePromise<[boolean, string, string]>}
  */
 export function GetLatestServerVersion(source) {
-    return $Call.ByID(2918980975, source);
+    return $Call.ByID(1666694076, source);
 }
 
 /**
  * @returns {$CancellablePromise<void>}
  */
 export function UnzipServer() {
-    return $Call.ByID(1126363284);
+    return $Call.ByID(1616992225);
 }
 
 /**
@@ -83,5 +83,5 @@ export function UnzipServer() {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function UpdateLauncherProgress(version) {
-    return $Call.ByID(97272861, version);
+    return $Call.ByID(768035426, version);
 }

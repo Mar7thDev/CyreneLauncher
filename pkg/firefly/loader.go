@@ -2,7 +2,7 @@ package firefly
 
 import (
 	"bufio"
-	"firefly-launcher/pkg/firefly/pb"
+	"cyrene-launcher/pkg/firefly/pb"
 	"io"
 	"os"
 

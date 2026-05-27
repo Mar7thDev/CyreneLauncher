@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import useModalStore from "@/stores/modalStore";
 import { Blend, BookOpen, Diff, Home, Info, Languages, Minus, Newspaper, Puzzle, Settings, TrendingUpDown, Wrench, X } from "lucide-react";
-import { AppService } from "@bindings/firefly-launcher/internal/app-service";
+import { AppService } from "@bindings/cyrene-launcher/internal/app-service";
 import LanguageSwitcher from "../languageSwitcher";
 import { useTranslation } from "react-i18next";
 import useSettingStore from "@/stores/settingStore";

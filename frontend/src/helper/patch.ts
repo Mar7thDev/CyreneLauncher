@@ -1,7 +1,7 @@
 import useLauncherStore from "@/stores/launcherStore";
 import useSettingStore, { type GameRegion } from "@/stores/settingStore";
-import { FSService } from "@bindings/firefly-launcher/internal/fs-service";
-import { GitService } from "@bindings/firefly-launcher/internal/git-service";
+import { FSService } from "@bindings/cyrene-launcher/internal/fs-service";
+import { GitService } from "@bindings/cyrene-launcher/internal/git-service";
 import { toast } from "react-toastify";
 
 const SOURCE_NOT_CONFIGURED = "SOURCE_NOT_CONFIGURED"

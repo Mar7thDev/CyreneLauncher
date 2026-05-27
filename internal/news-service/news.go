@@ -2,7 +2,7 @@ package newsService
 
 import (
 	"encoding/json"
-	"firefly-launcher/pkg/constant"
+	"cyrene-launcher/pkg/constant"
 	"fmt"
 	"html"
 	"io"

@@ -1,10 +1,10 @@
 package diffService
 
 import (
-	"firefly-launcher/pkg/firefly"
-	"firefly-launcher/pkg/firefly/pb"
-	"firefly-launcher/pkg/hpatchz"
-	"firefly-launcher/pkg/models"
+	"cyrene-launcher/pkg/firefly"
+	"cyrene-launcher/pkg/firefly/pb"
+	"cyrene-launcher/pkg/hpatchz"
+	"cyrene-launcher/pkg/models"
 	"fmt"
 	"os"
 	"path/filepath"

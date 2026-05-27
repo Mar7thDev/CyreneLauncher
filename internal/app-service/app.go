@@ -1,7 +1,7 @@
 package appService
 
 import (
-	"firefly-launcher/pkg/constant"
+	"cyrene-launcher/pkg/constant"
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"

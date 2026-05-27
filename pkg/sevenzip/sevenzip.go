@@ -2,7 +2,7 @@ package sevenzip
 
 import (
 	"bytes"
-	"firefly-launcher/pkg/constant"
+	"cyrene-launcher/pkg/constant"
 	"fmt"
 	"os"
 	"os/exec"

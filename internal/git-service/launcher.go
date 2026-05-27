@@ -2,8 +2,8 @@ package gitService
 
 import (
 	"encoding/json"
-	"firefly-launcher/pkg/constant"
-	"firefly-launcher/pkg/models"
+	"cyrene-launcher/pkg/constant"
+	"cyrene-launcher/pkg/models"
 	"io"
 	"net/http"
 	"github.com/minio/selfupdate"

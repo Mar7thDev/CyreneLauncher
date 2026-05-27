@@ -1,7 +1,7 @@
 package hpatchz
 
 import (
-	"firefly-launcher/pkg/constant"
+	"cyrene-launcher/pkg/constant"
 	"fmt"
 	"os/exec"
 	"syscall"

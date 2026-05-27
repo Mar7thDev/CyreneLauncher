@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
-	"firefly-launcher/pkg/models"
+	"cyrene-launcher/pkg/models"
 	"fmt"
 	"io"
 	"os"

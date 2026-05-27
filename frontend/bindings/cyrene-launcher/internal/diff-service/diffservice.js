@@ -11,7 +11,7 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
  * @returns {$CancellablePromise<[boolean, string, string]>}
  */
 export function CheckTypeHDiff(patchPath) {
-    return $Call.ByID(3717449114, patchPath);
+    return $Call.ByID(2225384349, patchPath);
 }
 
 /**
@@ -19,7 +19,7 @@ export function CheckTypeHDiff(patchPath) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function CutData(gamePath) {
-    return $Call.ByID(2019290107, gamePath);
+    return $Call.ByID(4128606402, gamePath);
 }
 
 /**
@@ -28,7 +28,7 @@ export function CutData(gamePath) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function DataExtract(gamePath, patchPath) {
-    return $Call.ByID(2161622254, gamePath, patchPath);
+    return $Call.ByID(3063526727, gamePath, patchPath);
 }
 
 /**
@@ -36,7 +36,7 @@ export function DataExtract(gamePath, patchPath) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function DeleteFiles(gamePath) {
-    return $Call.ByID(1103091613, gamePath);
+    return $Call.ByID(2090475352, gamePath);
 }
 
 /**
@@ -44,7 +44,7 @@ export function DeleteFiles(gamePath) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function HDiffPatchData(gamePath) {
-    return $Call.ByID(3944051994, gamePath);
+    return $Call.ByID(2478195521, gamePath);
 }
 
 /**
@@ -52,7 +52,7 @@ export function HDiffPatchData(gamePath) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function LDiffPatchData(gamePath) {
-    return $Call.ByID(360123238, gamePath);
+    return $Call.ByID(1781105813, gamePath);
 }
 
 /**
@@ -61,5 +61,5 @@ export function LDiffPatchData(gamePath) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function VersionValidate(gamePath, patchPath) {
-    return $Call.ByID(2105077257, gamePath, patchPath);
+    return $Call.ByID(364961568, gamePath, patchPath);
 }

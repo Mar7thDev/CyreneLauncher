@@ -11,7 +11,7 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
  * @returns {$CancellablePromise<[boolean, string, string, string]>}
  */
 export function GetLanguage(path) {
-    return $Call.ByID(3574191687, path);
+    return $Call.ByID(1449298450, path);
 }
 
 /**
@@ -21,5 +21,5 @@ export function GetLanguage(path) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function SetLanguage(path, text, voice) {
-    return $Call.ByID(2768939795, path, text, voice);
+    return $Call.ByID(4157307294, path, text, voice);
 }

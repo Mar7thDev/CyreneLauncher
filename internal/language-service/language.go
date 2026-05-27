@@ -2,9 +2,9 @@ package languageService
 
 import (
 	"bytes"
-	assetMeta "firefly-launcher/pkg/language-patch/asset-meta"
-	excelLanguage "firefly-launcher/pkg/language-patch/excel-language"
-	"firefly-launcher/pkg/models"
+	assetMeta "cyrene-launcher/pkg/language-patch/asset-meta"
+	excelLanguage "cyrene-launcher/pkg/language-patch/excel-language"
+	"cyrene-launcher/pkg/models"
 	"os"
 	"path/filepath"
 	"slices"

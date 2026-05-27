@@ -20,7 +20,7 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
  * @returns {$CancellablePromise<string>}
  */
 export function DetectRegion(gameDir) {
-    return $Call.ByID(3856993716, gameDir);
+    return $Call.ByID(821696099, gameDir);
 }
 
 /**
@@ -33,5 +33,5 @@ export function DetectRegion(gameDir) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function Start(gamePath, dllPath) {
-    return $Call.ByID(3513347549, gamePath, dllPath);
+    return $Call.ByID(3347991480, gamePath, dllPath);
 }

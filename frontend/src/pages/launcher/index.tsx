@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { Play, Menu, FolderOpen, MessageCircleQuestionMark } from 'lucide-react';
-import { AppService } from '@bindings/firefly-launcher/internal/app-service';
-import { FSService } from '@bindings/firefly-launcher/internal/fs-service';
-import { March7thHoneyService } from '@bindings/firefly-launcher/internal/march7thhoney-service';
+import { AppService } from '@bindings/cyrene-launcher/internal/app-service';
+import { FSService } from '@bindings/cyrene-launcher/internal/fs-service';
+import { March7thHoneyService } from '@bindings/cyrene-launcher/internal/march7thhoney-service';
 import { toast } from 'react-toastify';
 import path from 'path-browserify'
 import useSettingStore from '@/stores/settingStore';

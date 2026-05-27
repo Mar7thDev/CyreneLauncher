@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "motion/react"
 import { Newspaper, Server, RefreshCw, ExternalLink, Megaphone, Calendar, AlertCircle, ImageOff, Settings } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { toast } from "react-toastify"
-import { NewsService } from "@bindings/firefly-launcher/internal/news-service"
-import { AppService } from "@bindings/firefly-launcher/internal/app-service"
+import { NewsService } from "@bindings/cyrene-launcher/internal/news-service"
+import { AppService } from "@bindings/cyrene-launcher/internal/app-service"
 
 interface NewsItem {
     id: string

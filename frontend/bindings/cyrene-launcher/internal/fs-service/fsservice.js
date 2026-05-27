@@ -11,7 +11,7 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
  * @returns {$CancellablePromise<boolean>}
  */
 export function DirExists(path) {
-    return $Call.ByID(1772289644, path);
+    return $Call.ByID(160707185, path);
 }
 
 /**
@@ -19,7 +19,7 @@ export function DirExists(path) {
  * @returns {$CancellablePromise<boolean>}
  */
 export function FileExists(path) {
-    return $Call.ByID(1782610747, path);
+    return $Call.ByID(3297030196, path);
 }
 
 /**
@@ -28,7 +28,7 @@ export function FileExists(path) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function FileExistsInZip(archivePath, fileInside) {
-    return $Call.ByID(2509699047, archivePath, fileInside);
+    return $Call.ByID(3061100906, archivePath, fileInside);
 }
 
 /**
@@ -36,7 +36,7 @@ export function FileExistsInZip(archivePath, fileInside) {
  * @returns {$CancellablePromise<string>}
  */
 export function GetDir(path) {
-    return $Call.ByID(1744445742, path);
+    return $Call.ByID(607772389, path);
 }
 
 /**
@@ -44,7 +44,7 @@ export function GetDir(path) {
  * @returns {$CancellablePromise<string>}
  */
 export function Join(...paths) {
-    return $Call.ByID(2460588289, paths);
+    return $Call.ByID(2891580430, paths);
 }
 
 /**
@@ -52,7 +52,7 @@ export function Join(...paths) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function OpenFolder(path) {
-    return $Call.ByID(1635714001, path);
+    return $Call.ByID(3061305682, path);
 }
 
 /**
@@ -60,14 +60,14 @@ export function OpenFolder(path) {
  * @returns {$CancellablePromise<string>}
  */
 export function PickFile(filter) {
-    return $Call.ByID(3756474934, filter);
+    return $Call.ByID(1095914605, filter);
 }
 
 /**
  * @returns {$CancellablePromise<string>}
  */
 export function PickFolder() {
-    return $Call.ByID(3654471460);
+    return $Call.ByID(1421210103);
 }
 
 /**
@@ -75,7 +75,7 @@ export function PickFolder() {
  * @returns {$CancellablePromise<void>}
  */
 export function RemoveFile(path) {
-    return $Call.ByID(3206735043, path);
+    return $Call.ByID(572845152, path);
 }
 
 /**
@@ -83,7 +83,7 @@ export function RemoveFile(path) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function StartApp(path) {
-    return $Call.ByID(1267568402, path);
+    return $Call.ByID(870455593, path);
 }
 
 /**
@@ -91,5 +91,5 @@ export function StartApp(path) {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function StartWithConsole(path) {
-    return $Call.ByID(3249271428, path);
+    return $Call.ByID(3720428927, path);
 }

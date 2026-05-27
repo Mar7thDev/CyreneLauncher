@@ -1,8 +1,8 @@
 package diffService
 
 import (
-	"firefly-launcher/pkg/constant"
-	"firefly-launcher/pkg/sevenzip"
+	"cyrene-launcher/pkg/constant"
+	"cyrene-launcher/pkg/sevenzip"
 	"io"
 	"os"
 	"path/filepath"

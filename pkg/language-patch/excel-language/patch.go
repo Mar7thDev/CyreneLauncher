@@ -2,7 +2,7 @@ package excelLanguage
 
 import (
 	"bytes"
-	assetMeta "firefly-launcher/pkg/language-patch/asset-meta"
+	assetMeta "cyrene-launcher/pkg/language-patch/asset-meta"
 	"io"
 	"os"
 	"path/filepath"

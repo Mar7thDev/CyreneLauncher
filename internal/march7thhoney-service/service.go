@@ -5,8 +5,8 @@
 package march7thhoneyService
 
 import (
-	"firefly-launcher/pkg/march7thhoney"
-	"firefly-launcher/pkg/models"
+	"cyrene-launcher/pkg/march7thhoney"
+	"cyrene-launcher/pkg/models"
 	"path/filepath"
 	"strings"
 

@@ -1,4 +1,4 @@
-module firefly-launcher
+module cyrene-launcher
 
 go 1.26.1
 

@@ -1,5 +1,5 @@
 import { motion } from "motion/react"
-import { AppService } from "@bindings/firefly-launcher/internal/app-service"
+import { AppService } from "@bindings/cyrene-launcher/internal/app-service"
 import { toast } from "react-toastify"
 import useSettingStore from "@/stores/settingStore"
 import { useTranslation } from "react-i18next"

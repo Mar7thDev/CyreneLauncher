@@ -10,7 +10,7 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function CloseApp() {
-    return $Call.ByID(3422460836);
+    return $Call.ByID(4287907331);
 }
 
 /**
@@ -18,35 +18,35 @@ export function CloseApp() {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function CloseAppAfterTimeout(timeout) {
-    return $Call.ByID(1705931481, timeout);
+    return $Call.ByID(3736652886, timeout);
 }
 
 /**
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function GetCurrentLauncherVersion() {
-    return $Call.ByID(3575133982);
+    return $Call.ByID(2767927275);
 }
 
 /**
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function HideApp() {
-    return $Call.ByID(88003266);
+    return $Call.ByID(2658494055);
 }
 
 /**
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function MaximizeApp() {
-    return $Call.ByID(1257306588);
+    return $Call.ByID(2363462957);
 }
 
 /**
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function MinimizeApp() {
-    return $Call.ByID(3434614194);
+    return $Call.ByID(1985260791);
 }
 
 /**
@@ -54,12 +54,12 @@ export function MinimizeApp() {
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function OpenURL(url) {
-    return $Call.ByID(1592090092, url);
+    return $Call.ByID(1132232877, url);
 }
 
 /**
  * @returns {$CancellablePromise<[boolean, string]>}
  */
 export function RestoreApp() {
-    return $Call.ByID(3115625834);
+    return $Call.ByID(2717046005);
 }

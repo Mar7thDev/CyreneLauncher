@@ -11,12 +11,28 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 import * as $models from "./models.js";
 
 /**
- * GetCustomNews fetches the user-configured AnnouncementUrl.
- * Auto-detects between Gitea release format and []NewsItem format.
+ * GetCustomNews fetches markdown announcements from a GitHub repo directory.
+ * AnnouncementUrl points at /contents/<dir>; each *.md inside becomes a card.
+ * 
+ * Filename convention: YYYY-MM-DD-slug.md (date prefix used for sorting and
+ * for the displayed time). An optional YAML-ish frontmatter block at the top
+ * of each file may override the title:
+ * 
+ * 	---
+ * 	title: 自定义标题
+ * 	---
+ * 	正文 markdown...
+ * 
+ * Without frontmatter, the slug part of the filename (with dashes turned into
+ * spaces) is used as the title.
+ * 
+ * Falls back to the legacy Gitea releases / []NewsItem auto-detection if the
+ * configured URL doesn't look like a Contents API response — keeps existing
+ * custom-source deployments working.
  * @returns {$CancellablePromise<[boolean, $models.NewsItem[], string]>}
  */
 export function GetCustomNews() {
-    return $Call.ByID(826433463).then(/** @type {($result: any) => any} */(($result) => {
+    return $Call.ByID(3670222014).then(/** @type {($result: any) => any} */(($result) => {
         $result[1] = $$createType1($result[1]);
         return $result;
     }));
@@ -29,7 +45,7 @@ export function GetCustomNews() {
  * @returns {$CancellablePromise<[boolean, $models.NewsItem[], string]>}
  */
 export function GetOfficialNews(lang) {
-    return $Call.ByID(2016417425, lang).then(/** @type {($result: any) => any} */(($result) => {
+    return $Call.ByID(1638005996, lang).then(/** @type {($result: any) => any} */(($result) => {
         $result[1] = $$createType1($result[1]);
         return $result;
     }));

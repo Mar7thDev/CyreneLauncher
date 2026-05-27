@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Folder, Settings, Check, X, Globe, Mic } from 'lucide-react'
-import { FSService } from '@bindings/firefly-launcher/internal/fs-service'
-import { LanguageService } from '@bindings/firefly-launcher/internal/language-service'
+import { FSService } from '@bindings/cyrene-launcher/internal/fs-service'
+import { LanguageService } from '@bindings/cyrene-launcher/internal/language-service'
 import { toast } from 'react-toastify'
 import useSettingStore from '@/stores/settingStore'
 import { useTranslation } from "react-i18next"

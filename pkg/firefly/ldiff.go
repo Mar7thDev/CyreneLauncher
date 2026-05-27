@@ -1,7 +1,7 @@
 package firefly
 
 import (
-	"firefly-launcher/pkg/firefly/pb"
+	"cyrene-launcher/pkg/firefly/pb"
 	"fmt"
 	"os"
 	"path/filepath"

@@ -3,7 +3,7 @@ package gitService
 import (
 	"archive/zip"
 	"encoding/json"
-	"firefly-launcher/pkg/models"
+	"cyrene-launcher/pkg/models"
 	"fmt"
 	"io"
 	"math"

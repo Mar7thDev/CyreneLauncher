@@ -1,7 +1,7 @@
 package fsService
 
 import (
-	"firefly-launcher/pkg/sevenzip"
+	"cyrene-launcher/pkg/sevenzip"
 	"os"
 	"os/exec"
 	"path/filepath"
