@@ -139,13 +139,13 @@ const (
 	HSRGameID             = "4ziysqXOQ8" // Honkai: Star Rail (global)
 )
 
-// AnnouncementUrl is the URL for the "Server" tab in the News page.
-// Set to empty string to show "not configured" state.
+// AnnouncementUrl is the GitHub Contents API endpoint listing markdown files
+// in the public repo's announcements/ directory. Each *.md becomes one card
+// in the News page's "Server" tab. Filenames are expected to start with
+// YYYY-MM-DD so they sort newest-first.
 //
-// Points at the March7thHoney public repo so that each patch release's body
-// (Markdown changelog) becomes an announcement card. GitHub's release schema
-// matches Gitea, so news-service's auto-detector picks it up unchanged.
-const AnnouncementUrl = "https://api.github.com/repos/Mar7thLover/CyreneLauncher-Public/releases"
+// Empty string disables the tab.
+const AnnouncementUrl = "https://api.github.com/repos/Mar7thLover/CyreneLauncher-Public/contents/announcements"
 
 // Project metadata for the About section
 const ProjectName = "Cyrene Launcher"
