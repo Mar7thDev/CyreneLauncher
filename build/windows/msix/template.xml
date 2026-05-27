@@ -8,7 +8,7 @@
         AllowPromptForPassword="false">
     </Settings>
     <Installer
-        Path="firefly-launcher.exe"
+        Path="cyrene-launcher.exe"
         Arguments=""
         InstallLocation="C:\Program Files\My Company\My Product">
     </Installer>
@@ -25,10 +25,10 @@
         </Capabilities>
         <Applications>
             <Application
-                Id="com.wails.firefly-launcher"
+                Id="com.wails.cyrene-launcher"
                 Description="My Product Description"
                 DisplayName="My Product"
-                ExecutableName="firefly-launcher.exe"
+                ExecutableName="cyrene-launcher.exe"
                 EntryPoint="Windows.FullTrustApplication">
                 
             </Application>
@@ -47,7 +47,7 @@
             <Logo>Assets\AppIcon.png</Logo>
         </Properties>
     </PackageInformation>
-    <SaveLocation PackagePath="firefly-launcher.msix" />
+    <SaveLocation PackagePath="cyrene-launcher.msix" />
     <PackageIntegrity>
         <CertificatePath></CertificatePath>
     </PackageIntegrity>

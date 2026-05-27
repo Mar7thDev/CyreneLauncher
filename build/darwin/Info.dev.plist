@@ -6,7 +6,7 @@
         <key>CFBundleName</key>
             <string>Firefly Launcher</string>
         <key>CFBundleExecutable</key>
-            <string>firefly-launcher</string>
+            <string>cyrene-launcher</string>
         <key>CFBundleIdentifier</key>
             <string>com.fireflyshelter.fireflylauncher</string>
         <key>CFBundleVersion</key>

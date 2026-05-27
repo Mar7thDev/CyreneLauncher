@@ -3,11 +3,11 @@ Version=1.0
 Name=Firefly Launcher
 Comment=Firefly Launcher
 # The Exec line includes %u to pass the URL to the application
-Exec=/usr/local/bin/firefly-launcher %u
+Exec=/usr/local/bin/cyrene-launcher %u
 Terminal=false
 Type=Application
-Icon=firefly-launcher
+Icon=cyrene-launcher
 Categories=Utility;
-StartupWMClass=firefly-launcher
+StartupWMClass=cyrene-launcher
 
  

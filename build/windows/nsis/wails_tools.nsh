@@ -5,7 +5,7 @@
 !include "FileFunc.nsh"
 
 !ifndef INFO_PROJECTNAME
-    !define INFO_PROJECTNAME "firefly-launcher"
+    !define INFO_PROJECTNAME "cyrene-launcher"
 !endif
 !ifndef INFO_COMPANYNAME
     !define INFO_COMPANYNAME "Firefly Shelter"

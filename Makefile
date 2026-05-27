@@ -34,6 +34,6 @@ release:
 
 update:
 	@echo Updating build assets...
-	wails3 update build-assets -name "firefly-launcher" -binaryname "firefly-launcher" -config build/config.yml
+	wails3 update build-assets -name "cyrene-launcher" -binaryname "cyrene-launcher" -config build/config.yml
 	@echo Done!
 

@@ -4,7 +4,7 @@ const AppName = "Cyrene Launcher"
 
 // === Launcher self-update (always FireflyGo source) ===
 const LauncherGitUrl = "https://git.kain.io.vn/api/v1/repos/Firefly-Shelter/Firefly_Launcher/releases"
-const LauncherFile = "firefly-launcher.exe"
+const LauncherFile = "cyrene-launcher.exe"
 
 // === Server/Proxy storage ===
 const ServerStorageUrl = "./server"
