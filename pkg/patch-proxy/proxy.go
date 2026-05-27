@@ -4,6 +4,7 @@ package patchproxy
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -36,6 +37,11 @@ type Proxy struct {
 	ln       net.Listener
 	stopOnce sync.Once
 	wg       sync.WaitGroup
+
+	// serverRSAKey is the RSA public key served by the target server.
+	// Fetched asynchronously on Start(); used to patch response bodies.
+	serverRSAKey string
+	rsaMu        sync.RWMutex
 }
 
 // New creates a Proxy that forwards intercepted traffic to targetURL.
@@ -56,12 +62,23 @@ func New(targetURL string) (*Proxy, error) {
 func (p *Proxy) CA() *caState { return p.ca }
 
 // Start begins listening on a random loopback port and returns that port.
+// It also launches a background probe to fetch the target server's RSA public
+// key; response-body patching activates once the key is available.
 func (p *Proxy) Start() (int, error) {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		return 0, fmt.Errorf("listen: %w", err)
 	}
 	p.ln = ln
+
+	go func() {
+		if key := fetchServerRSAKey(p.target.String()); key != "" {
+			p.rsaMu.Lock()
+			p.serverRSAKey = key
+			p.rsaMu.Unlock()
+		}
+	}()
+
 	go p.accept()
 	return ln.Addr().(*net.TCPAddr).Port, nil
 }
@@ -195,6 +212,30 @@ func (p *Proxy) mitm(conn net.Conn, hostname string) {
 				"HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
 			return
 		}
+
+		// RSA key patching: buffer text/JSON responses and replace known RSA
+		// public key fields with the target server's key. Binary responses
+		// (audio, video, game archives) are passed through as-is.
+		p.rsaMu.RLock()
+		serverKey := p.serverRSAKey
+		p.rsaMu.RUnlock()
+		if serverKey != "" {
+			ct := resp.Header.Get("Content-Type")
+			ctLow := strings.ToLower(ct)
+			if strings.Contains(ctLow, "json") || strings.Contains(ctLow, "text") {
+				raw, readErr := io.ReadAll(io.LimitReader(resp.Body, 4<<20)) // 4 MiB cap
+				resp.Body.Close()
+				if readErr == nil {
+					patched := patchRSAInBody(raw, ct, serverKey)
+					resp.Body = io.NopCloser(bytes.NewReader(patched))
+					resp.ContentLength = int64(len(patched))
+					resp.TransferEncoding = nil
+				} else {
+					resp.Body = io.NopCloser(bytes.NewReader(raw))
+				}
+			}
+		}
+
 		_ = resp.Write(tlsConn)
 		resp.Body.Close()
 
