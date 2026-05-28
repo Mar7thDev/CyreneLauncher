@@ -257,8 +257,7 @@
     "m7h_proxy_ca": "certutil で自己署名 CA 証明書を自動インストールし TLS 傍受を有効化",
     "m7h_proxy_rsa": "ディスパッチ / 設定レスポンス内の RSA 公開鍵を置換",
     "m7h_proxy_url": "HTML / JSON レスポンス内の miHoYo ドメイン URL を書き換え",
-    "m7h_proxy_restore": "ゲーム終了時にシステムプロキシ設定を自動復元",
-    "m7h_note_admin": "CA 証明書のインストールとシステムプロキシの変更には管理者権限が必要です。",
+    "m7h_note_admin": "CA 証明書のインストールには管理者権限が必要です。",
     "m7h_note_antivirus": "ウイルス対策ソフトが検知する場合は、ランチャーを除外リストに追加してください。",
     "btn_back": "ホームに戻る"
   },

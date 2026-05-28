@@ -207,7 +207,6 @@ export default function HowToPage() {
                                 { icon: "🔐", text: t("howto.m7h_proxy_ca") },
                                 { icon: "🔑", text: t("howto.m7h_proxy_rsa") },
                                 { icon: "🔗", text: t("howto.m7h_proxy_url") },
-                                { icon: "↩️", text: t("howto.m7h_proxy_restore") },
                             ].map((item, i) => (
                                 <li key={i} className="flex items-start gap-2">
                                     <span>{item.icon}</span>

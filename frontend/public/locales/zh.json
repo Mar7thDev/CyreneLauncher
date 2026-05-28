@@ -259,8 +259,7 @@
     "m7h_proxy_ca": "通过 certutil 自动安装自签名 CA 证书，使 TLS 拦截生效",
     "m7h_proxy_rsa": "替换 dispatch / config 响应中的 RSA 公钥",
     "m7h_proxy_url": "重写 HTML / JSON 响应中的米哈游域名 URL",
-    "m7h_proxy_restore": "游戏退出后自动还原系统代理设置",
-    "m7h_note_admin": "安装 CA 证书和修改系统代理设置需要管理员权限。",
+    "m7h_note_admin": "安装 CA 证书需要管理员权限。",
     "m7h_note_antivirus": "如杀毒软件报警，请为启动器添加白名单排除项。",
     "btn_back": "返回主页"
   },

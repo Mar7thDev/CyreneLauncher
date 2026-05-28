@@ -3,43 +3,66 @@
 // Package march7thhoneyService is the Wails-exposed service for the
 // March7thHoney launch mode.
 //
-// The old approach (CreateProcess SUSPENDED + LoadLibraryW DLL injection) has
-// been replaced by a Go-native HTTPS MITM proxy:
-//
-//  1. A local proxy is started on a random loopback port. It intercepts HTTPS
-//     traffic to miHoYo domains and forwards it to the configured private server.
-//  2. The proxy root CA is installed in the Windows trusted root store so the
-//     game accepts our MITM TLS certificates.
-//  3. The Windows system HTTP/HTTPS proxy is pointed at the local listener.
-//  4. StarRail.exe is launched normally — no suspension or DLL needed.
-//  5. When the game process exits, the system proxy is restored and "game:exit"
-//     is emitted on the Wails event bus.
+// Flow:
+//  1. A local HTTPS MITM proxy is started on a random loopback port. It
+//     intercepts miHoYo-domain traffic and forwards it to the configured
+//     private server.
+//  2. The proxy root CA is installed in the Windows trusted root store so
+//     the game accepts the MITM TLS certificates.
+//  3. The game is launched suspended via CreateProcessW. CyreneHook.dll
+//     (in-process hook DLL — RSA key replacement, WebView URL redirect,
+//     and WinHTTP/WinINet proxy redirect) is injected via LoadLibraryW.
+//     The local proxy port is passed in via the CYRENE_PROXY environment
+//     variable, which the DLL also mirrors into HTTP_PROXY / HTTPS_PROXY
+//     so libcurl-based code paths route through the same MITM proxy.
+//  4. The main thread is resumed and we wait on the raw process handle —
+//     when the game exits, the proxy is stopped and "game:exit" is emitted.
 package march7thhoneyService
 
 import (
 	"cyrene-launcher/pkg/constant"
+	"cyrene-launcher/pkg/injector"
 	patchproxy "cyrene-launcher/pkg/patch-proxy"
+	"errors"
 	"fmt"
-	"os/exec"
+	"os"
 	"path/filepath"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-type March7thHoneyService struct{}
+const (
+	dllStoragePath = "./patch/CyreneHook.dll"
+	envProxyKey    = "CYRENE_PROXY"
+)
 
-// Start patches the system proxy, launches gamePath, and returns immediately.
+// March7thHoneyService is constructed via New so the embedded CyreneHook.dll
+// bytes can be supplied from main.
+type March7thHoneyService struct {
+	dllBytes []byte
+}
+
+// New returns a service that will extract the given DLL bytes to
+// ./patch/CyreneHook.dll on first launch. dllBytes may be empty — in that
+// case the service refuses to launch (and reports a clear error to the UI).
+func New(dllBytes []byte) *March7thHoneyService {
+	return &March7thHoneyService{dllBytes: dllBytes}
+}
+
+// Start launches gamePath with the local proxy + CyreneHook injection.
 //
 // targetURL is the private-server base URL (e.g. "https://march7th.hoyotoon.com").
 // An empty string uses constant.DefaultPatchTargetURL.
-//
-// opts controls optional body patching. Zero value disables all patching;
-// use patchproxy.DefaultPatchOptions() for the recommended defaults.
 //
 // Returns (true, "") on success, (false, errMsg) on failure.
 func (m *March7thHoneyService) Start(gamePath, targetURL string, opts patchproxy.PatchOptions) (bool, string) {
 	if targetURL == "" {
 		targetURL = constant.DefaultPatchTargetURL
+	}
+
+	dllPath, err := m.ensureDLL()
+	if err != nil {
+		return false, err.Error()
 	}
 
 	proxy, err := patchproxy.New(targetURL, opts)
@@ -56,33 +79,46 @@ func (m *March7thHoneyService) Start(gamePath, targetURL string, opts patchproxy
 		return false, "proxy start: " + err.Error()
 	}
 
-	prev := patchproxy.SaveState()
-	if err := patchproxy.SetProxy(fmt.Sprintf("127.0.0.1:%d", port)); err != nil {
-		proxy.Stop()
-		return false, "set system proxy: " + err.Error()
+	env := map[string]string{
+		envProxyKey: fmt.Sprintf("127.0.0.1:%d", port),
 	}
 
-	absGame, err := filepath.Abs(gamePath)
+	proc, err := injector.Launch(gamePath, dllPath, env)
 	if err != nil {
 		proxy.Stop()
-		patchproxy.RestoreState(prev)
-		return false, "resolve game path: " + err.Error()
-	}
-
-	cmd := exec.Command(absGame)
-	cmd.Dir = filepath.Dir(absGame)
-	if err := cmd.Start(); err != nil {
-		proxy.Stop()
-		patchproxy.RestoreState(prev)
 		return false, "launch game: " + err.Error()
 	}
 
 	go func() {
-		_ = cmd.Wait()
+		proc.Wait()
+		proc.Close()
 		proxy.Stop()
-		patchproxy.RestoreState(prev)
 		application.Get().Event.Emit("game:exit")
 	}()
 
 	return true, ""
+}
+
+// ensureDLL writes the embedded DLL bytes to disk if missing, then returns
+// the absolute path. Returns an error if no DLL bytes were embedded.
+func (m *March7thHoneyService) ensureDLL() (string, error) {
+	if len(m.dllBytes) == 0 {
+		return "", errors.New("CyreneHook.dll is missing from this build — place a compiled DLL at assets/CyreneHook.dll and rebuild")
+	}
+
+	abs, err := filepath.Abs(dllStoragePath)
+	if err != nil {
+		return "", fmt.Errorf("resolve dll path: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(abs), 0755); err != nil {
+		return "", fmt.Errorf("mkdir patch dir: %w", err)
+	}
+
+	if info, err := os.Stat(abs); err == nil && info.Size() == int64(len(m.dllBytes)) {
+		return abs, nil
+	}
+	if err := os.WriteFile(abs, m.dllBytes, 0644); err != nil {
+		return "", fmt.Errorf("write dll: %w", err)
+	}
+	return abs, nil
 }

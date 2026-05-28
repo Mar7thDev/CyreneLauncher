@@ -257,8 +257,7 @@
     "m7h_proxy_ca": "certutil로 자체 서명 CA 인증서를 자동 설치해 TLS 가로채기 활성화",
     "m7h_proxy_rsa": "디스패치 / 설정 응답의 RSA 공개키 교체",
     "m7h_proxy_url": "HTML / JSON 응답 내 miHoYo 도메인 URL 재작성",
-    "m7h_proxy_restore": "게임 종료 시 시스템 프록시 설정 자동 복원",
-    "m7h_note_admin": "CA 인증서 설치 및 시스템 프록시 변경에는 관리자 권한이 필요합니다.",
+    "m7h_note_admin": "CA 인증서 설치에는 관리자 권한이 필요합니다.",
     "m7h_note_antivirus": "바이러스 백신이 감지하는 경우 런처를 예외 목록에 추가하세요.",
     "btn_back": "홈으로 돌아가기"
   },

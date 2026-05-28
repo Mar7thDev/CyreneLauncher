@@ -257,8 +257,7 @@
     "m7h_proxy_ca": "Tự động cài chứng chỉ CA tự ký qua certutil để TLS intercepting hoạt động",
     "m7h_proxy_rsa": "Thay thế khóa công khai RSA trong phản hồi dispatch / config",
     "m7h_proxy_url": "Ghi đè URL domain miHoYo trong phản hồi HTML / JSON",
-    "m7h_proxy_restore": "Tự động khôi phục cài đặt proxy hệ thống khi game thoát",
-    "m7h_note_admin": "Cần quyền Administrator để cài chứng chỉ CA và thay đổi cài đặt proxy hệ thống.",
+    "m7h_note_admin": "Cần quyền Administrator để cài chứng chỉ CA.",
     "m7h_note_antivirus": "Nếu phần mềm diệt virus cảnh báo, hãy thêm launcher vào danh sách ngoại lệ.",
     "btn_back": "Trở về Trang chủ"
   },

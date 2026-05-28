@@ -71,6 +71,11 @@ func main() {
 	// and the system tray.
 	iconBytes, _ := tools.ReadFile("assets/appicon.png")
 
+	// CyreneHook.dll: in-process hook DLL injected into the game in
+	// March7thHoney mode (built from HSR-Patch). Missing file → empty bytes
+	// → service reports a clear error when the user tries to launch.
+	dllBytes, _ := tools.ReadFile("assets/CyreneHook.dll")
+
 	// Create application
 	app := application.New(application.Options{
 		Name:        "cyrene-launcher",
@@ -83,7 +88,7 @@ func main() {
 			application.NewService(&diffService.DiffService{}),
 			application.NewService(&appService.AppService{}),
 			application.NewService(&newsService.NewsService{}),
-			application.NewService(&march7thHoneyService.March7thHoneyService{}),
+			application.NewService(march7thHoneyService.New(dllBytes)),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
