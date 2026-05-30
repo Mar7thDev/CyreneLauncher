@@ -24,12 +24,17 @@ frontend/.vite/
 # Build artifacts
 build/linux/appimage/build
 build/windows/nsis/MicrosoftEdgeWebview2Setup.exe
+wails_windows_amd64.syso
 
 # OS
 .DS_Store
 Thumbs.db
 ehthumbs.db
 desktop.ini
+._*
 
 # Logs
 *.log
+
+# CLAUDE
+CLAUDE.md
