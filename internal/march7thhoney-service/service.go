@@ -32,8 +32,10 @@ import (
 )
 
 const (
-	dllStoragePath = "./patch/CyreneHook.dll"
-	envProxyKey    = "CYRENE_PROXY"
+	dllStoragePath  = "./patch/CyreneHook.dll"
+	ec2bStoragePath = "./patch/ClientSecretKey.bin"
+	envProxyKey     = "CYRENE_PROXY"
+	envEc2bKey      = "CYRENE_EC2B_FILE"
 )
 
 // March7thHoneyService is constructed via New so the embedded CyreneHook.dll
@@ -73,6 +75,16 @@ func (m *March7thHoneyService) Start(gamePath, targetURL string, preferredPort i
 		return false, "proxy init: " + err.Error()
 	}
 
+	// Hand-off path for the Ec2b key: the proxy captures it from query_gateway
+	// and the injected DLL's game relay reads it back (the DLL can't see the
+	// MITM'd HTTP). Absolute + env-passed so it is independent of the game dir.
+	ec2bPath, err := filepath.Abs(ec2bStoragePath)
+	if err != nil {
+		return false, "resolve ec2b path: " + err.Error()
+	}
+	_ = os.Remove(ec2bPath) // drop any stale key from a previous run
+	proxy.SetEc2bFile(ec2bPath)
+
 	// Best-effort: install the CA cert. Non-fatal — the cert may already be
 	// trusted from a previous session, or certutil might not be on PATH.
 	_ = proxy.CA().InstallTrust()
@@ -84,6 +96,7 @@ func (m *March7thHoneyService) Start(gamePath, targetURL string, preferredPort i
 
 	env := map[string]string{
 		envProxyKey: fmt.Sprintf("127.0.0.1:%d", port),
+		envEc2bKey:  ec2bPath,
 	}
 
 	proc, err := injector.Launch(gamePath, dllPath, env)

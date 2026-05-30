@@ -11,8 +11,10 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
+	"sync/atomic"
 )
 
 // redirectDomains lists the domain suffixes whose traffic the proxy intercepts
@@ -49,6 +51,8 @@ type Proxy struct {
 	ln       net.Listener
 	stopOnce sync.Once
 	wg       sync.WaitGroup
+	ec2bFile string      // CyreneHook.dll hand-off: raw Ec2b blob from query_gateway ("" disables)
+	ec2bDone atomic.Bool // capture is one-shot
 }
 
 // New creates a Proxy that forwards intercepted traffic to targetURL.
@@ -91,6 +95,30 @@ func New(targetURL string, opts PatchOptions) (*Proxy, error) {
 
 // CA exposes the proxy root CA so the caller can install it in the OS trust store.
 func (p *Proxy) CA() *caState { return p.ca }
+
+// SetEc2bFile enables capturing the Ec2b key blob from the query_gateway
+// response and writing it to path, so the injected CyreneHook.dll's game relay
+// can read it — the DLL's own in-process HTTP capture never sees this proxy's
+// MITM'd traffic. Empty path disables capture.
+func (p *Proxy) SetEc2bFile(path string) { p.ec2bFile = path }
+
+// captureEc2b extracts the Ec2b blob from a buffered query_gateway body and
+// writes it atomically (temp + rename) so the DLL never reads a partial file.
+func (p *Proxy) captureEc2b(body []byte) {
+	blob := extractEc2b(body)
+	if blob == nil {
+		return
+	}
+	tmp := p.ec2bFile + ".tmp"
+	if os.WriteFile(tmp, blob, 0o644) != nil {
+		return
+	}
+	if os.Rename(tmp, p.ec2bFile) != nil {
+		os.Remove(tmp)
+		return
+	}
+	p.ec2bDone.Store(true)
+}
 
 // Start begins listening and returns the bound port. preferredPort is tried
 // first; if it is 0 or unavailable, a random free loopback port is used.
@@ -256,10 +284,11 @@ func (p *Proxy) forward(w io.Writer, req *http.Request, isTLS bool, mitmHost str
 	}
 	outReq.Header.Del("Proxy-Connection")
 
-	// When patching response bodies, drop Accept-Encoding so Go's transport
-	// transparently handles gzip and hands us the decompressed body.
+	// When patching response bodies (or capturing the Ec2b key) drop
+	// Accept-Encoding so Go's transport hands us the decompressed body.
 	patching := p.rsaKey != "" || len(p.webHosts) > 0
-	if patching {
+	capture := p.ec2bFile != "" && !p.ec2bDone.Load() && isGatewayPath(req.URL.Path)
+	if patching || capture {
 		outReq.Header.Del("Accept-Encoding")
 	}
 
@@ -271,17 +300,23 @@ func (p *Proxy) forward(w io.Writer, req *http.Request, isTLS bool, mitmHost str
 	}
 	defer resp.Body.Close()
 
-	// For text/JSON responses, buffer and apply body patches (RSA key + URL
-	// rewrites). Binary responses pass through untouched.
+	// Buffer text/JSON responses to apply body patches (RSA key + URL rewrites),
+	// and the query_gateway response to capture the Ec2b key. Other binary
+	// responses pass through untouched.
 	ct := resp.Header.Get("Content-Type")
-	if patching && isTextContent(ct) {
+	if (patching && isTextContent(ct)) || capture {
 		raw, readErr := io.ReadAll(io.LimitReader(resp.Body, 8<<20)) // 8 MiB cap
 		if readErr == nil {
-			if p.rsaKey != "" {
-				raw = patchRSAInBody(raw, ct, p.rsaKey)
+			if capture {
+				p.captureEc2b(raw)
 			}
-			if len(p.webHosts) > 0 {
-				raw = patchURLsInBody(raw, ct, p.target.Scheme, p.target.Host, p.webHosts)
+			if patching && isTextContent(ct) {
+				if p.rsaKey != "" {
+					raw = patchRSAInBody(raw, ct, p.rsaKey)
+				}
+				if len(p.webHosts) > 0 {
+					raw = patchURLsInBody(raw, ct, p.target.Scheme, p.target.Host, p.webHosts)
+				}
 			}
 			// Body is now identity-encoded; advertise it as such.
 			resp.Header.Del("Content-Encoding")
