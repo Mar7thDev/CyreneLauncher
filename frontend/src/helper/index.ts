@@ -1,4 +1,5 @@
 export * from "./server"
 export * from "./proxy"
+export * from "./genshinServer"
 export * from "./launcher"
 export * from "./sleep"

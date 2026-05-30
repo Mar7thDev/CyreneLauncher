@@ -5,11 +5,13 @@ import { AppService } from "@bindings/cyrene-launcher/internal/app-service";
 import LanguageSwitcher from "../languageSwitcher";
 import { useTranslation } from "react-i18next";
 import useSettingStore from "@/stores/settingStore";
+import { AnimatePresence, motion } from "motion/react";
 
 export default function Header() {
     const { setIsOpenSettingModal, setIsOpenCloseModal } = useModalStore()
-    const { closingOption } = useSettingStore()
+    const { closingOption, gameProfile } = useSettingStore()
     const { t } = useTranslation()
+    const isStarRail = gameProfile === "starrail"
 
     const controlButtons = [
         {
@@ -57,21 +59,25 @@ export default function Header() {
                         className="menu menu-sm dropdown-content bg-white/90 backdrop-blur-xl border border-pink-200/60 rounded-box z-1 mt-3 w-52 p-2 shadow-xl"
                     >
                         <li><Link to="/">{t("header.home")}</Link></li>
-                        <li><Link to="/news">{t("header.news")}</Link></li>
-                        <li>
-                            <a>{t("header.tools")}</a>
-                            <ul className="p-2">
-                                <li><Link to="/language">{t("header.language")}</Link></li>
-                                <li><Link to="/diff">{t("header.client_update")}</Link></li>
-                            </ul>
-                        </li>
-                        <li>
-                            <a>{t("header.plugins")}</a>
-                            <ul className="p-2">
-                                <li><Link to="/analysis">{t("header.analysis")}</Link></li>
-                                <li><Link to="/srtools">{t("header.firefly_tools")}</Link></li>
-                            </ul>
-                        </li>
+                        {isStarRail && (
+                            <>
+                                <li><Link to="/news">{t("header.news")}</Link></li>
+                                <li>
+                                    <a>{t("header.tools")}</a>
+                                    <ul className="p-2">
+                                        <li><Link to="/language">{t("header.language")}</Link></li>
+                                        <li><Link to="/diff">{t("header.client_update")}</Link></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a>{t("header.plugins")}</a>
+                                    <ul className="p-2">
+                                        <li><Link to="/analysis">{t("header.analysis")}</Link></li>
+                                        <li><Link to="/srtools">{t("header.firefly_tools")}</Link></li>
+                                    </ul>
+                                </li>
+                            </>
+                        )}
                         <li><Link to="/howto">{t("header.how_to")}</Link></li>
                         <li><Link to="/about">{t("header.about")}</Link></li>
                     </ul>
@@ -93,71 +99,82 @@ export default function Header() {
             </div>
 
             {/* CENTER */}
-            <div
-                className="navbar-center hidden md:flex bg-white/60 backdrop-blur-xl border border-white/80 rounded-xl shadow-sm shadow-pink-200/30"
-                style={{ '--wails-draggable': 'no-drag' } as any}
-            >
-                <ul className="menu menu-horizontal px-1 gap-1">
-                    <li>
-                        <Link to="/" className="flex items-center gap-2 hover:text-pink-500 transition-colors rounded-lg">
-                            <Home size={17} /> {t("header.home")}
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/news" className="flex items-center gap-2 hover:text-pink-500 transition-colors rounded-lg">
-                            <Newspaper size={17} /> {t("header.news")}
-                        </Link>
-                    </li>
-                    <li>
-                        <details>
-                            <summary className="flex items-center gap-2 cursor-pointer hover:text-pink-500 transition-colors rounded-lg">
-                                <Wrench size={17} /> {t("header.tools")}
-                            </summary>
-                            <ul className="p-2 bg-white/95 backdrop-blur-xl border border-pink-100 rounded-xl min-w-40 whitespace-nowrap shadow-lg shadow-pink-100/50">
+            <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                    key={gameProfile}
+                    initial={{ y: -72, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -72, opacity: 0 }}
+                    transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+                    className="navbar-center hidden md:flex bg-white/60 backdrop-blur-xl border border-white/80 rounded-xl shadow-sm shadow-pink-200/30"
+                    style={{ '--wails-draggable': 'no-drag' } as any}
+                >
+                    <ul className="menu menu-horizontal px-1 gap-1">
+                        <li>
+                            <Link to="/" className="flex items-center gap-2 hover:text-pink-500 transition-colors rounded-lg">
+                                <Home size={17} /> {t("header.home")}
+                            </Link>
+                        </li>
+                        {isStarRail && (
+                            <>
                                 <li>
-                                    <Link to="/language" className="flex items-center gap-2 hover:text-pink-500 transition-colors">
-                                        <Languages size={17} /> {t("header.language")}
+                                    <Link to="/news" className="flex items-center gap-2 hover:text-pink-500 transition-colors rounded-lg">
+                                        <Newspaper size={17} /> {t("header.news")}
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link to="/diff" className="flex items-center gap-2 hover:text-pink-500 transition-colors">
-                                        <Diff size={17} /> {t("header.client_update")}
-                                    </Link>
+                                    <details>
+                                        <summary className="flex items-center gap-2 cursor-pointer hover:text-pink-500 transition-colors rounded-lg">
+                                            <Wrench size={17} /> {t("header.tools")}
+                                        </summary>
+                                        <ul className="p-2 bg-white/95 backdrop-blur-xl border border-pink-100 rounded-xl min-w-40 whitespace-nowrap shadow-lg shadow-pink-100/50">
+                                            <li>
+                                                <Link to="/language" className="flex items-center gap-2 hover:text-pink-500 transition-colors">
+                                                    <Languages size={17} /> {t("header.language")}
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <Link to="/diff" className="flex items-center gap-2 hover:text-pink-500 transition-colors">
+                                                    <Diff size={17} /> {t("header.client_update")}
+                                                </Link>
+                                            </li>
+                                        </ul>
+                                    </details>
                                 </li>
-                            </ul>
-                        </details>
-                    </li>
-                    <li>
-                        <details>
-                            <summary className="flex items-center gap-2 cursor-pointer hover:text-pink-500 transition-colors rounded-lg">
-                                <Puzzle size={17} /> {t("header.plugins")}
-                            </summary>
-                            <ul className="p-2 bg-white/95 backdrop-blur-xl border border-pink-100 rounded-xl min-w-40 whitespace-nowrap shadow-lg shadow-pink-100/50">
                                 <li>
-                                    <Link to="/analysis" className="flex items-center gap-2 hover:text-pink-500 transition-colors">
-                                        <TrendingUpDown size={17} /> {t("header.analysis")}
-                                    </Link>
+                                    <details>
+                                        <summary className="flex items-center gap-2 cursor-pointer hover:text-pink-500 transition-colors rounded-lg">
+                                            <Puzzle size={17} /> {t("header.plugins")}
+                                        </summary>
+                                        <ul className="p-2 bg-white/95 backdrop-blur-xl border border-pink-100 rounded-xl min-w-40 whitespace-nowrap shadow-lg shadow-pink-100/50">
+                                            <li>
+                                                <Link to="/analysis" className="flex items-center gap-2 hover:text-pink-500 transition-colors">
+                                                    <TrendingUpDown size={17} /> {t("header.analysis")}
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <Link to="/srtools" className="flex items-center gap-2 hover:text-pink-500 transition-colors">
+                                                    <Blend size={17} /> {t("header.firefly_tools")}
+                                                </Link>
+                                            </li>
+                                        </ul>
+                                    </details>
                                 </li>
-                                <li>
-                                    <Link to="/srtools" className="flex items-center gap-2 hover:text-pink-500 transition-colors">
-                                        <Blend size={17} /> {t("header.firefly_tools")}
-                                    </Link>
-                                </li>
-                            </ul>
-                        </details>
-                    </li>
-                    <li>
-                        <Link to="/howto" className="flex items-center gap-2 hover:text-pink-500 transition-colors rounded-lg">
-                            <BookOpen size={17} /> {t("header.how_to")}
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/about" className="flex items-center gap-2 hover:text-pink-500 transition-colors rounded-lg">
-                            <Info size={17} /> {t("header.about")}
-                        </Link>
-                    </li>
-                </ul>
-            </div>
+                            </>
+                        )}
+                        <li>
+                            <Link to="/howto" className="flex items-center gap-2 hover:text-pink-500 transition-colors rounded-lg">
+                                <BookOpen size={17} /> {t("header.how_to")}
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/about" className="flex items-center gap-2 hover:text-pink-500 transition-colors rounded-lg">
+                                <Info size={17} /> {t("header.about")}
+                            </Link>
+                        </li>
+                    </ul>
+                </motion.div>
+            </AnimatePresence>
 
             {/* RIGHT */}
             <div className="navbar-end flex gap-2 z-52">

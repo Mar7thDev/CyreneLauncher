@@ -54,8 +54,11 @@ func New(dllBytes []byte) *March7thHoneyService {
 // targetURL is the private-server base URL (e.g. "https://march7th.hoyotoon.com").
 // An empty string uses constant.DefaultPatchTargetURL.
 //
+// preferredPort is the loopback port the proxy tries to bind. 0 (or an
+// unavailable port) falls back to a random free port.
+//
 // Returns (true, "") on success, (false, errMsg) on failure.
-func (m *March7thHoneyService) Start(gamePath, targetURL string, opts patchproxy.PatchOptions) (bool, string) {
+func (m *March7thHoneyService) Start(gamePath, targetURL string, preferredPort int, opts patchproxy.PatchOptions) (bool, string) {
 	if targetURL == "" {
 		targetURL = constant.DefaultPatchTargetURL
 	}
@@ -74,7 +77,7 @@ func (m *March7thHoneyService) Start(gamePath, targetURL string, opts patchproxy
 	// trusted from a previous session, or certutil might not be on PATH.
 	_ = proxy.CA().InstallTrust()
 
-	port, err := proxy.Start()
+	port, err := proxy.Start(preferredPort)
 	if err != nil {
 		return false, "proxy start: " + err.Error()
 	}

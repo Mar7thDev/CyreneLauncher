@@ -7,8 +7,12 @@ import Cropper from 'react-easy-crop'
 import getCroppedImg from '@/utils/cropImage'
 import { useTranslation } from 'react-i18next'
 import { toast } from "react-toastify"
+import { motion } from 'motion/react'
+
+const GENSHIN_BACKGROUND = "bg-columbina.jpg"
 
 const initialImages = {
+  "bg-columbina": "bg-columbina.jpg",
   "bg-17": "bg-17.jpg",
   "bg-11": "bg-11.jpeg",
   "bg-1": "bg-1.jpeg",
@@ -31,12 +35,29 @@ export const BackgroundSelector = () => {
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
-  const { background, setBackground, extraBackgrounds, setExtraBackgrounds } = useSettingStore()
+  const {
+    background, setBackground,
+    starRailBackground, setStarRailBackground,
+    gameProfile, setGameProfile,
+    extraBackgrounds, setExtraBackgrounds,
+  } = useSettingStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { t } = useTranslation()
   const handleSelect = (img: string) => {
     setIsOpen(false)
     setBackground(img)
+    if (gameProfile === "starrail") {
+      setStarRailBackground(img)
+    }
+  }
+
+  const handleGameSelect = (profile: "genshin" | "starrail") => {
+    setGameProfile(profile)
+    if (profile === "genshin") {
+      setBackground(GENSHIN_BACKGROUND)
+      return
+    }
+    setBackground(starRailBackground || "bg-17.jpg")
   }
   const isImageUrl = (url: string) => {
     return /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(url)
@@ -77,6 +98,39 @@ export const BackgroundSelector = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full">
+      <div className="flex flex-col items-center gap-3">
+        {([
+          { id: "genshin", icon: "game-genshin.png", label: t("home.game_profile_genshin") },
+          { id: "starrail", icon: "game-starrail.png", label: t("home.game_profile_starrail") },
+        ] as const).map((game) => {
+          const isActive = gameProfile === game.id
+          return (
+            <div key={game.id} className="tooltip tooltip-right" data-tip={game.label}>
+              <motion.button
+                type="button"
+                whileHover={{ y: -5, scale: 1.08 }}
+                whileTap={{ scale: 0.92, opacity: 0.62 }}
+                transition={{ type: "spring", stiffness: 420, damping: 24 }}
+                onClick={() => handleGameSelect(game.id)}
+                className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 bg-white/65 backdrop-blur-md shadow-md shadow-pink-100/50 transition-all duration-200 ${
+                  isActive
+                    ? "border-pink-300 ring-2 ring-white/90"
+                    : "border-white/70 hover:border-pink-200"
+                }`}
+                aria-label={game.label}
+              >
+                <img
+                  src={game.icon}
+                  alt=""
+                  className="h-10 w-10 rounded-full object-cover"
+                  draggable={false}
+                />
+              </motion.button>
+            </div>
+          )
+        })}
+      </div>
+
       <div className="tooltip tooltip-right" data-tip={t("background.select_bg")}>
         <button
           className="group btn btn-primary btn-circle flex items-center justify-center shadow-md transition-all duration-300 hover:scale-110 hover:shadow-lg hover:bg-primary/80"
@@ -191,4 +245,3 @@ export const BackgroundSelector = () => {
     </div>
   )
 }
-

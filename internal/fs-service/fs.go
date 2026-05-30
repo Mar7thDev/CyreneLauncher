@@ -103,7 +103,7 @@ func (f *FSService) StartApp(path string) (bool, string) {
 		return false, err.Error()
 	}
 
-	if strings.HasSuffix(path, "StarRail.exe") {
+	if isGameProcess(path) {
 		go func() {
 			_ = cmd.Wait()
 			application.Get().Event.Emit("game:exit")
@@ -148,9 +148,15 @@ func (f *FSService) StartWithConsole(path string) (bool, string) {
 			application.Get().Event.Emit("server:exit")
 		} else if strings.HasSuffix(path, "firefly-go-proxy.exe") {
 			application.Get().Event.Emit("proxy:exit")
+		} else if isGameProcess(path) {
+			application.Get().Event.Emit("game:exit")
 		}
 	}()
 	return true, ""
+}
+
+func isGameProcess(path string) bool {
+	return strings.HasSuffix(path, "StarRail.exe") || strings.HasSuffix(path, "YuanShen.exe")
 }
 
 func (f *FSService) OpenFolder(path string) (bool, string) {

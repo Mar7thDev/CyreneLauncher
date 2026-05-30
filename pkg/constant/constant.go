@@ -13,6 +13,16 @@ const ServerZipFile = "prebuild_win_x86.zip"
 const ProxyFile = "firefly-go-proxy.exe"
 const TempUrl = "./temp"
 
+// === Genshin launcher-runtime package ===
+const GenshinServerGitUrl = "https://api.github.com/repos/PrliStrxs/ZGN-SR/releases"
+const GenshinServerExpandedAssetsUrl = "https://github.com/PrliStrxs/ZGN-SR/releases/expanded_assets/genshin"
+const GenshinServerReleaseTag = "genshin"
+const GenshinServerAssetPrefix = "Columbina-GI-Release-launcher-runtime-"
+const GenshinServerAssetSuffix = ".zip"
+const GenshinServerStorageUrl = "./server-packages"
+const GenshinServerBundleDir = "./server-packages/Columbina-GI"
+const GenshinServerManifest = "./server-packages/Columbina-GI/cyrene-manifest.json"
+
 // === March7thHoney proxy mode ===
 //
 // The patch is implemented as a Go-native HTTPS MITM proxy (pkg/patch-proxy).
@@ -28,6 +38,7 @@ const DefaultPatchTargetURL = "https://march7th.hoyotoon.com"
 const (
 	SourceFirefly = "firefly"
 	SourceCustom  = "custom"
+	SourceGenshin = "genshin"
 )
 
 // SourceConfig is the per-source URL + filename bundle.
@@ -69,6 +80,11 @@ func GetSourceConfig(name string) SourceConfig {
 	switch name {
 	case SourceCustom:
 		return CustomConfig
+	case SourceGenshin:
+		return SourceConfig{
+			Name:         "Columbina-GI",
+			ServerGitUrl: GenshinServerGitUrl,
+		}
 	default:
 		return FireflyConfig
 	}

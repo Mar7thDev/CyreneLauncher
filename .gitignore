@@ -9,6 +9,7 @@ tests/
 server/
 proxy/
 temp/
+.codex-tools/
 
 # Editor
 .history/
