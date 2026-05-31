@@ -1,5 +1,7 @@
 # 🚀 Cyrene Launcher
 
+**English** | [简体中文](README.zh-CN.md)
+
 A lightweight and modern launcher for Anime game — designed to make launching, updating, and customizing your game easy and efficient.
 
 ---
@@ -46,6 +48,12 @@ wails3 build
 # Package the app (NSIS)
 wails3 package
 ```
+---
+
+## 🙏 Credits
+
+Cyrene Launcher is a fork built on the original work by [**AzenKain**](https://github.com/AzenKain) — many thanks to the original author for the foundation this project is based on.
+
 ---
 
 ## 📄 License
