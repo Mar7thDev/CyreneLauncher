@@ -11,7 +11,7 @@ info:
   description: "Cyrene Launcher" # The application description
   copyright: "@ 2025, Cyrene" # Copyright text
   comments: "Cyrene Launcher" # Comments
-  version: "1.0.1" # The application version
+  version: "1.0.2" # The application version
 
 # Dev mode configuration
 dev_mode:
