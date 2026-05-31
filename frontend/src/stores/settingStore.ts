@@ -83,7 +83,7 @@ const useSettingStore = create<SettingState>()(
             serverVersion: "",
             proxyVersion: "",
             serverSource: "firefly",
-            launchMode: "fireflygo",
+            launchMode: "march7thhoney",
             patchTargetUrl: "",
             proxyPort: 8080,
             rsaPatch: true,
