@@ -3,7 +3,8 @@ package constant
 const AppName = "Cyrene Launcher"
 
 // === Launcher self-update ===
-const LauncherGitUrl = "https://api.github.com/repos/Mar7thLover/CyreneLauncher-Public/releases"
+// Update detection reads releases from the main repo (open-sourced).
+const LauncherGitUrl = "https://api.github.com/repos/Mar7thDev/CyreneLauncher/releases"
 const LauncherFile = "cyrene-launcher.exe"
 
 // === Server/Proxy storage ===
@@ -116,7 +117,7 @@ const (
 // YYYY-MM-DD so they sort newest-first.
 //
 // Empty string disables the tab.
-const AnnouncementUrl = "https://api.github.com/repos/Mar7thLover/CyreneLauncher-Public/contents/announcements"
+const AnnouncementUrl = "https://api.github.com/repos/Mar7thDev/CyreneLauncher/contents/announcements"
 
 // Project metadata for the About section
 const ProjectName = "Cyrene Launcher"
