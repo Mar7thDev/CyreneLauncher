@@ -36,6 +36,7 @@ const (
 	ec2bStoragePath = "./patch/ClientSecretKey.bin"
 	envProxyKey     = "CYRENE_PROXY"
 	envEc2bKey      = "CYRENE_EC2B_FILE"
+	envWebTargetKey = "CYRENE_WEB_TARGET"
 )
 
 // March7thHoneyService is constructed via New so the embedded CyreneHook.dll
@@ -95,8 +96,12 @@ func (m *March7thHoneyService) Start(gamePath, targetURL string, preferredPort i
 	}
 
 	env := map[string]string{
-		envProxyKey: fmt.Sprintf("127.0.0.1:%d", port),
-		envEc2bKey:  ec2bPath,
+		envProxyKey:     fmt.Sprintf("127.0.0.1:%d", port),
+		envEc2bKey:      ec2bPath,
+		// In-game register/webview redirect target: the patch rewrites the SDK
+		// webview URL to this base so the page loads from the configured server
+		// during remote play (instead of the build-time local default).
+		envWebTargetKey: targetURL,
 	}
 
 	proc, err := injector.Launch(gamePath, dllPath, env)
