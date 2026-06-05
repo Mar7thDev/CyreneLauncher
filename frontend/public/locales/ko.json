@@ -431,6 +431,17 @@
     "err_uid": "UID는 양수여야 합니다.",
     "err_connect": "연결에 실패했습니다. UID, 비밀번호, 온라인 상태를 확인하세요.",
     "err_exec": "명령어 실행에 실패했습니다.",
-    "btn_back": "홈으로"
+    "btn_back": "홈으로",
+    "hb_title": "핸드북",
+    "hb_subtitle": "핸드북 전문 검색 (명령어, 아이템, ID 등).",
+    "hb_ph": "검색어 입력 (예: give, 1409)",
+    "hb_search": "검색",
+    "hb_no_langs": "서버 사용 불가",
+    "hb_hint": "언어를 선택하고 검색어를 입력하세요.",
+    "hb_no_results": "일치 항목 없음.",
+    "hb_count": "{{count}}개 (최대 1000)",
+    "hb_copied": "복사됨",
+    "hb_copy_hint": "클릭하여 ID 복사",
+    "hb_err": "핸드북 검색 실패."
   }
 }

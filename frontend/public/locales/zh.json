@@ -433,6 +433,17 @@
     "err_uid": "UID 必须是正整数。",
     "err_connect": "连接失败。请检查 UID、密码，并确认你已在线。",
     "err_exec": "命令执行失败。",
-    "btn_back": "返回首页"
+    "btn_back": "返回首页",
+    "hb_title": "Handbook 查询",
+    "hb_subtitle": "全文搜索 handbook（命令、物品、ID 等）。",
+    "hb_ph": "搜索任意关键词（如 give、1409）",
+    "hb_search": "搜索",
+    "hb_no_langs": "服务器不可用",
+    "hb_hint": "选择语言，输入关键词搜索 handbook。",
+    "hb_no_results": "无匹配结果。",
+    "hb_count": "共 {{count}} 条（最多 1000）",
+    "hb_copied": "已复制",
+    "hb_copy_hint": "点击复制 ID",
+    "hb_err": "Handbook 查询失败。"
   }
 }

@@ -1,15 +1,17 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { Terminal, Plug, PlugZap, Send, Eraser, ChevronRight } from "lucide-react";
+import { Terminal, Plug, PlugZap, Send, Eraser, ChevronRight, BookText, Search } from "lucide-react";
 import useSettingStore from "@/stores/settingStore";
 import { ConsoleService } from "@bindings/cyrene-launcher/internal/console-service";
+import { HandbookService } from "@bindings/cyrene-launcher/internal/handbook-service";
 
 const DEFAULT_SERVER = "https://march7th.hoyotoon.com";
+const LANG_MAP: Record<string, string> = { zh: "CHS", en: "EN", ja: "JP", ko: "KR", vi: "VI" };
 
 export default function ConsolePage() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { patchTargetUrl } = useSettingStore();
 
     // Reuse the server address configured in Settings; fall back to the default.
@@ -25,6 +27,13 @@ export default function ConsolePage() {
     const [log, setLog] = useState<string[]>([]);
 
     const logRef = useRef<HTMLDivElement>(null);
+
+    const [hbLangs, setHbLangs] = useState<string[]>([]);
+    const [hbLang, setHbLang] = useState("");
+    const [hbQuery, setHbQuery] = useState("");
+    const [hbResults, setHbResults] = useState<string[]>([]);
+    const [hbSearching, setHbSearching] = useState(false);
+    const [hbSearched, setHbSearched] = useState(false);
 
     const appendLog = (line: string) => {
         setLog((prev) => {
@@ -83,6 +92,46 @@ export default function ConsolePage() {
         } finally {
             setExecuting(false);
         }
+    };
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const [ok, langs] = await HandbookService.Languages(serverUrl);
+                if (cancelled || !ok || !langs || langs.length === 0) return;
+                setHbLangs(langs);
+                const pref = LANG_MAP[(i18n.language || "en").slice(0, 2)] || "EN";
+                setHbLang(langs.includes(pref) ? pref : langs[0]);
+            } catch {
+                /* server may be unreachable; leave handbook disabled */
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [serverUrl]);
+
+    const handleSearch = async () => {
+        if (!hbLang || hbSearching) return;
+        setHbSearching(true);
+        try {
+            const [ok, results, err] = await HandbookService.Search(serverUrl, hbLang, hbQuery.trim());
+            if (!ok) {
+                toast.error(err || t("console.hb_err"));
+                setHbResults([]);
+            } else {
+                setHbResults(results ?? []);
+            }
+            setHbSearched(true);
+        } catch (e: any) {
+            toast.error(String(e));
+        } finally {
+            setHbSearching(false);
+        }
+    };
+
+    const copyLine = (line: string) => {
+        navigator.clipboard?.writeText(line);
+        toast.success(t("console.hb_copied"));
     };
 
     return (
@@ -161,12 +210,12 @@ export default function ConsolePage() {
                     {/* Output */}
                     <div
                         ref={logRef}
-                        className="bg-neutral text-neutral-content font-mono text-sm rounded-xl p-4 h-72 overflow-y-auto whitespace-pre-wrap break-words shadow-inner"
+                        className="bg-white/70 border border-violet-200 text-base-content/80 font-mono text-sm rounded-xl p-4 h-72 overflow-y-auto whitespace-pre-wrap break-words shadow-inner"
                     >
                         {log.length === 0
-                            ? <span className="text-neutral-content/40">{t("console.output_empty")}</span>
+                            ? <span className="text-base-content/30">{t("console.output_empty")}</span>
                             : log.map((line, i) => (
-                                <div key={i} className={line.startsWith("!") ? "text-error" : line.startsWith(">") ? "text-info" : ""}>
+                                <div key={i} className={line.startsWith("!") ? "text-error" : line.startsWith(">") ? "text-violet-600 font-medium" : ""}>
                                     {line}
                                 </div>
                             ))}
@@ -205,6 +254,66 @@ export default function ConsolePage() {
                             <Eraser size={18} />
                         </button>
                     </div>
+                </div>
+
+                {/* Handbook lookup */}
+                <div className="bg-emerald-50 border-l-4 border-emerald-400 p-6 rounded-r-lg">
+                    <h2 className="text-2xl font-bold text-emerald-800 flex items-center gap-2 mb-1">
+                        <BookText size={20} /> {t("console.hb_title")}
+                    </h2>
+                    <p className="text-emerald-700/70 text-sm mb-4">{t("console.hb_subtitle")}</p>
+
+                    <div className="flex flex-col sm:flex-row items-stretch gap-2">
+                        <select
+                            className="select w-full sm:w-40"
+                            value={hbLang}
+                            disabled={hbLangs.length === 0}
+                            onChange={(e) => setHbLang(e.target.value)}
+                        >
+                            {hbLangs.length === 0
+                                ? <option value="">{t("console.hb_no_langs")}</option>
+                                : hbLangs.map((l) => <option key={l} value={l}>{l}</option>)}
+                        </select>
+                        <label className="input flex-1 flex items-center gap-2">
+                            <Search size={16} className="text-emerald-500 shrink-0" />
+                            <input
+                                type="text"
+                                className="grow"
+                                placeholder={t("console.hb_ph")}
+                                value={hbQuery}
+                                onChange={(e) => setHbQuery(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
+                            />
+                        </label>
+                        <button className="btn btn-primary" onClick={handleSearch} disabled={hbSearching || !hbLang}>
+                            {hbSearching ? <span className="loading loading-spinner loading-sm" /> : <Search size={18} />}
+                            {t("console.hb_search")}
+                        </button>
+                    </div>
+
+                    <div className="mt-4 bg-white/70 border border-emerald-200 text-base-content/80 font-mono text-sm rounded-xl overflow-hidden shadow-inner">
+                        <div className="max-h-80 overflow-y-auto p-3">
+                            {hbResults.length === 0 ? (
+                                <div className="p-3 text-center text-base-content/30">
+                                    {hbSearched ? t("console.hb_no_results") : t("console.hb_hint")}
+                                </div>
+                            ) : (
+                                hbResults.map((line, i) => (
+                                    <div
+                                        key={i}
+                                        className="px-1 py-0.5 rounded hover:bg-emerald-100/70 cursor-pointer whitespace-pre-wrap break-words"
+                                        onClick={() => copyLine(line)}
+                                        title={t("console.hb_copy_hint")}
+                                    >
+                                        {line}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                    {hbResults.length > 0 && (
+                        <p className="text-emerald-700/60 text-xs mt-2">{t("console.hb_count", { count: hbResults.length })}</p>
+                    )}
                 </div>
 
                 <div className="text-center pt-2">

@@ -9,6 +9,7 @@ import (
 	diffService "cyrene-launcher/internal/diff-service"
 	fsService "cyrene-launcher/internal/fs-service"
 	gitService "cyrene-launcher/internal/git-service"
+	handbookService "cyrene-launcher/internal/handbook-service"
 	languageService "cyrene-launcher/internal/language-service"
 	march7thHoneyService "cyrene-launcher/internal/march7thhoney-service"
 	newsService "cyrene-launcher/internal/news-service"
@@ -90,6 +91,7 @@ func main() {
 			application.NewService(&appService.AppService{}),
 			application.NewService(&newsService.NewsService{}),
 			application.NewService(&consoleService.ConsoleService{}),
+			application.NewService(&handbookService.HandbookService{}),
 			application.NewService(march7thHoneyService.New(dllBytes)),
 		},
 		Assets: application.AssetOptions{

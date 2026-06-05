@@ -431,6 +431,17 @@
     "err_uid": "UID phải là số dương.",
     "err_connect": "Kết nối thất bại. Kiểm tra UID, mật khẩu và trạng thái online.",
     "err_exec": "Lệnh thất bại.",
-    "btn_back": "Về trang chủ"
+    "btn_back": "Về trang chủ",
+    "hb_title": "Handbook",
+    "hb_subtitle": "Tìm toàn văn trong handbook (lệnh, vật phẩm, ID…).",
+    "hb_ph": "Tìm bất kỳ (vd: give, 1409)",
+    "hb_search": "Tìm",
+    "hb_no_langs": "Máy chủ không khả dụng",
+    "hb_hint": "Chọn ngôn ngữ và nhập từ khóa.",
+    "hb_no_results": "Không có kết quả.",
+    "hb_count": "{{count}} kết quả (tối đa 1000)",
+    "hb_copied": "Đã sao chép",
+    "hb_copy_hint": "Nhấn để sao chép ID",
+    "hb_err": "Tra Handbook thất bại."
   }
 }

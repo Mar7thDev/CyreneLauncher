@@ -433,6 +433,17 @@
     "err_uid": "UID must be a positive number.",
     "err_connect": "Failed to connect. Check your UID, password and that you are online.",
     "err_exec": "Command failed.",
-    "btn_back": "Back to Home"
+    "btn_back": "Back to Home",
+    "hb_title": "Handbook",
+    "hb_subtitle": "Full-text search over the handbook (commands, items, ids…).",
+    "hb_ph": "Search anything (e.g. give, 1409)",
+    "hb_search": "Search",
+    "hb_no_langs": "Server unavailable",
+    "hb_hint": "Pick a language and type to search the handbook.",
+    "hb_no_results": "No matches.",
+    "hb_count": "{{count}} matches (max 1000)",
+    "hb_copied": "Copied",
+    "hb_copy_hint": "Click to copy ID",
+    "hb_err": "Handbook lookup failed."
   }
 }
