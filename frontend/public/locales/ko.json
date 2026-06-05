@@ -442,6 +442,14 @@
     "hb_count": "{{count}}개 (최대 1000)",
     "hb_copied": "복사됨",
     "hb_copy_hint": "클릭하여 ID 복사",
-    "hb_err": "핸드북 검색 실패."
+    "hb_err": "핸드북 검색 실패.",
+    "reset_title": "내 세이브 초기화",
+    "reset_desc": "내 게임 데이터를 지우고 새로 시작합니다(계정과 비밀번호는 유지). 세이브가 깨졌거나 막혔을 때 사용하세요. 로그인할 수 없어도 초기화됩니다.",
+    "reset_btn": "내 세이브 초기화",
+    "reset_confirm_q": "세이브가 영구히 삭제됩니다. 계속할까요?",
+    "reset_confirm_yes": "초기화",
+    "reset_confirm_no": "취소",
+    "reset_done": "세이브가 초기화되었습니다. 다시 로그인하세요.",
+    "reset_err": "초기화 실패."
   }
 }

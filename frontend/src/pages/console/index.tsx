@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { Terminal, Plug, PlugZap, Send, Eraser, ChevronRight, BookText, Search } from "lucide-react";
+import { Terminal, Plug, PlugZap, Send, Eraser, ChevronRight, BookText, Search, AlertTriangle, Trash2 } from "lucide-react";
 import useSettingStore from "@/stores/settingStore";
 import { ConsoleService } from "@bindings/cyrene-launcher/internal/console-service";
 import { HandbookService } from "@bindings/cyrene-launcher/internal/handbook-service";
@@ -34,6 +34,9 @@ export default function ConsolePage() {
     const [hbResults, setHbResults] = useState<string[]>([]);
     const [hbSearching, setHbSearching] = useState(false);
     const [hbSearched, setHbSearched] = useState(false);
+
+    const [resetConfirming, setResetConfirming] = useState(false);
+    const [resetting, setResetting] = useState(false);
 
     const appendLog = (line: string) => {
         setLog((prev) => {
@@ -132,6 +135,33 @@ export default function ConsolePage() {
     const copyLine = (line: string) => {
         navigator.clipboard?.writeText(line);
         toast.success(t("console.hb_copied"));
+    };
+
+    const handleSelfReset = async () => {
+        if (!uid.trim() || !password) {
+            toast.error(t("console.err_fields"));
+            return;
+        }
+        const uidNum = Number(uid.trim());
+        if (!Number.isInteger(uidNum) || uidNum <= 0) {
+            toast.error(t("console.err_uid"));
+            return;
+        }
+        setResetting(true);
+        try {
+            const [ok, output, err] = await ConsoleService.SelfReset(serverUrl, uidNum, password);
+            if (!ok) {
+                toast.error(err || t("console.reset_err"));
+                return;
+            }
+            toast.success(output || t("console.reset_done"));
+            setResetConfirming(false);
+            if (connected) handleDisconnect();
+        } catch (e: any) {
+            toast.error(String(e));
+        } finally {
+            setResetting(false);
+        }
     };
 
     return (
@@ -313,6 +343,39 @@ export default function ConsolePage() {
                     </div>
                     {hbResults.length > 0 && (
                         <p className="text-emerald-700/60 text-xs mt-2">{t("console.hb_count", { count: hbResults.length })}</p>
+                    )}
+                </div>
+
+                {/* Danger zone: self reset */}
+                <div className="bg-red-50 border-l-4 border-red-400 p-6 rounded-r-lg">
+                    <h2 className="text-2xl font-bold text-red-800 flex items-center gap-2 mb-1">
+                        <AlertTriangle size={20} /> {t("console.reset_title")}
+                    </h2>
+                    <p className="text-red-700/80 text-sm mb-4">{t("console.reset_desc")}</p>
+
+                    {!resetConfirming ? (
+                        <button
+                            className="btn btn-error btn-outline"
+                            onClick={() => setResetConfirming(true)}
+                            disabled={!uid.trim() || !password}
+                        >
+                            <Trash2 size={18} /> {t("console.reset_btn")}
+                        </button>
+                    ) : (
+                        <div className="space-y-3">
+                            <p className="text-red-800 font-semibold">{t("console.reset_confirm_q")}</p>
+                            <div className="flex items-center gap-3">
+                                <button className="btn btn-error" onClick={handleSelfReset} disabled={resetting}>
+                                    {resetting
+                                        ? <span className="loading loading-spinner loading-sm" />
+                                        : <Trash2 size={18} />}
+                                    {t("console.reset_confirm_yes")}
+                                </button>
+                                <button className="btn btn-ghost" onClick={() => setResetConfirming(false)} disabled={resetting}>
+                                    {t("console.reset_confirm_no")}
+                                </button>
+                            </div>
+                        </div>
                     )}
                 </div>
 

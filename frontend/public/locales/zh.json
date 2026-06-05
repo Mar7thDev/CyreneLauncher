@@ -444,6 +444,14 @@
     "hb_count": "共 {{count}} 条（最多 1000）",
     "hb_copied": "已复制",
     "hb_copy_hint": "点击复制 ID",
-    "hb_err": "Handbook 查询失败。"
+    "hb_err": "Handbook 查询失败。",
+    "reset_title": "重置我的存档",
+    "reset_desc": "清空你自己的存档数据、从头开始（账号和密码保留）。存档损坏或卡死时可用，进不去游戏也能重置。",
+    "reset_btn": "重置我的存档",
+    "reset_confirm_q": "这将永久清空你的存档，确定吗？",
+    "reset_confirm_yes": "确定重置",
+    "reset_confirm_no": "取消",
+    "reset_done": "存档已重置，请重新登录开始新的旅程。",
+    "reset_err": "重置失败。"
   }
 }

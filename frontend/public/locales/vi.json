@@ -442,6 +442,14 @@
     "hb_count": "{{count}} kết quả (tối đa 1000)",
     "hb_copied": "Đã sao chép",
     "hb_copy_hint": "Nhấn để sao chép ID",
-    "hb_err": "Tra Handbook thất bại."
+    "hb_err": "Tra Handbook thất bại.",
+    "reset_title": "Đặt lại dữ liệu của tôi",
+    "reset_desc": "Xóa dữ liệu chơi của chính bạn và bắt đầu lại (giữ tài khoản và mật khẩu). Hữu ích khi save lỗi hoặc kẹt — hoạt động ngay cả khi không đăng nhập được.",
+    "reset_btn": "Đặt lại dữ liệu",
+    "reset_confirm_q": "Thao tác này xóa vĩnh viễn dữ liệu của bạn. Chắc chứ?",
+    "reset_confirm_yes": "Đặt lại",
+    "reset_confirm_no": "Hủy",
+    "reset_done": "Đã đặt lại dữ liệu. Hãy đăng nhập lại.",
+    "reset_err": "Đặt lại thất bại."
   }
 }

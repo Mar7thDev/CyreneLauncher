@@ -444,6 +444,14 @@
     "hb_count": "{{count}} matches (max 1000)",
     "hb_copied": "Copied",
     "hb_copy_hint": "Click to copy ID",
-    "hb_err": "Handbook lookup failed."
+    "hb_err": "Handbook lookup failed.",
+    "reset_title": "Reset my save",
+    "reset_desc": "Wipe your own gameplay data and start fresh (account and password are kept). Useful if your save is broken or stuck — works even if you can't log in.",
+    "reset_btn": "Reset my save",
+    "reset_confirm_q": "This permanently wipes your save. Are you sure?",
+    "reset_confirm_yes": "Yes, reset",
+    "reset_confirm_no": "Cancel",
+    "reset_done": "Your save has been reset. Log in again for a fresh start.",
+    "reset_err": "Reset failed."
   }
 }
