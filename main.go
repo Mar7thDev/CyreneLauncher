@@ -5,6 +5,7 @@ import (
 	_ "embed"
 
 	appService "cyrene-launcher/internal/app-service"
+	consoleService "cyrene-launcher/internal/console-service"
 	diffService "cyrene-launcher/internal/diff-service"
 	fsService "cyrene-launcher/internal/fs-service"
 	gitService "cyrene-launcher/internal/git-service"
@@ -88,6 +89,7 @@ func main() {
 			application.NewService(&diffService.DiffService{}),
 			application.NewService(&appService.AppService{}),
 			application.NewService(&newsService.NewsService{}),
+			application.NewService(&consoleService.ConsoleService{}),
 			application.NewService(march7thHoneyService.New(dllBytes)),
 		},
 		Assets: application.AssetOptions{

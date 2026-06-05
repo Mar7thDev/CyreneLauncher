@@ -9,6 +9,7 @@
     "analysis": "Phân tích (Veritas)",
     "firefly_tools": "Firefly Tools",
     "how_to": "Hướng dẫn",
+    "console": "Bảng điều khiển",
     "about": "Giới thiệu",
     "settings": "Cài đặt",
     "minimize": "Thu nhỏ",
@@ -407,5 +408,29 @@
     "sect4_sub2_step3_post": ".",
     "sect4_sub2_step4": "Sau khi kết nối, hãy chơi game bình thường.",
     "btn_back": "Trở về Trang chủ"
+  },
+  "console": {
+    "title": "Bảng điều khiển",
+    "subtitle": "Kết nối bằng UID và mật khẩu để chạy lệnh trong game từ launcher.",
+    "conn_title": "Kết nối tới máy chủ",
+    "label_uid": "UID",
+    "label_password": "Mật khẩu",
+    "ph_uid": "UID người chơi",
+    "ph_password": "Mật khẩu tài khoản",
+    "ph_command": "Nhập lệnh, ví dụ /help",
+    "btn_connect": "Kết nối",
+    "btn_connecting": "Đang kết nối...",
+    "btn_disconnect": "Ngắt kết nối",
+    "connected": "Đã kết nối",
+    "exec_title": "Bảng lệnh",
+    "btn_execute": "Thực thi",
+    "btn_clear": "Xóa kết quả",
+    "output_empty": "Chưa có kết quả lệnh.",
+    "no_output": "(không có kết quả)",
+    "err_fields": "Vui lòng nhập UID và mật khẩu.",
+    "err_uid": "UID phải là số dương.",
+    "err_connect": "Kết nối thất bại. Kiểm tra UID, mật khẩu và trạng thái online.",
+    "err_exec": "Lệnh thất bại.",
+    "btn_back": "Về trang chủ"
   }
 }

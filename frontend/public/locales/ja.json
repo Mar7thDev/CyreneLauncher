@@ -9,6 +9,7 @@
     "analysis": "分析（Veritas）",
     "firefly_tools": "Fireflyツール",
     "how_to": "使い方",
+    "console": "コンソール",
     "about": "概要",
     "settings": "設定",
     "minimize": "最小化",
@@ -406,6 +407,30 @@
     "sect4_sub2_step3_btn": "Connect",
     "sect4_sub2_step3_post": " をクリックします。",
     "sect4_sub2_step4": "接続後、通常通りゲームをプレイしてください。",
+    "btn_back": "ホームに戻る"
+  },
+  "console": {
+    "title": "コンソール",
+    "subtitle": "UID とパスワードで接続し、ランチャーからゲーム内コマンドを実行します。",
+    "conn_title": "サーバーに接続",
+    "label_uid": "UID",
+    "label_password": "パスワード",
+    "ph_uid": "プレイヤー UID",
+    "ph_password": "アカウントのパスワード",
+    "ph_command": "コマンドを入力（例: /help）",
+    "btn_connect": "接続",
+    "btn_connecting": "接続中...",
+    "btn_disconnect": "切断",
+    "connected": "接続済み",
+    "exec_title": "コマンドコンソール",
+    "btn_execute": "実行",
+    "btn_clear": "出力をクリア",
+    "output_empty": "コマンド出力はまだありません。",
+    "no_output": "(出力なし)",
+    "err_fields": "UID とパスワードを入力してください。",
+    "err_uid": "UID は正の数値である必要があります。",
+    "err_connect": "接続に失敗しました。UID・パスワード・オンライン状態を確認してください。",
+    "err_exec": "コマンドの実行に失敗しました。",
     "btn_back": "ホームに戻る"
   }
 }

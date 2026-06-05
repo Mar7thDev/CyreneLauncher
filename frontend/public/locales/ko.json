@@ -9,6 +9,7 @@
     "analysis": "분석 (Veritas)",
     "firefly_tools": "Firefly 도구",
     "how_to": "사용 방법",
+    "console": "콘솔",
     "about": "정보",
     "settings": "설정",
     "minimize": "최소화",
@@ -407,5 +408,29 @@
     "sect4_sub2_step3_post": "를 클릭합니다.",
     "sect4_sub2_step4": "연결되면 평소처럼 게임을 플레이합니다.",
     "btn_back": "홈으로 돌아가기"
+  },
+  "console": {
+    "title": "콘솔",
+    "subtitle": "UID와 비밀번호로 접속하여 런처에서 게임 내 명령어를 실행하세요.",
+    "conn_title": "서버에 연결",
+    "label_uid": "UID",
+    "label_password": "비밀번호",
+    "ph_uid": "플레이어 UID",
+    "ph_password": "계정 비밀번호",
+    "ph_command": "명령어 입력, 예: /help",
+    "btn_connect": "연결",
+    "btn_connecting": "연결 중...",
+    "btn_disconnect": "연결 해제",
+    "connected": "연결됨",
+    "exec_title": "명령어 콘솔",
+    "btn_execute": "실행",
+    "btn_clear": "출력 지우기",
+    "output_empty": "아직 명령어 출력이 없습니다.",
+    "no_output": "(출력 없음)",
+    "err_fields": "UID와 비밀번호를 입력하세요.",
+    "err_uid": "UID는 양수여야 합니다.",
+    "err_connect": "연결에 실패했습니다. UID, 비밀번호, 온라인 상태를 확인하세요.",
+    "err_exec": "명령어 실행에 실패했습니다.",
+    "btn_back": "홈으로"
   }
 }

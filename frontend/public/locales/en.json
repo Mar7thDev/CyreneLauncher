@@ -9,6 +9,7 @@
     "analysis": "Analysis (Veritas)",
     "firefly_tools": "Firefly Tools",
     "how_to": "How to?",
+    "console": "Console",
     "about": "About",
     "settings": "Settings",
     "minimize": "Minimize",
@@ -408,6 +409,30 @@
     "sect4_sub2_step3_btn": "Connect",
     "sect4_sub2_step3_post": ".",
     "sect4_sub2_step4": "Once connected, play the game normally.",
+    "btn_back": "Back to Home"
+  },
+  "console": {
+    "title": "Console",
+    "subtitle": "Connect with your UID and password to run in-game commands from the launcher.",
+    "conn_title": "Connect to Server",
+    "label_uid": "UID",
+    "label_password": "Password",
+    "ph_uid": "Your player UID",
+    "ph_password": "Your account password",
+    "ph_command": "Enter a command, e.g. /help",
+    "btn_connect": "Connect",
+    "btn_connecting": "Connecting...",
+    "btn_disconnect": "Disconnect",
+    "connected": "Connected",
+    "exec_title": "Command Console",
+    "btn_execute": "Execute",
+    "btn_clear": "Clear output",
+    "output_empty": "No command output yet.",
+    "no_output": "(no output)",
+    "err_fields": "Please enter your UID and password.",
+    "err_uid": "UID must be a positive number.",
+    "err_connect": "Failed to connect. Check your UID, password and that you are online.",
+    "err_exec": "Command failed.",
     "btn_back": "Back to Home"
   }
 }

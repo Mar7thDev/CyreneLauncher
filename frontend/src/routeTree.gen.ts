@@ -14,6 +14,7 @@ import { Route as NewsRouteImport } from './routes/news'
 import { Route as LanguageRouteImport } from './routes/language'
 import { Route as HowtoRouteImport } from './routes/howto'
 import { Route as DiffRouteImport } from './routes/diff'
+import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -43,6 +44,11 @@ const DiffRoute = DiffRouteImport.update({
   path: '/diff',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConsoleRoute = ConsoleRouteImport.update({
+  id: '/console',
+  path: '/console',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AnalysisRoute = AnalysisRouteImport.update({
   id: '/analysis',
   path: '/analysis',
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/analysis': typeof AnalysisRoute
+  '/console': typeof ConsoleRoute
   '/diff': typeof DiffRoute
   '/howto': typeof HowtoRoute
   '/language': typeof LanguageRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/analysis': typeof AnalysisRoute
+  '/console': typeof ConsoleRoute
   '/diff': typeof DiffRoute
   '/howto': typeof HowtoRoute
   '/language': typeof LanguageRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/analysis': typeof AnalysisRoute
+  '/console': typeof ConsoleRoute
   '/diff': typeof DiffRoute
   '/howto': typeof HowtoRoute
   '/language': typeof LanguageRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/analysis'
+    | '/console'
     | '/diff'
     | '/howto'
     | '/language'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/analysis'
+    | '/console'
     | '/diff'
     | '/howto'
     | '/language'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/analysis'
+    | '/console'
     | '/diff'
     | '/howto'
     | '/language'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AnalysisRoute: typeof AnalysisRoute
+  ConsoleRoute: typeof ConsoleRoute
   DiffRoute: typeof DiffRoute
   HowtoRoute: typeof HowtoRoute
   LanguageRoute: typeof LanguageRoute
@@ -171,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiffRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/console': {
+      id: '/console'
+      path: '/console'
+      fullPath: '/console'
+      preLoaderRoute: typeof ConsoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/analysis': {
       id: '/analysis'
       path: '/analysis'
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AnalysisRoute: AnalysisRoute,
+  ConsoleRoute: ConsoleRoute,
   DiffRoute: DiffRoute,
   HowtoRoute: HowtoRoute,
   LanguageRoute: LanguageRoute,

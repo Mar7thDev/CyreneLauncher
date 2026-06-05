@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import useModalStore from "@/stores/modalStore";
-import { Blend, BookOpen, Diff, Home, Info, Languages, Minus, Newspaper, Puzzle, Settings, TrendingUpDown, Wrench, X } from "lucide-react";
+import { Blend, BookOpen, Diff, Home, Info, Languages, Minus, Newspaper, Puzzle, Settings, Terminal, TrendingUpDown, Wrench, X } from "lucide-react";
 import { AppService } from "@bindings/cyrene-launcher/internal/app-service";
 import LanguageSwitcher from "../languageSwitcher";
 import { useTranslation } from "react-i18next";
@@ -79,6 +79,7 @@ export default function Header() {
                             </>
                         )}
                         <li><Link to="/howto">{t("header.how_to")}</Link></li>
+                        {isStarRail && <li><Link to="/console">{t("header.console")}</Link></li>}
                         <li><Link to="/about">{t("header.about")}</Link></li>
                     </ul>
                 </div>
@@ -167,6 +168,13 @@ export default function Header() {
                                 <BookOpen size={17} /> {t("header.how_to")}
                             </Link>
                         </li>
+                        {isStarRail && (
+                            <li>
+                                <Link to="/console" className="flex items-center gap-2 hover:text-pink-500 transition-colors rounded-lg">
+                                    <Terminal size={17} /> {t("header.console")}
+                                </Link>
+                            </li>
+                        )}
                         <li>
                             <Link to="/about" className="flex items-center gap-2 hover:text-pink-500 transition-colors rounded-lg">
                                 <Info size={17} /> {t("header.about")}

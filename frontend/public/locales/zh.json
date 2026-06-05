@@ -9,6 +9,7 @@
     "analysis": "分析（Veritas）",
     "firefly_tools": "Firefly工具",
     "how_to": "使用方法",
+    "console": "控制台",
     "about": "关于",
     "settings": "设置",
     "minimize": "最小化",
@@ -409,5 +410,29 @@
     "sect4_sub2_step3_post": "。",
     "sect4_sub2_step4": "连接后，正常游玩游戏即可。",
     "btn_back": "返回主页"
+  },
+  "console": {
+    "title": "控制台",
+    "subtitle": "使用你的 UID 和密码连接，即可在启动器中执行游戏内命令。",
+    "conn_title": "连接到服务器",
+    "label_uid": "UID",
+    "label_password": "密码",
+    "ph_uid": "你的玩家 UID",
+    "ph_password": "你的账号密码",
+    "ph_command": "输入命令，例如 /help",
+    "btn_connect": "连接",
+    "btn_connecting": "连接中...",
+    "btn_disconnect": "断开连接",
+    "connected": "已连接",
+    "exec_title": "命令控制台",
+    "btn_execute": "执行",
+    "btn_clear": "清空输出",
+    "output_empty": "暂无命令输出。",
+    "no_output": "(无输出)",
+    "err_fields": "请输入你的 UID 和密码。",
+    "err_uid": "UID 必须是正整数。",
+    "err_connect": "连接失败。请检查 UID、密码，并确认你已在线。",
+    "err_exec": "命令执行失败。",
+    "btn_back": "返回首页"
   }
 }
