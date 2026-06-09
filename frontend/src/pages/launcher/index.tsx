@@ -492,7 +492,7 @@ export default function LauncherPage() {
 
                         <div className="tooltip tooltip-left" data-tip="Join our Discord">
                             <button
-                                onClick={() => openExternal("https://discord.gg/castoriceps")}
+                                onClick={() => openExternal("https://discord.gg/CyreneEchoes")}
                                 className="btn btn-circle btn-sm bg-transparent hover:bg-[#5865F2]/15 border-none text-[#5865F2] transition-all"
                                 aria-label="Discord"
                             >
