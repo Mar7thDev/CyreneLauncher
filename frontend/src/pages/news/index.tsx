@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { Newspaper, Server, RefreshCw, ExternalLink, Megaphone, Calendar, AlertCircle, ImageOff, Settings } from "lucide-react"
+import { Newspaper, Server, RefreshCw, ExternalLink, Megaphone, Calendar, AlertCircle, ImageOff, Settings, Pin } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { toast } from "react-toastify"
 import { NewsService } from "@bindings/cyrene-launcher/internal/news-service"
 import { AppService } from "@bindings/cyrene-launcher/internal/app-service"
+import useNewsStore from "@/stores/newsStore"
 
 interface NewsItem {
     id: string
@@ -15,6 +16,7 @@ interface NewsItem {
     time: string
     timestamp: number
     type: string
+    pinned?: boolean
 }
 
 type TabId = "notice" | "event" | "info" | "server"
@@ -92,6 +94,11 @@ export default function NewsPage() {
             cacheRef.current[serverKey] = ok
                 ? { items: list ?? [], timestamp: Date.now() }
                 : { items: [], timestamp: Date.now(), error: err || "unknown" }
+            if (ok && list?.length) {
+                // Viewing the server tab clears the unread badge.
+                const latest = Math.max(...list.map(i => i.timestamp))
+                useNewsStore.setState({ latestServerTimestamp: latest, lastReadServerTimestamp: latest })
+            }
             if (!ok && err !== SERVER_NOT_CONFIGURED) toast.error(t("news.toast_fetch_error") + err)
             setRevision(r => r + 1)
         } catch (e: any) {
@@ -295,6 +302,7 @@ function NewsCard({ item, delay, onOpen }: { item: NewsItem, delay: number, onOp
             <div className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
                     <h3 className="font-semibold text-sm leading-snug line-clamp-2 flex-1 text-base-content">
+                        {item.pinned && <Pin size={13} className="inline-block text-pink-500 mr-1 -mt-0.5" />}
                         {item.title}
                     </h3>
                     <ExternalLink size={14} className="text-base-content/30 group-hover:text-pink-500 transition-colors shrink-0 mt-0.5" />

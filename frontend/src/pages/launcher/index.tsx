@@ -13,19 +13,16 @@ import { Link } from '@tanstack/react-router';
 import {
     CheckUpdateGenshinServer,
     CheckUpdateLauncher,
-    CheckUpdateProxy,
-    CheckUpdateServer,
     GENSHIN_INJECTOR_PATH,
     GENSHIN_SERVER_MANIFEST,
     GENSHIN_SERVER_ROOT,
     sleep,
     UpdateGenshinServer,
     UpdateLauncher,
-    UpdateProxy,
-    UpdateServer,
 } from '@/helper';
 import UpdateModal from '@/components/updateModal';
 import { BackgroundSelector } from '@/components/backgroudModal';
+import NewsWidget from '@/components/newsWidget';
 import { useTranslation } from 'react-i18next';
 
 const DEFAULT_PATCH_URL = "https://march7th.hoyotoon.com"
@@ -35,11 +32,9 @@ export default function LauncherPage() {
         gamePath, setGamePath, setGameDir,
         genshinGamePath, genshinGameDir, genshinServerDir, genshinServerVersion,
         setGenshinGamePath, setGenshinGameDir, setGenshinServerDir,
-        serverPath, proxyPath, gameDir,
-        serverVersion, proxyVersion, background, gameProfile,
-        launchMode, patchTargetUrl, proxyPort,
+        gameDir, background, gameProfile,
+        patchTargetUrl, proxyPort,
         rsaPatch, rsaKey, webRedirect, webHosts,
-        setServerPath, setProxyPath,
     } = useSettingStore()
     const { t } = useTranslation()
     const [visibleBackground, setVisibleBackground] = useState(background)
@@ -51,11 +46,11 @@ export default function LauncherPage() {
         setIsOpenDownloadDataModal, setIsOpenUpdateDataModal, setIsOpenSelfUpdateModal,
     } = useModalStore()
     const {
-        isLoading, downloadType, serverReady, proxyReady, patchReady, isDownloading,
-        serverRunning, proxyRunning, gameRunning, progressDownload, downloadSpeed,
+        isLoading, downloadType, serverReady, isDownloading,
+        serverRunning, gameRunning, progressDownload, downloadSpeed,
         updateData, setLauncherVersion, setIsLoading, setDownloadType,
-        setServerReady, setProxyReady, setPatchReady, setIsDownloading,
-        setServerRunning, setProxyRunning, setGameRunning, setUpdateData,
+        setServerReady, setPatchReady, setIsDownloading,
+        setServerRunning, setGameRunning, setUpdateData,
     } = useLauncherStore()
     const isGenshin = gameProfile === "genshin"
     const isStarRail = gameProfile === "starrail"
@@ -96,7 +91,7 @@ export default function LauncherPage() {
         catch { window.open(url, "_blank") }
     }
 
-    // Check if server/proxy binaries exist on disk.
+    // Check if the Genshin server package exists on disk; Star Rail only needs a game path.
     useEffect(() => {
         const check = async () => {
             if (isGenshin) {
@@ -105,21 +100,13 @@ export default function LauncherPage() {
                 const injectorPath = genshinServerDir ? `${serverRoot}/native/bin/YsrpgInjector.exe` : GENSHIN_INJECTOR_PATH
                 setServerReady(await FSService.FileExists(manifestPath) && await FSService.FileExists(injectorPath))
                 setServerRunning(await FSService.IsGenshinServerRunning())
-                setProxyReady(true)
                 setPatchReady(genshinGamePath !== "")
                 return
             }
-            if (launchMode === "march7thhoney") {
-                // Proxy mode: no binary to check. Ready as long as game path is set.
-                setPatchReady(gamePath !== "")
-                return
-            }
-            if (!serverVersion || !proxyVersion) { setServerReady(false); setProxyReady(false); return }
-            setServerReady(await FSService.FileExists(serverPath))
-            setProxyReady(await FSService.FileExists(proxyPath))
+            setPatchReady(gamePath !== "")
         }
         check()
-    }, [isGenshin, launchMode, serverPath, proxyPath, serverVersion, proxyVersion, gamePath, genshinGamePath, genshinServerDir])
+    }, [isGenshin, gamePath, genshinGamePath, genshinServerDir])
 
     // Startup: check launcher update, then server/proxy updates.
     useEffect(() => {
@@ -168,7 +155,6 @@ export default function LauncherPage() {
                 })
                 setServerReady(genshinServerData.isExists)
                 setServerRunning(await FSService.IsGenshinServerRunning())
-                setProxyReady(true)
                 setPatchReady(genshinGamePath !== "")
                 if (genshinServerData.isUpdate) {
                     setIsOpenUpdateDataModal(true)
@@ -179,50 +165,17 @@ export default function LauncherPage() {
             const exitGame = await FSService.FileExists(gamePath)
             if (!exitGame) { setGameRunning(false); setGamePath(""); setGameDir("") }
 
-            if (launchMode === "march7thhoney") {
-                // No asset to download or update check in proxy mode.
-                setUpdateData({
-                    server: { isUpdate: false, isExists: true, version: "" },
-                    proxy:  { isUpdate: false, isExists: true, version: "" },
-                    patch:  { isUpdate: false, isExists: true, version: "" },
-                    launcher: launcherData,
-                })
-                setPatchReady(gamePath !== "")
-                return
-            }
-
-            // FireflyGo: auto-relink if binaries exist at default paths.
-            let effServerPath = serverPath
-            let effProxyPath  = proxyPath
-            const defaultServer = "./server/firefly-go_win.exe"
-            const defaultProxy  = "./proxy/firefly-go-proxy.exe"
-            if (!effServerPath && await FSService.FileExists(defaultServer)) {
-                effServerPath = defaultServer
-                setServerPath(defaultServer)
-            }
-            if (!effProxyPath && await FSService.FileExists(defaultProxy)) {
-                effProxyPath = defaultProxy
-                setProxyPath(defaultProxy)
-            }
-
-            const serverData = await CheckUpdateServer(effServerPath, serverVersion)
-            const proxyData  = await CheckUpdateProxy(effProxyPath, proxyVersion)
+            // Star Rail proxy mode: no asset to download or update check.
             setUpdateData({
-                server: serverData,
-                proxy: proxyData,
-                patch: { isUpdate: false, isExists: false, version: "" },
+                server: { isUpdate: false, isExists: true, version: "" },
+                proxy:  { isUpdate: false, isExists: true, version: "" },
+                patch:  { isUpdate: false, isExists: true, version: "" },
                 launcher: launcherData,
             })
-            if (!serverData.isExists || !proxyData.isExists) {
-                setServerReady(false); setProxyReady(false); setIsOpenDownloadDataModal(true); return
-            }
-            if (serverData.isUpdate || proxyData.isUpdate) {
-                setServerReady(true); setProxyReady(true); setIsOpenUpdateDataModal(true); return
-            }
-            setServerReady(true); setProxyReady(true)
+            setPatchReady(gamePath !== "")
         }
         checkStartUp()
-    }, [isGenshin, launchMode]);
+    }, [isGenshin]);
 
     const handlePickFile = async () => {
         try {
@@ -308,40 +261,15 @@ export default function LauncherPage() {
         if (!gamePath || gameRunning) return
         try {
             setIsLoading(true)
-
-            if (launchMode === "march7thhoney") {
-                if (gamePath.endsWith("launcher.exe")) {
-                    toast.error(t("home.toast_march7th_needs_starrail"))
-                    return
-                }
-                const target = patchTargetUrl || DEFAULT_PATCH_URL
-                const [ok, err] = await March7thHoneyService.Start(gamePath, target, proxyPort, {
-                    rsaPatch, rsaKey, webRedirect, webHosts,
-                })
-                if (!ok) { toast.error(t("home.toast_start_game_failed") + err); return }
-                setGameRunning(true)
+            if (gamePath.endsWith("launcher.exe")) {
+                toast.error(t("home.toast_march7th_needs_starrail"))
                 return
             }
-
-            if (!proxyRunning && !gamePath.endsWith("launcher.exe")) {
-                const [ok, err] = await FSService.StartWithConsole(proxyPath)
-                if (!ok) { toast.error(t("home.toast_start_proxy_failed") + err); return }
-                setProxyRunning(true)
-            }
-            await sleep(500)
-            if (!serverRunning) {
-                const [ok, err] = await FSService.StartWithConsole(serverPath)
-                if (!ok) { toast.error(t("home.toast_start_server_failed") + err); return }
-                setServerRunning(true)
-            }
-            await sleep(1000)
-            if (gamePath.endsWith("launcher.exe")) {
-                const [ok, err] = await FSService.StartWithConsole(gamePath)
-                if (!ok) { toast.error(t("home.toast_start_game_failed") + err); return }
-            } else {
-                const [ok, err] = await FSService.StartApp(gamePath)
-                if (!ok) { toast.error(t("home.toast_start_game_failed") + err); return }
-            }
+            const target = patchTargetUrl || DEFAULT_PATCH_URL
+            const [ok, err] = await March7thHoneyService.Start(gamePath, target, proxyPort, {
+                rsaPatch, rsaKey, webRedirect, webHosts,
+            })
+            if (!ok) { toast.error(t("home.toast_start_game_failed") + err); return }
             setGameRunning(true)
         } catch (err: any) { toast.error(t("home.toast_start_game_error"), err) }
         finally { setIsLoading(false) }
@@ -394,7 +322,6 @@ export default function LauncherPage() {
                 }
                 const ok = await UpdateGenshinServer(serverData.version)
                 setServerReady(ok)
-                setProxyReady(true)
                 if (ok) {
                     setUpdateData({
                         ...updateData,
@@ -415,19 +342,6 @@ export default function LauncherPage() {
             await UpdateLauncher(updateData.launcher.version)
             setUpdateData({ ...updateData, launcher: { isUpdate: false, isExists: true, version: updateData.launcher.version } })
             setIsOpenSelfUpdateModal(true)
-        }
-        // FireflyGo only — march7thhoney has no assets to download.
-        if (isStarRail && launchMode === "fireflygo") {
-            if (updateData.server.isUpdate || !updateData.server.isExists) {
-                await UpdateServer(updateData.server.version)
-                setServerReady(true)
-                setUpdateData({ ...updateData, server: { isUpdate: false, isExists: true, version: updateData.server.version } })
-            }
-            if (updateData.proxy.isUpdate || !updateData.proxy.isExists) {
-                await UpdateProxy(updateData.proxy.version)
-                setProxyReady(true)
-                setUpdateData({ ...updateData, proxy: { isUpdate: false, isExists: true, version: updateData.proxy.version } })
-            }
         }
         setDownloadType(""); setIsDownloading(false)
     }
@@ -516,8 +430,9 @@ export default function LauncherPage() {
                 </motion.div>
             </AnimatePresence>
 
-            {/* Background selector */}
-            <div className="hidden sm:flex fixed bottom-5 left-5 z-10">
+            {/* Bottom-left: server news + background selector */}
+            <div className="hidden sm:flex fixed bottom-5 left-5 z-10 flex-col items-start gap-3">
+                {isStarRail && <NewsWidget />}
                 <BackgroundSelector />
             </div>
 
@@ -539,24 +454,8 @@ export default function LauncherPage() {
                                 {isGenshin ? t("home.menu_change_genshin_path") : t("home.menu_change_path")}
                             </button>
                         </li>
-                        {isStarRail && launchMode === "fireflygo" && (
-                            <li>
-                                <button onClick={async () => {
-                                    const serverData = await CheckUpdateServer(serverPath, serverVersion)
-                                    const proxyData  = await CheckUpdateProxy(proxyPath, proxyVersion)
-                                    setUpdateData({ ...updateData, server: serverData, proxy: proxyData })
-                                    if (!serverData.isExists || !proxyData.isExists) { setIsOpenDownloadDataModal(true); return }
-                                    if (serverData.isUpdate || proxyData.isUpdate)   { setIsOpenUpdateDataModal(true); return }
-                                    toast.success(t("home.no_updates"))
-                                }}>{t("home.menu_check_update")}</button>
-                            </li>
-                        )}
                         {isStarRail && (
-                            <>
-                                <li><button disabled={!serverPath} onClick={() => serverPath && FSService.OpenFolder("./server")}>{t("home.menu_open_server")}</button></li>
-                                <li><button disabled={!proxyPath}  onClick={() => proxyPath  && FSService.OpenFolder("./proxy")} >{t("home.menu_open_proxy")}</button></li>
-                                <li><button disabled={!gameDir}    onClick={() => gameDir    && FSService.OpenFolder(gameDir + "/StarRail_Data/Persistent/Audio/AudioPackage/Windows")}>{t("home.menu_open_voice")}</button></li>
-                            </>
+                            <li><button disabled={!gameDir} onClick={() => gameDir && FSService.OpenFolder(gameDir + "/StarRail_Data/Persistent/Audio/AudioPackage/Windows")}>{t("home.menu_open_voice")}</button></li>
                         )}
                         {isGenshin && (
                             <>
@@ -621,16 +520,6 @@ export default function LauncherPage() {
                             {isLoading ? t("home.btn_selecting") : gameRunning ? t("home.btn_game_running") : t("home.btn_start_genshin")}
                         </motion.button>
                     )
-                ) : (launchMode === "march7thhoney" ? !patchReady : (!serverReady || !proxyReady)) ? (
-                    <motion.button
-                        whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(244,114,182,0.45)' }}
-                        whileTap={{ scale: 0.97 }}
-                        className="btn btn-lg font-bold bg-linear-to-r from-pink-500 via-violet-500 to-sky-500 border-none text-white shadow-lg shadow-pink-300/50"
-                        onClick={launchMode === "march7thhoney" ? handlePickCurrentGameFile : handleOpenDownloadDataModal}
-                    >
-                        <FolderOpen className="w-5 h-5" />
-                        {launchMode === "march7thhoney" ? t("home.btn_select_game") : t("home.btn_download")}
-                    </motion.button>
                 ) : gamePath === "" ? (
                     <motion.button
                         whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(244,114,182,0.45)' }}
@@ -655,13 +544,7 @@ export default function LauncherPage() {
             </div>
 
             {/* Download progress */}
-            {isDownloading && !updateData.launcher.isUpdate && (
-                isGenshin ||
-                (isStarRail && launchMode === "fireflygo" && (
-                    updateData.proxy.isUpdate || updateData.server.isUpdate ||
-                    !updateData.proxy.isExists || !updateData.server.isExists
-                ))
-            ) && (
+            {isDownloading && !updateData.launcher.isUpdate && isGenshin && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-10 w-[55vw] bg-white/80 backdrop-blur-xl border border-pink-200/60 rounded-2xl p-4 shadow-xl shadow-pink-100/50">
                     <div className="space-y-2">
                         <div className="flex justify-between items-center text-sm">

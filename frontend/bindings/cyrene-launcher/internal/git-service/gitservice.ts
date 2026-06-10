@@ -5,10 +5,6 @@
 // @ts-ignore: Unused imports
 import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
-export function DownloadProxyProgress(source: string, version: string): $CancellablePromise<[boolean, string]> {
-    return $Call.ByID(144810991, source, version);
-}
-
 export function DownloadServerProgress(source: string, version: string): $CancellablePromise<[boolean, string]> {
     return $Call.ByID(779132168, source, version);
 }
@@ -17,10 +13,11 @@ export function GetLatestLauncherVersion(): $CancellablePromise<[boolean, string
     return $Call.ByID(391023589);
 }
 
-export function GetLatestProxyVersion(source: string): $CancellablePromise<[boolean, string, string]> {
-    return $Call.ByID(2017476991, source);
-}
-
+/**
+ * GetLatestServerVersion resolves the newest Genshin launcher-runtime package.
+ * The source parameter is kept for binding compatibility; only "genshin" is
+ * supported now that the FireflyGo mode is gone.
+ */
 export function GetLatestServerVersion(source: string): $CancellablePromise<[boolean, string, string]> {
     return $Call.ByID(1666694076, source);
 }

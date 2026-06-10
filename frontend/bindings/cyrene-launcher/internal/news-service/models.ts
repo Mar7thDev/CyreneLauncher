@@ -30,6 +30,11 @@ export class NewsItem {
      */
     "type": string;
 
+    /**
+     * server announcements only
+     */
+    "pinned": boolean;
+
     /** Creates a new NewsItem instance. */
     constructor($$source: Partial<NewsItem> = {}) {
         if (!("id" in $$source)) {
@@ -55,6 +60,9 @@ export class NewsItem {
         }
         if (!("type" in $$source)) {
             this["type"] = "";
+        }
+        if (!("pinned" in $$source)) {
+            this["pinned"] = false;
         }
 
         Object.assign(this, $$source);

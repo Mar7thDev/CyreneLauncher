@@ -57,10 +57,6 @@ export function StartGenshinServer(): $CancellablePromise<[boolean, string]> {
     return $Call.ByID(3170868339);
 }
 
-export function StartWithConsole(path: string): $CancellablePromise<[boolean, string]> {
-    return $Call.ByID(3720428927, path);
-}
-
 export function StopGenshinServer(): $CancellablePromise<[boolean, string]> {
     return $Call.ByID(2226560723);
 }

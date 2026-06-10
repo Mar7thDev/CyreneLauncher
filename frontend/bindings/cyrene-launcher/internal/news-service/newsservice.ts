@@ -10,24 +10,9 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 import * as $models from "./models.js";
 
 /**
- * GetCustomNews fetches markdown announcements from a GitHub repo directory.
- * AnnouncementUrl points at /contents/<dir>; each *.md inside becomes a card.
- * 
- * Filename convention: YYYY-MM-DD-slug.md (date prefix used for sorting and
- * for the displayed time). An optional YAML-ish frontmatter block at the top
- * of each file may override the title:
- * 
- * 	---
- * 	title: 自定义标题
- * 	---
- * 	正文 markdown...
- * 
- * Without frontmatter, the slug part of the filename (with dashes turned into
- * spaces) is used as the title.
- * 
- * Falls back to the legacy Gitea releases / []NewsItem auto-detection if the
- * configured URL doesn't look like a Contents API response — keeps existing
- * custom-source deployments working.
+ * GetCustomNews fetches server announcements from the Cyrene website API
+ * (constant.AnnouncementUrl), which returns a plain []NewsItem array with
+ * pinned posts first.
  */
 export function GetCustomNews(): $CancellablePromise<[boolean, $models.NewsItem[], string]> {
     return $Call.ByID(3670222014).then(($result: any) => {

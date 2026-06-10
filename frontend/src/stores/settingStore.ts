@@ -1,13 +1,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type ServerSource = "firefly" | "custom"
 export type GameProfile = "starrail" | "genshin"
-
-// LaunchMode picks how the launcher starts the game:
-//   - "fireflygo"     → local proxy + server (FireflyGo)
-//   - "march7thhoney" → Go-native MITM proxy; no DLL injection, no region
-export type LaunchMode = "fireflygo" | "march7thhoney"
 
 interface SettingState {
     locale: string;
@@ -18,12 +12,6 @@ interface SettingState {
     genshinGameDir: string;
     genshinServerDir: string;
     genshinServerVersion: string;
-    serverPath: string;
-    proxyPath: string;
-    serverVersion: string;
-    proxyVersion: string;
-    serverSource: ServerSource;
-    launchMode: LaunchMode;
     // March7thHoney: target server URL for the MITM proxy.
     // Empty → use the built-in default (march7th.hoyotoon.com).
     patchTargetUrl: string;
@@ -53,12 +41,6 @@ interface SettingState {
     setGenshinGameDir: (newGameDir: string) => void;
     setGenshinServerDir: (newServerDir: string) => void;
     setGenshinServerVersion: (newServerVersion: string) => void;
-    setServerPath: (newServerPath: string) => void;
-    setProxyPath: (newProxyPath: string) => void;
-    setServerVersion: (newServerVersion: string) => void;
-    setProxyVersion: (newProxyVersion: string) => void;
-    setServerSource: (newSource: ServerSource) => void;
-    setLaunchMode: (newMode: LaunchMode) => void;
     setPatchTargetUrl: (url: string) => void;
     setProxyPort: (port: number) => void;
     setRsaPatch: (v: boolean) => void;
@@ -78,12 +60,6 @@ const useSettingStore = create<SettingState>()(
             genshinGameDir: "",
             genshinServerDir: "",
             genshinServerVersion: "",
-            serverPath: "",
-            proxyPath: "",
-            serverVersion: "",
-            proxyVersion: "",
-            serverSource: "firefly",
-            launchMode: "march7thhoney",
             patchTargetUrl: "",
             proxyPort: 8080,
             rsaPatch: true,
@@ -109,20 +85,6 @@ const useSettingStore = create<SettingState>()(
             setGenshinGameDir: (newGameDir: string) => set({ genshinGameDir: newGameDir }),
             setGenshinServerDir: (newServerDir: string) => set({ genshinServerDir: newServerDir }),
             setGenshinServerVersion: (newServerVersion: string) => set({ genshinServerVersion: newServerVersion }),
-            setServerPath: (newServerPath: string) => set({ serverPath: newServerPath }),
-            setProxyPath: (newProxyPath: string) => set({ proxyPath: newProxyPath }),
-            setServerVersion: (newServerVersion: string) => set({ serverVersion: newServerVersion }),
-            setProxyVersion: (newProxyVersion: string) => set({ proxyVersion: newProxyVersion }),
-            // Switching source invalidates the cached server/proxy state so the
-            // launcher re-prompts the user to download from the new source.
-            setServerSource: (newSource: ServerSource) => set({
-                serverSource: newSource,
-                serverPath: "",
-                proxyPath: "",
-                serverVersion: "",
-                proxyVersion: "",
-            }),
-            setLaunchMode: (newMode: LaunchMode) => set({ launchMode: newMode }),
             setPatchTargetUrl: (url: string) => set({ patchTargetUrl: url }),
             setProxyPort: (port: number) => set({ proxyPort: port }),
             setRsaPatch: (v: boolean) => set({ rsaPatch: v }),

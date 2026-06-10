@@ -10,13 +10,12 @@ import useLauncherStore from "@/stores/launcherStore";
 
 export function useGlobalEvents() {
     const { setIsOpenCloseModal } = useModalStore()
-    const { setGameRunning, setServerRunning, setProxyRunning, setProgressDownload, setDownloadSpeed } = useLauncherStore()
+    const { setGameRunning, setServerRunning, setProgressDownload, setDownloadSpeed } = useLauncherStore()
     const { setProgressUpdate, setMaxProgressUpdate, setMessageUpdate, setStageType } = useDiffStore()
 
     useEffect(() => {
         const onGameExit = () => setGameRunning(false);
         const onServerExit = () => setServerRunning(false);
-        const onProxyExit = () => setProxyRunning(false);
 
         const onDownload = (event: any) => {
             const { percent, speed } = event.data;
@@ -42,11 +41,9 @@ export function useGlobalEvents() {
         };
 
         Events.On("download:server", onDownload);
-        Events.On("download:proxy", onDownload);
         Events.On("download:patch", onDownload);
         Events.On("game:exit", onGameExit);
         Events.On("server:exit", onServerExit);
-        Events.On("proxy:exit", onProxyExit);
         Events.On("diff:progress", onUpdateProgress);
         Events.On("diff:message", onMessageUpdate);
         Events.On("diff:stage", onStageUpdate);
@@ -71,11 +68,9 @@ export function useGlobalEvents() {
 
         return () => {
             Events.Off("download:server");
-            Events.Off("download:proxy");
             Events.Off("download:patch");
             Events.Off("game:exit");
             Events.Off("server:exit");
-            Events.Off("proxy:exit");
             Events.Off("diff:progress")
             Events.Off("diff:message");
             Events.Off("diff:stage");

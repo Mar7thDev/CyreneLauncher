@@ -113,48 +113,6 @@ func (f *FSService) StartApp(path string) (bool, string) {
 	return true, ""
 }
 
-func (f *FSService) StartWithConsole(path string) (bool, string) {
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return false, err.Error()
-	}
-
-	if _, err := os.Stat(absPath); os.IsNotExist(err) {
-		return false, "file not found: " + absPath
-	}
-	cmd := exec.Command(absPath)
-	cmd.Dir = filepath.Dir(absPath)
-	cmd.Stdin = nil
-	cmd.Stdout = nil
-	cmd.Stderr = nil
-
-	cmd.SysProcAttr = &windows.SysProcAttr{
-		CreationFlags: windows.CREATE_NEW_CONSOLE |
-			windows.CREATE_BREAKAWAY_FROM_JOB,
-		NoInheritHandles: true,
-	}
-
-	err = cmd.Start()
-
-	if err != nil {
-		return false, err.Error()
-	}
-
-	go func() {
-		_ = cmd.Wait()
-		if strings.HasSuffix(path, "launcher.exe") {
-			application.Get().Event.Emit("game:exit")
-		} else if strings.HasSuffix(path, "firefly-go_win.exe") {
-			application.Get().Event.Emit("server:exit")
-		} else if strings.HasSuffix(path, "firefly-go-proxy.exe") {
-			application.Get().Event.Emit("proxy:exit")
-		} else if isGameProcess(path) {
-			application.Get().Event.Emit("game:exit")
-		}
-	}()
-	return true, ""
-}
-
 func isGameProcess(path string) bool {
 	return strings.HasSuffix(path, "StarRail.exe") || strings.HasSuffix(path, "YuanShen.exe")
 }

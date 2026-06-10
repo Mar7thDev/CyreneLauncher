@@ -1,27 +1,14 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import useSettingStore from '@/stores/settingStore';
-import { Rocket, Syringe } from 'lucide-react';
 
 export default function HowToPage() {
     const { t } = useTranslation();
-    const { launchMode } = useSettingStore();
-    const isM7H = launchMode === "march7thhoney";
 
     return (
         <div className="min-h-screen bg-base-200 flex items-center justify-center p-6">
             <div className="w-full bg-base-100 shadow-xl rounded-2xl p-8 space-y-8">
                 <div className="flex flex-col items-center gap-3">
                     <h1 className="text-4xl font-bold text-primary text-center">{t("howto.title")}</h1>
-                    {/* Active mode badge */}
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border ${
-                        isM7H
-                            ? "bg-violet-50 border-violet-200 text-violet-700"
-                            : "bg-sky-50 border-sky-200 text-sky-700"
-                    }`}>
-                        {isM7H ? <Syringe size={14} /> : <Rocket size={14} />}
-                        <span>{t(`setting.launch_mode_${launchMode}`)}</span>
-                    </div>
                 </div>
 
                 {/* ── Section 1: General features ── */}
@@ -31,12 +18,6 @@ export default function HowToPage() {
                         <span>{t("howto.sect1_title")}</span>
                     </h2>
                     <div className="space-y-3 text-green-700">
-                        {!isM7H && (
-                            <div className="flex items-start gap-3">
-                                <div className="text-green-600 text-lg">🔄</div>
-                                <p>{t("howto.sect1_auto_update_pre")} <span className="font-semibold text-amber-600">Firefly Go</span> {t("howto.sect1_auto_update_post")}</p>
-                            </div>
-                        )}
                         <div className="flex items-start gap-3">
                             <div className="text-green-600 text-lg">🎮</div>
                             <p>{t("howto.sect1_launch_game")}</p>
@@ -60,119 +41,7 @@ export default function HowToPage() {
                     </div>
                 </div>
 
-                {/* ── Section 2a: FireflyGo commands ── */}
-                {!isM7H && (
-                <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
-                    <h2 className="text-2xl font-bold text-blue-800 flex items-center gap-2 mb-4">
-                        <span>📜</span>
-                        <span>{t("howto.sect2_title")}</span>
-                    </h2>
-
-                    <p className="text-blue-700 mb-4">
-                        {t("howto.sect2_desc_pre")} <span className="font-semibold text-accent">{t("howto.sect2_desc_bold")}</span>{t("howto.sect2_desc_post")}
-                    </p>
-
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                        <div className="flex items-start gap-3">
-                            <div className="text-red-600 text-xl">🔒</div>
-                            <div>
-                                <h3 className="font-semibold text-red-800 mb-2">{t("howto.sect2_tc_req_title")}</h3>
-                                <p className="text-red-700 mb-2">{t("howto.sect2_tc_req_desc_pre")} <strong>{t("howto.sect2_tc_req_desc_bold")}</strong> {t("howto.sect2_tc_req_desc_post")}</p>
-                                <div className="flex flex-wrap gap-2">
-                                    <code className="bg-red-100 px-2 py-1 rounded text-sm text-red-800">/cycle</code>
-                                    <code className="bg-red-100 px-2 py-1 rounded text-sm text-red-800">/hp</code>
-                                    <code className="bg-red-100 px-2 py-1 rounded text-sm text-red-800">/log</code>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white border border-blue-200 rounded-lg p-4">
-                        <div className="flex items-start gap-3">
-                            <div className="text-blue-600 text-lg">✨</div>
-                            <div className="flex-1">
-                                <h4 className="font-semibold text-blue-800 mb-1">{t("howto.sect2_extra_title")}</h4>
-                                <div className="space-y-4 text-blue-700 text-sm">
-                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                        <h5 className="font-semibold text-blue-800 flex items-center gap-2">🎭 {t("howto.sect2_hidden_ui_title")}</h5>
-                                        <p className="mt-1">{t("howto.sect2_hidden_ui_desc")}</p>
-                                    </div>
-                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                        <h5 className="font-semibold text-blue-800 flex items-center gap-2">🚫 {t("howto.sect2_censor_title")}</h5>
-                                        <p className="mt-1">{t("howto.sect2_censor_desc")}</p>
-                                    </div>
-                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                        <h5 className="font-semibold text-blue-800 flex items-center gap-2">🧪 {t("howto.sect2_tc_title")}</h5>
-                                        <p className="mt-1">{t("howto.sect2_tc_desc")}</p>
-                                    </div>
-                                </div>
-                                <div className="mt-4">
-                                    <iframe
-                                        src="https://www.youtube.com/embed/uiKdFrvn9NQ"
-                                        title="Extra Settings Tutorial"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
-                                        className="rounded-lg w-full h-75"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="space-y-4 mt-4">
-                        <h3 className="text-lg font-semibold text-blue-800">{t("howto.sect2_cmd_title")}</h3>
-
-                        {[
-                            { icon: "⚙️", title: t("howto.sect2_cmd_tc"), items: [
-                                <p key="a"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/theorycraft 1</code> {t("howto.sect2_cmd_tc_enable")}</p>,
-                                <p key="b"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/theorycraft 0</code> {t("howto.sect2_cmd_tc_disable")}</p>,
-                            ]},
-                            { icon: "🔄", title: <>{t("howto.sect2_cmd_cycle")} <span className="text-red-600 text-sm">{t("howto.sect2_cmd_tc_only")}</span></>, items: [
-                                <p key="a"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/cycle N</code> {t("howto.sect2_cmd_cycle_desc")}</p>,
-                                <p key="b" className="text-sm">{t("howto.sect2_cmd_cycle_ex1_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/cycle 30</code> {t("howto.sect2_cmd_cycle_ex1_post")}</p>,
-                                <p key="c" className="text-sm"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/cycle 0</code> {t("howto.sect2_cmd_cycle_ex2_post")}</p>,
-                            ]},
-                            { icon: "❤️", title: <>{t("howto.sect2_cmd_hp")} <span className="text-red-600 text-sm">{t("howto.sect2_cmd_tc_only")}</span></>, items: [
-                                <p key="a" className="text-sm"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/hp N</code> {t("howto.sect2_cmd_hp_desc1")}</p>,
-                                <p key="b" className="text-sm"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/hp 0</code> {t("howto.sect2_cmd_hp_desc2")}</p>,
-                                <p key="c" className="text-sm"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/hp Wave V1 V2 ...</code> {t("howto.sect2_cmd_hp_desc3")}</p>,
-                                <p key="d" className="text-sm ml-4">{t("howto.sect2_cmd_hp_ex_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/hp 1 2000000 3000000</code> {t("howto.sect2_cmd_hp_ex_post")}</p>,
-                            ]},
-                            { icon: "📝", title: <>{t("howto.sect2_cmd_log")} <span className="text-red-600 text-sm">{t("howto.sect2_cmd_tc_only")}</span></>, items: [
-                                <p key="a"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/log 1</code> {t("howto.sect2_cmd_log_desc1")}</p>,
-                                <p key="b"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/log 0</code> {t("howto.sect2_cmd_log_desc2")}</p>,
-                                <p key="c" className="text-sm">{t("howto.sect2_cmd_log_out_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">.json</code></p>,
-                            ]},
-                            { icon: "⏭️", title: t("howto.sect2_cmd_skip"), items: [
-                                <p key="a"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/skip N</code> {t("howto.sect2_cmd_skip_desc")}</p>,
-                                <p key="b" className="text-sm">{t("howto.sect2_cmd_skip_ex1_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/skip 2</code> {t("howto.sect2_cmd_skip_ex1_post")}</p>,
-                                <p key="c" className="text-sm"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/skip 0</code> {t("howto.sect2_cmd_skip_ex2_post")}</p>,
-                            ]},
-                            { icon: "🔀", title: t("howto.sect2_cmd_id"), items: [
-                                <p key="a"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/id CHAR_ID</code> {t("howto.sect2_cmd_id_desc")}</p>,
-                                <p key="b" className="text-sm">{t("howto.sect2_cmd_id_ex1_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/id 8008</code> {t("howto.sect2_cmd_id_ex1_post")}</p>,
-                                <p key="c" className="text-sm">{t("howto.sect2_cmd_id_ex2_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">8001 → 8008</code>, <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">1001 → 1224</code></p>,
-                            ]},
-                            { icon: "🔄", title: t("howto.sect2_cmd_update"), items: [
-                                <p key="a"><code className="bg-blue-100 px-1 py-0.5 rounded text-sm">/update</code> {t("howto.sect2_cmd_update_desc_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">freesr-data.json</code></p>,
-                            ]},
-                        ].map((cmd, i) => (
-                            <div key={i} className="bg-white border border-blue-200 rounded-lg p-4">
-                                <div className="flex items-start gap-3">
-                                    <div className="text-blue-600 text-lg">{cmd.icon}</div>
-                                    <div className="flex-1">
-                                        <h4 className="font-semibold text-blue-800 mb-1">{cmd.title}</h4>
-                                        <div className="space-y-1 text-blue-700 text-sm">{cmd.items}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                )}
-
-                {/* ── Section 2b: March7thHoney proxy guide ── */}
-                {isM7H && (
+                {/* ── Section 2: March7thHoney proxy guide ── */}
                 <div className="bg-violet-50 border-l-4 border-violet-400 p-6 rounded-r-lg">
                     <h2 className="text-2xl font-bold text-violet-800 flex items-center gap-2 mb-4">
                         <span>🛡️</span>
@@ -228,7 +97,6 @@ export default function HowToPage() {
                         </div>
                     </div>
                 </div>
-                )}
 
                 {/* ── Section 3: Other notes ── */}
                 <div className="bg-gray-50 border-l-4 border-gray-400 p-6 rounded-r-lg">
@@ -247,46 +115,6 @@ export default function HowToPage() {
                             </div>
                         </div>
 
-                        {!isM7H && (
-                        <>
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                                <div className="text-blue-600 text-xl">💾</div>
-                                <div>
-                                    <h3 className="font-semibold text-blue-800 mb-1">{t("howto.sect3_backup_title")}</h3>
-                                    <p className="text-blue-700">
-                                        {t("howto.sect3_backup_desc_pre")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">config.json</code> {t("howto.sect3_backup_desc_mid")} <code className="bg-blue-100 px-1 py-0.5 rounded text-sm">freesr-data.json</code> {t("howto.sect3_backup_desc_post")}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                                <div className="text-green-600 text-xl">🎵</div>
-                                <div className="flex-1">
-                                    <h3 className="font-semibold text-green-800 mb-2">{t("howto.sect3_voice_title")}</h3>
-                                    <div className="space-y-3 text-green-700">
-                                        <div className="flex items-start gap-2">
-                                            <span className="font-medium min-w-5 text-green-600">1.</span>
-                                            <div>
-                                                <p className="mb-1">{t("howto.sect3_voice_step1_pre")} <code className="bg-green-100 px-1 py-0.5 rounded text-sm">Japanese</code>, <code className="bg-green-100 px-1 py-0.5 rounded text-sm">English</code>{t("howto.sect3_voice_step1_mid")}</p>
-                                                <code className="block bg-green-100 px-2 py-1 rounded text-sm mt-1">
-                                                    Star Rail\Games\StarRail_Data\Persistent\Audio\AudioPackage\Windows
-                                                </code>
-                                                <p className="mt-1">{t("howto.sect3_voice_step1_post_pre")} <strong>{t("howto.sect3_voice_step1_post_bold")}</strong> {t("howto.sect3_voice_step1_post_post")}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <span className="font-medium min-w-5 text-green-600">2.</span>
-                                            <p>{t("howto.sect3_voice_step2")}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        </>
-                        )}
                     </div>
                 </div>
 

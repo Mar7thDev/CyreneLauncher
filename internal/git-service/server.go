@@ -18,92 +18,51 @@ import (
 	"golang.org/x/net/html"
 )
 
-// SourceNotConfigured is returned when the user picked a source whose URL is empty.
-const SourceNotConfigured = "SOURCE_NOT_CONFIGURED"
-
 var lastServerArchivePath string
-var lastServerArchiveSource string
 
+// GetLatestServerVersion resolves the newest Genshin launcher-runtime package.
+// The source parameter is kept for binding compatibility; only "genshin" is
+// supported now that the FireflyGo mode is gone.
 func (g *GitService) GetLatestServerVersion(source string) (bool, string, string) {
-	if source == constant.SourceGenshin {
-		asset, ok, err := g.getGenshinRuntimeAsset("")
-		if err != nil {
-			return false, "", err.Error()
-		}
-		if !ok {
-			return false, "", "no Columbina-GI launcher runtime package found"
-		}
-		return true, asset.Name, ""
+	if source != constant.SourceGenshin {
+		return false, "", "unknown server source: " + source
 	}
-
-	cfg := constant.GetSourceConfig(source)
-	if cfg.ServerGitUrl == "" {
-		return false, "", SourceNotConfigured
-	}
-
-	resp, err := http.Get(cfg.ServerGitUrl)
+	asset, ok, err := g.getGenshinRuntimeAsset("")
 	if err != nil {
 		return false, "", err.Error()
 	}
-	defer resp.Body.Close()
-
-	body, _ := io.ReadAll(resp.Body)
-
-	var releases []models.ReleaseType
-	err = json.Unmarshal(body, &releases)
-	if err != nil {
-		return false, "", err.Error()
+	if !ok {
+		return false, "", "no Columbina-GI launcher runtime package found"
 	}
-
-	if len(releases) == 0 {
-		return false, "", "no releases found"
-	}
-
-	return true, releases[0].TagName, ""
+	return true, asset.Name, ""
 }
 
 func (g *GitService) DownloadServerProgress(source string, version string) (bool, string) {
-	storageDir := constant.ServerStorageUrl
-	var asset models.AssetType
-	var downloadURL string
-
-	if source == constant.SourceGenshin {
-		resolvedAsset, ok, err := g.getGenshinRuntimeAsset(version)
-		if err != nil {
-			return false, err.Error()
-		}
-		if !ok {
-			return false, "no Columbina-GI launcher runtime package found"
-		}
-		asset = resolvedAsset
-		downloadURL = asset.BrowserDownloadURL
-		if downloadURL == "" {
-			downloadURL = fmt.Sprintf(
-				"https://github.com/PrliStrxs/ZGN-SR/releases/download/%s/%s",
-				constant.GenshinServerReleaseTag,
-				asset.Name,
-			)
-		}
-		storageDir = constant.GenshinServerStorageUrl
-	} else {
-		cfg := constant.GetSourceConfig(source)
-		if cfg.ServerGitUrl == "" {
-			return false, SourceNotConfigured
-		}
-
-		resolvedAsset, ok := g.getReleaseAsset(version, cfg.ServerGitUrl, cfg.ServerZipFile)
-		if !ok {
-			return false, "no release found"
-		}
-		asset = resolvedAsset
-		downloadURL = asset.BrowserDownloadURL
+	if source != constant.SourceGenshin {
+		return false, "unknown server source: " + source
 	}
 
-	if err := os.MkdirAll(storageDir, 0755); err != nil {
+	asset, ok, err := g.getGenshinRuntimeAsset(version)
+	if err != nil {
+		return false, err.Error()
+	}
+	if !ok {
+		return false, "no Columbina-GI launcher runtime package found"
+	}
+	downloadURL := asset.BrowserDownloadURL
+	if downloadURL == "" {
+		downloadURL = fmt.Sprintf(
+			"https://github.com/PrliStrxs/ZGN-SR/releases/download/%s/%s",
+			constant.GenshinServerReleaseTag,
+			asset.Name,
+		)
+	}
+
+	if err := os.MkdirAll(constant.GenshinServerStorageUrl, 0755); err != nil {
 		return false, err.Error()
 	}
 
-	saveFile := filepath.Join(storageDir, asset.Name)
+	saveFile := filepath.Join(constant.GenshinServerStorageUrl, asset.Name)
 	os.Remove(saveFile)
 	os.Remove(saveFile + ".tmp")
 
@@ -119,7 +78,6 @@ func (g *GitService) DownloadServerProgress(source string, version string) (bool
 	for i := 0; i < 3; i++ {
 		if err := os.Rename(tmpPath, saveFile); err == nil {
 			lastServerArchivePath = saveFile
-			lastServerArchiveSource = source
 			return true, ""
 		}
 		time.Sleep(300 * time.Millisecond)
@@ -128,25 +86,12 @@ func (g *GitService) DownloadServerProgress(source string, version string) (bool
 }
 
 func (g *GitService) UnzipServer() {
-	archivePath := lastServerArchivePath
-	source := lastServerArchiveSource
-
-	if source == constant.SourceGenshin {
-		if archivePath == "" {
-			return
-		}
-		os.RemoveAll(constant.GenshinServerBundleDir)
-		if err := g.unzipParallel(archivePath, constant.GenshinServerStorageUrl); err == nil {
-			os.Remove(archivePath)
-		}
+	if lastServerArchivePath == "" {
 		return
 	}
-
-	if archivePath == "" {
-		archivePath = filepath.Join(constant.ServerStorageUrl, constant.ServerZipFile)
-	}
-	if err := g.unzipParallel(archivePath, constant.ServerStorageUrl); err == nil {
-		os.Remove(archivePath)
+	os.RemoveAll(constant.GenshinServerBundleDir)
+	if err := g.unzipParallel(lastServerArchivePath, constant.GenshinServerStorageUrl); err == nil {
+		os.Remove(lastServerArchivePath)
 	}
 }
 

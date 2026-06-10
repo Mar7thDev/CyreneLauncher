@@ -6,11 +6,9 @@ type UpdateSlot = { isUpdate: boolean, isExists: boolean, version: string }
 interface LauncherState {
     downloadType: string;
     serverReady: boolean;
-    proxyReady: boolean;
     patchReady: boolean;
     isDownloading: boolean;
     serverRunning: boolean;
-    proxyRunning: boolean;
     isLoading: boolean;
     gameRunning: boolean;
     progressDownload: number;
@@ -19,11 +17,9 @@ interface LauncherState {
     updateData: Record<'server' | 'proxy' | 'patch' | 'launcher', UpdateSlot>;
     setDownloadType: (value: string) => void;
     setServerReady: (value: boolean) => void;
-    setProxyReady: (value: boolean) => void;
     setPatchReady: (value: boolean) => void;
     setIsDownloading: (value: boolean) => void;
     setServerRunning: (value: boolean) => void;
-    setProxyRunning: (value: boolean) => void;
     setIsLoading: (value: boolean) => void;
     setGameRunning: (value: boolean) => void;
     setProgressDownload: (value: number) => void;
@@ -36,11 +32,9 @@ const useLauncherStore = create<LauncherState>((set) => ({
     isLoading: false,
     downloadType: "",
     serverReady: false,
-    proxyReady: false,
     patchReady: false,
     isDownloading: false,
     serverRunning: false,
-    proxyRunning: false,
     gameRunning: false,
     progressDownload: 0,
     downloadSpeed: "",
@@ -54,11 +48,9 @@ const useLauncherStore = create<LauncherState>((set) => ({
     setIsLoading: (value: boolean) => set({ isLoading: value }),
     setDownloadType: (value: string) => set({ downloadType: value }),
     setServerReady: (value: boolean) => set({ serverReady: value }),
-    setProxyReady: (value: boolean) => set({ proxyReady: value }),
     setPatchReady: (value: boolean) => set({ patchReady: value }),
     setIsDownloading: (value: boolean) => set({ isDownloading: value }),
     setServerRunning: (value: boolean) => set({ serverRunning: value }),
-    setProxyRunning: (value: boolean) => set({ proxyRunning: value }),
     setGameRunning: (value: boolean) => set({ gameRunning: value }),
     setProgressDownload: (value: number) => set({ progressDownload: value }),
     setLauncherVersion: (value: string) => set({ launcherVersion: value }),

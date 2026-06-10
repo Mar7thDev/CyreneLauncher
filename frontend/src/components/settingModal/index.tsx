@@ -1,10 +1,10 @@
 import { CheckUpdateLauncher } from "@/helper"
 import useModalStore from "@/stores/modalStore"
-import useSettingStore, { type ServerSource, type LaunchMode } from "@/stores/settingStore"
+import useSettingStore from "@/stores/settingStore"
 import useLauncherStore from "@/stores/launcherStore"
 import { toast } from "react-toastify"
 import { useTranslation } from "react-i18next"
-import { ExternalLink, Server, ServerCog, Rocket, Syringe } from "lucide-react"
+import { ExternalLink } from "lucide-react"
 
 const PROJECT_NAME = "Cyrene Launcher"
 const PROJECT_AUTHOR = "Firefly Shelter (original) · Cyrene (fork)"
@@ -23,28 +23,13 @@ export default function SettingModal({
     const { setIsOpenSelfUpdateModal } = useModalStore()
     const {
         closingOption, setClosingOption,
-        serverVersion, proxyVersion,
-        serverSource, setServerSource,
         gameProfile,
-        launchMode, setLaunchMode,
         patchTargetUrl, setPatchTargetUrl,
         proxyPort, setProxyPort,
         rsaPatch, setRsaPatch, rsaKey, setRsaKey,
         webRedirect, setWebRedirect, webHosts, setWebHosts,
     } = useSettingStore()
     const { setUpdateData, updateData, launcherVersion } = useLauncherStore()
-
-    const handleSourceChange = (next: ServerSource) => {
-        if (next === serverSource) return
-        setServerSource(next)
-        toast.success(t("setting.source_switched", { name: t(`setting.source_${next}`) }))
-    }
-
-    const handleLaunchModeChange = (next: LaunchMode) => {
-        if (next === launchMode) return
-        setLaunchMode(next)
-        toast.success(t("setting.launch_mode_switched", { name: t(`setting.launch_mode_${next}`) }))
-    }
 
     const CheckUpdate = async () => {
         const launcherData = await CheckUpdateLauncher()
@@ -85,135 +70,78 @@ export default function SettingModal({
                         </div>
                     ) : (
                         <>
-                            {/* Launch Mode */}
-                            <div className="p-4 bg-base-200 rounded-xl border border-violet-200/50">
-                                <h4 className="font-bold text-base mb-1">{t("setting.launch_mode_title")}</h4>
-                                <p className="text-sm text-base-content/50 mb-3">{t("setting.launch_mode_desc")}</p>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {(["fireflygo", "march7thhoney"] as LaunchMode[]).map(opt => {
-                                        const isActive = launchMode === opt
-                                        const Icon = opt === "fireflygo" ? Rocket : Syringe
-                                        return (
-                                            <button
-                                                key={opt}
-                                                onClick={() => handleLaunchModeChange(opt)}
-                                                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all text-left ${
-                                                    isActive
-                                                        ? "bg-linear-to-r from-violet-500 to-pink-500 text-white border-transparent shadow-md shadow-violet-200/50"
-                                                        : "bg-white hover:bg-violet-50 border-violet-200/60 text-base-content/70 hover:text-violet-500"
-                                                }`}
-                                            >
-                                                <Icon size={16} />
-                                                <span className="flex-1">{t(`setting.launch_mode_${opt}`)}</span>
-                                            </button>
-                                        )
-                                    })}
+                            {/* Star Rail patch options */}
+                            <div className="p-4 bg-base-200 rounded-xl border border-violet-200/50 flex flex-col gap-4">
+                                <div>
+                                    <h4 className="font-bold text-base mb-1">{t("setting.patch_url_title")}</h4>
+                                    <p className="text-sm text-base-content/50 mb-2">{t("setting.patch_url_desc")}</p>
+                                    <input
+                                        type="text"
+                                        className="input input-sm w-full bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
+                                        placeholder={DEFAULT_PATCH_URL}
+                                        value={patchTargetUrl}
+                                        onChange={e => setPatchTargetUrl(e.target.value)}
+                                    />
+                                    <p className="text-xs text-base-content/40 mt-1">{t("setting.patch_url_hint")}</p>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-bold text-base mb-1">{t("setting.proxy_port_title")}</h4>
+                                    <p className="text-sm text-base-content/50 mb-2">{t("setting.proxy_port_desc")}</p>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        max={65535}
+                                        className="input input-sm w-full bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
+                                        placeholder="8080"
+                                        value={proxyPort || ""}
+                                        onChange={e => setProxyPort(Math.max(0, Math.min(65535, parseInt(e.target.value, 10) || 0)))}
+                                    />
+                                    <p className="text-xs text-base-content/40 mt-1">{t("setting.proxy_port_hint")}</p>
+                                </div>
+
+                                <div>
+                                    <label className="flex items-center gap-2 cursor-pointer select-none mb-2">
+                                        <input
+                                            type="checkbox"
+                                            className="toggle toggle-xs toggle-primary"
+                                            checked={rsaPatch}
+                                            onChange={e => setRsaPatch(e.target.checked)}
+                                        />
+                                        <span className="text-sm font-medium">{t("setting.rsa_patch_title")}</span>
+                                    </label>
+                                    {rsaPatch && (
+                                        <textarea
+                                            className="textarea textarea-sm w-full bg-white border border-violet-200/60 rounded-lg text-xs font-mono focus:outline-none focus:border-violet-400 resize-none"
+                                            rows={3}
+                                            placeholder={t("setting.rsa_key_hint")}
+                                            value={rsaKey}
+                                            onChange={e => setRsaKey(e.target.value)}
+                                        />
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="flex items-center gap-2 cursor-pointer select-none mb-2">
+                                        <input
+                                            type="checkbox"
+                                            className="toggle toggle-xs toggle-primary"
+                                            checked={webRedirect}
+                                            onChange={e => setWebRedirect(e.target.checked)}
+                                        />
+                                        <span className="text-sm font-medium">{t("setting.web_redirect_title")}</span>
+                                    </label>
+                                    {webRedirect && (
+                                        <textarea
+                                            className="textarea textarea-sm w-full bg-white border border-violet-200/60 rounded-lg text-xs font-mono focus:outline-none focus:border-violet-400 resize-none"
+                                            rows={4}
+                                            placeholder={t("setting.web_hosts_hint")}
+                                            value={webHosts}
+                                            onChange={e => setWebHosts(e.target.value)}
+                                        />
+                                    )}
                                 </div>
                             </div>
-
-                            {/* FireflyGo: Server Source */}
-                            {launchMode === "fireflygo" && (
-                                <div className="p-4 bg-base-200 rounded-xl border border-sky-200/50">
-                                    <h4 className="font-bold text-base mb-1">{t("setting.source_title")}</h4>
-                                    <p className="text-sm text-base-content/50 mb-3">{t("setting.source_desc")}</p>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {(["firefly", "custom"] as ServerSource[]).map(opt => {
-                                            const isActive = serverSource === opt
-                                            const Icon = opt === "firefly" ? Server : ServerCog
-                                            return (
-                                                <button
-                                                    key={opt}
-                                                    onClick={() => handleSourceChange(opt)}
-                                                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all text-left ${
-                                                        isActive
-                                                            ? "bg-linear-to-r from-pink-500 to-sky-500 text-white border-transparent shadow-md shadow-pink-200/50"
-                                                            : "bg-white hover:bg-pink-50 border-pink-200/60 text-base-content/70 hover:text-pink-500"
-                                                    }`}
-                                                >
-                                                    <Icon size={16} />
-                                                    <span className="flex-1">{t(`setting.source_${opt}`)}</span>
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
-                                    <p className="text-xs text-base-content/40 mt-2">{t("setting.source_hint")}</p>
-                                </div>
-                            )}
-
-                            {/* March7thHoney options */}
-                            {launchMode === "march7thhoney" && (
-                                <div className="p-4 bg-base-200 rounded-xl border border-violet-200/50 flex flex-col gap-4">
-                                    <div>
-                                        <h4 className="font-bold text-base mb-1">{t("setting.patch_url_title")}</h4>
-                                        <p className="text-sm text-base-content/50 mb-2">{t("setting.patch_url_desc")}</p>
-                                        <input
-                                            type="text"
-                                            className="input input-sm w-full bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
-                                            placeholder={DEFAULT_PATCH_URL}
-                                            value={patchTargetUrl}
-                                            onChange={e => setPatchTargetUrl(e.target.value)}
-                                        />
-                                        <p className="text-xs text-base-content/40 mt-1">{t("setting.patch_url_hint")}</p>
-                                    </div>
-
-                                    <div>
-                                        <h4 className="font-bold text-base mb-1">{t("setting.proxy_port_title")}</h4>
-                                        <p className="text-sm text-base-content/50 mb-2">{t("setting.proxy_port_desc")}</p>
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            max={65535}
-                                            className="input input-sm w-full bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
-                                            placeholder="8080"
-                                            value={proxyPort || ""}
-                                            onChange={e => setProxyPort(Math.max(0, Math.min(65535, parseInt(e.target.value, 10) || 0)))}
-                                        />
-                                        <p className="text-xs text-base-content/40 mt-1">{t("setting.proxy_port_hint")}</p>
-                                    </div>
-
-                                    <div>
-                                        <label className="flex items-center gap-2 cursor-pointer select-none mb-2">
-                                            <input
-                                                type="checkbox"
-                                                className="toggle toggle-xs toggle-primary"
-                                                checked={rsaPatch}
-                                                onChange={e => setRsaPatch(e.target.checked)}
-                                            />
-                                            <span className="text-sm font-medium">{t("setting.rsa_patch_title")}</span>
-                                        </label>
-                                        {rsaPatch && (
-                                            <textarea
-                                                className="textarea textarea-sm w-full bg-white border border-violet-200/60 rounded-lg text-xs font-mono focus:outline-none focus:border-violet-400 resize-none"
-                                                rows={3}
-                                                placeholder={t("setting.rsa_key_hint")}
-                                                value={rsaKey}
-                                                onChange={e => setRsaKey(e.target.value)}
-                                            />
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="flex items-center gap-2 cursor-pointer select-none mb-2">
-                                            <input
-                                                type="checkbox"
-                                                className="toggle toggle-xs toggle-primary"
-                                                checked={webRedirect}
-                                                onChange={e => setWebRedirect(e.target.checked)}
-                                            />
-                                            <span className="text-sm font-medium">{t("setting.web_redirect_title")}</span>
-                                        </label>
-                                        {webRedirect && (
-                                            <textarea
-                                                className="textarea textarea-sm w-full bg-white border border-violet-200/60 rounded-lg text-xs font-mono focus:outline-none focus:border-violet-400 resize-none"
-                                                rows={4}
-                                                placeholder={t("setting.web_hosts_hint")}
-                                                value={webHosts}
-                                                onChange={e => setWebHosts(e.target.value)}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-                            )}
 
                             {/* Launcher Update */}
                             <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">
@@ -255,16 +183,6 @@ export default function SettingModal({
                             <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">
                                 <h4 className="font-bold text-base mb-3">{t("setting.version_label")}</h4>
                                 <div className="flex flex-wrap gap-2">
-                                    {launchMode === "fireflygo" && (
-                                        <>
-                                            <span className="badge badge-outline badge-primary text-xs">
-                                                {t("setting.server_label")}: {serverVersion}
-                                            </span>
-                                            <span className="badge badge-outline badge-secondary text-xs">
-                                                {t("setting.proxy_label")}: {proxyVersion}
-                                            </span>
-                                        </>
-                                    )}
                                     <span className="badge badge-outline badge-accent text-xs">
                                         {t("setting.launcher_label")}: {launcherVersion}
                                     </span>

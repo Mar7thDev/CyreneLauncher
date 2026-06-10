@@ -1,10 +1,13 @@
+import { useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import useModalStore from "@/stores/modalStore";
-import { Blend, BookOpen, Diff, Home, Info, Languages, Minus, Newspaper, Puzzle, Settings, Terminal, TrendingUpDown, Wrench, X } from "lucide-react";
+import { Blend, BookOpen, Diff, Home, Info, Languages, Minus, Newspaper, Settings, Terminal, TrendingUpDown, Wrench, X } from "lucide-react";
 import { AppService } from "@bindings/cyrene-launcher/internal/app-service";
 import LanguageSwitcher from "../languageSwitcher";
+import AccountButton from "../accountButton";
 import { useTranslation } from "react-i18next";
 import useSettingStore from "@/stores/settingStore";
+import useNewsStore, { hasUnreadServerNews } from "@/stores/newsStore";
 import { AnimatePresence, motion } from "motion/react";
 
 export default function Header() {
@@ -12,6 +15,12 @@ export default function Header() {
     const { closingOption, gameProfile } = useSettingStore()
     const { t } = useTranslation()
     const isStarRail = gameProfile === "starrail"
+    const newsState = useNewsStore()
+    const showNewsDot = hasUnreadServerNews(newsState)
+
+    useEffect(() => {
+        useNewsStore.getState().checkServerNews()
+    }, [])
 
     const controlButtons = [
         {
@@ -61,17 +70,17 @@ export default function Header() {
                         <li><Link to="/">{t("header.home")}</Link></li>
                         {isStarRail && (
                             <>
-                                <li><Link to="/news">{t("header.news")}</Link></li>
+                                <li>
+                                    <Link to="/news">
+                                        {t("header.news")}
+                                        {showNewsDot && <span className="w-2 h-2 rounded-full bg-pink-500 inline-block" />}
+                                    </Link>
+                                </li>
                                 <li>
                                     <a>{t("header.tools")}</a>
                                     <ul className="p-2">
                                         <li><Link to="/language">{t("header.language")}</Link></li>
                                         <li><Link to="/diff">{t("header.client_update")}</Link></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <a>{t("header.plugins")}</a>
-                                    <ul className="p-2">
                                         <li><Link to="/analysis">{t("header.analysis")}</Link></li>
                                         <li><Link to="/srtools">{t("header.firefly_tools")}</Link></li>
                                     </ul>
@@ -120,7 +129,13 @@ export default function Header() {
                             <>
                                 <li>
                                     <Link to="/news" className="flex items-center gap-2 hover:text-pink-500 transition-colors rounded-lg">
-                                        <Newspaper size={17} /> {t("header.news")}
+                                        <span className="relative">
+                                            <Newspaper size={17} />
+                                            {showNewsDot && (
+                                                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-pink-500" />
+                                            )}
+                                        </span>
+                                        {t("header.news")}
                                     </Link>
                                 </li>
                                 <li>
@@ -139,15 +154,6 @@ export default function Header() {
                                                     <Diff size={17} /> {t("header.client_update")}
                                                 </Link>
                                             </li>
-                                        </ul>
-                                    </details>
-                                </li>
-                                <li>
-                                    <details>
-                                        <summary className="flex items-center gap-2 cursor-pointer hover:text-pink-500 transition-colors rounded-lg">
-                                            <Puzzle size={17} /> {t("header.plugins")}
-                                        </summary>
-                                        <ul className="p-2 bg-white/95 backdrop-blur-xl border border-pink-100 rounded-xl min-w-40 whitespace-nowrap shadow-lg shadow-pink-100/50">
                                             <li>
                                                 <Link to="/analysis" className="flex items-center gap-2 hover:text-pink-500 transition-colors">
                                                     <TrendingUpDown size={17} /> {t("header.analysis")}
@@ -190,6 +196,7 @@ export default function Header() {
                     className="flex items-center gap-1 bg-white/60 backdrop-blur-xl border border-white/80 rounded-xl shadow-sm shadow-pink-200/30"
                     style={{ '--wails-draggable': 'no-drag' } as any}
                 >
+                    <AccountButton />
                     <LanguageSwitcher />
                     {controlButtons.map((btn, i) => (
                         <div key={i} className="tooltip tooltip-bottom" data-tip={btn.tip}>

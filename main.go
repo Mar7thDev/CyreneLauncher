@@ -4,6 +4,7 @@ import (
 	"embed"
 	_ "embed"
 
+	accountService "cyrene-launcher/internal/account-service"
 	appService "cyrene-launcher/internal/app-service"
 	consoleService "cyrene-launcher/internal/console-service"
 	diffService "cyrene-launcher/internal/diff-service"
@@ -93,6 +94,7 @@ func main() {
 			application.NewService(&consoleService.ConsoleService{}),
 			application.NewService(&handbookService.HandbookService{}),
 			application.NewService(march7thHoneyService.New(dllBytes)),
+			application.NewService(accountService.New(constant.WebBaseURL)),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),

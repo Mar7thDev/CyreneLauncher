@@ -20,10 +20,10 @@ import * as patchproxy$0 from "../../pkg/patch-proxy/models.js";
  * 
  * targetURL is the private-server base URL (e.g. "https://march7th.hoyotoon.com").
  * An empty string uses constant.DefaultPatchTargetURL.
- *
+ * 
  * preferredPort is the loopback port the proxy tries to bind. 0 (or an
  * unavailable port) falls back to a random free port.
- *
+ * 
  * Returns (true, "") on success, (false, errMsg) on failure.
  */
 export function Start(gamePath: string, targetURL: string, preferredPort: number, opts: patchproxy$0.PatchOptions): $CancellablePromise<[boolean, string]> {
