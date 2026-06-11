@@ -126,16 +126,21 @@ func (a *AccountService) StartLogin() (bool, string) {
 		VerificationURI string `json:"verification_uri_complete"`
 		ExpiresIn       int    `json:"expires_in"`
 		Interval        int    `json:"interval"`
+		Error           string `json:"error"`
 	}
 	status, err := a.doJSON("POST", "/api/launcher/device/code", "", map[string]string{
-		"version":  constant.CurrentLauncherVersion,
-		"os":       runtime.GOOS,
-		"hostname": hostname,
+		"version":   constant.CurrentLauncherVersion,
+		"os":        runtime.GOOS,
+		"hostname":  hostname,
+		"device_id": deviceID(),
 	}, &code)
 	if err != nil || status != http.StatusOK {
 		a.finishLogin()
 		if err != nil {
 			return false, err.Error()
+		}
+		if code.Error != "" {
+			return false, code.Error
 		}
 		return false, fmt.Sprintf("HTTP %d", status)
 	}
@@ -262,8 +267,9 @@ func (a *AccountService) beat() {
 		return
 	}
 	status, err := a.doJSON("POST", "/api/launcher/heartbeat", token, map[string]string{
-		"version": constant.CurrentLauncherVersion,
-		"os":      runtime.GOOS,
+		"version":   constant.CurrentLauncherVersion,
+		"os":        runtime.GOOS,
+		"device_id": deviceID(),
 	}, nil)
 	if err != nil {
 		return

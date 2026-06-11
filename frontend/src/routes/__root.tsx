@@ -5,6 +5,7 @@ import useModalStore from '@/stores/modalStore';;
 import SettingModal from '@/components/settingModal';
 import CloseModal from '@/components/closeModal';
 import Header from '@/components/header';
+import LoginGate from '@/components/loginGate';
 import { motion, AnimatePresence } from 'motion/react'
 
 export const Route = createRootRoute({
@@ -37,6 +38,7 @@ function RootLayout() {
 
             <CloseModal isOpen={isOpenCloseModal} onClose={() => setIsOpenCloseModal(false)} />
             <SettingModal isOpen={isOpenSettingModal} onClose={() => setIsOpenSettingModal(false)} />
+            <LoginGate />
             <ToastContainer />
         </>
     )
