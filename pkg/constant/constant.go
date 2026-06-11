@@ -47,8 +47,7 @@ const (
 )
 
 // WebBaseURL is the Cyrene website (account system, news, device login).
-// TODO: replace with the production domain once the site is deployed.
-const WebBaseURL = "https://cyrene-web.vercel.app"
+const WebBaseURL = "https://cyrene-web-one.vercel.app"
 
 // AnnouncementUrl returns the website's server announcements as a JSON
 // []NewsItem array (pinned first). Each entry becomes one card in the News
