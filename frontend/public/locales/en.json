@@ -387,6 +387,8 @@
         "pending": "Account awaiting activation",
         "offline": "Can't reach the server",
         "retry": "Retry",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "skip": "Continue without signing in",
+        "skip_reminder": "Sign in anytime from the top-right"
     }
 }

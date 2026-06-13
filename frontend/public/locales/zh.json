@@ -387,6 +387,8 @@
         "pending": "账号待激活",
         "offline": "无法连接服务器",
         "retry": "重试",
-        "cancel": "取消"
+        "cancel": "取消",
+        "skip": "暂不登录，直接进入",
+        "skip_reminder": "随时可在右上角登录"
     }
 }

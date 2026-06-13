@@ -1,4 +1,4 @@
-import { ExternalLink, LogOut } from "lucide-react";
+import { ExternalLink, LogIn, LogOut } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AccountService } from "@bindings/cyrene-launcher/internal/account-service";
 import useAccountStore from "@/stores/accountStore";
@@ -7,7 +7,7 @@ import useAccountStore from "@/stores/accountStore";
 // all live in LoginGate — by the time this renders, the user is signed in.
 export default function AccountButton() {
     const { t } = useTranslation()
-    const { user, setUser } = useAccountStore()
+    const { user, skipped, setUser, setSkipped } = useAccountStore()
 
     const handleLogout = async () => {
         try { await AccountService.Logout() } catch { }
@@ -19,6 +19,13 @@ export default function AccountButton() {
         const { AppService } = await import("@bindings/cyrene-launcher/internal/app-service")
         await AppService.OpenURL(base + "/profile")
     }
+
+    // Skipped the gate: offer a way back in.
+    if (!user && skipped) return (
+        <button onClick={() => setSkipped(false)} className="btn btn-ghost btn-sm gap-1 text-base-content/60">
+            <LogIn size={15} /> {t("account.sign_in")}
+        </button>
+    )
 
     if (!user) return null
 

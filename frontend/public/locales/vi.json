@@ -386,6 +386,8 @@
         "pending": "Tài khoản đang chờ kích hoạt",
         "offline": "Không thể kết nối máy chủ",
         "retry": "Thử lại",
-        "cancel": "Hủy"
+        "cancel": "Hủy",
+        "skip": "Tiếp tục mà không đăng nhập",
+        "skip_reminder": "Bạn có thể đăng nhập bất cứ lúc nào ở góc trên bên phải"
     }
 }

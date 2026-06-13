@@ -30,7 +30,7 @@ const DefaultPatchTargetURL = "https://march7th.hoyotoon.com"
 // uses the March7thHoney proxy mode and has no artifacts to download.
 const SourceGenshin = "genshin"
 
-const CurrentLauncherVersion = "1.0.5"
+const CurrentLauncherVersion = "1.0.6"
 
 // === News module ===
 //

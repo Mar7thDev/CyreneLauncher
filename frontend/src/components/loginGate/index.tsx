@@ -17,7 +17,7 @@ function mapError(code: string): GateError {
 // Owns all account events; AccountButton only renders the store state.
 export default function LoginGate() {
     const { t } = useTranslation()
-    const { user, pending, checking, gateError, setUser, setPending, setChecking, setGateError } = useAccountStore()
+    const { user, pending, checking, skipped, gateError, setUser, setPending, setChecking, setSkipped, setGateError } = useAccountStore()
 
     const restore = async () => {
         setChecking(true)
@@ -66,7 +66,12 @@ export default function LoginGate() {
         setPending(false)
     }
 
-    if (user) return null
+    const handleSkip = () => {
+        setSkipped(true)
+        toast.info(t("account.skip_reminder"))
+    }
+
+    if (user || skipped) return null
 
     const errorKey =
         gateError === "banned" ? "account.banned" :
@@ -129,6 +134,9 @@ export default function LoginGate() {
                                 </button>
                             )}
                         </div>
+                        <button onClick={handleSkip} className="btn btn-ghost btn-sm text-base-content/40">
+                            {t("account.skip")}
+                        </button>
                     </div>
                 )}
             </div>

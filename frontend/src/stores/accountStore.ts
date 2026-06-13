@@ -17,10 +17,13 @@ interface AccountState {
     pending: boolean;
     // True while the persisted session is being restored on startup.
     checking: boolean;
+    // User dismissed the gate to continue without signing in (per session).
+    skipped: boolean;
     gateError: GateError;
     setUser: (user: AccountUser | null) => void;
     setPending: (pending: boolean) => void;
     setChecking: (checking: boolean) => void;
+    setSkipped: (skipped: boolean) => void;
     setGateError: (gateError: GateError) => void;
 }
 
@@ -28,10 +31,12 @@ const useAccountStore = create<AccountState>((set) => ({
     user: null,
     pending: false,
     checking: true,
+    skipped: false,
     gateError: "",
-    setUser: (user) => set({ user, pending: false, ...(user ? { gateError: "" as GateError } : {}) }),
+    setUser: (user) => set({ user, pending: false, ...(user ? { gateError: "" as GateError, skipped: false } : {}) }),
     setPending: (pending) => set({ pending }),
     setChecking: (checking) => set({ checking }),
+    setSkipped: (skipped) => set({ skipped }),
     setGateError: (gateError) => set({ gateError }),
 }));
 
