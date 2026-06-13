@@ -23,26 +23,22 @@ func ParseBinaryVersion(path string) (*BinaryVersion, error) {
 	}
 
 	content := string(data)
-	fmt.Println(content)
 
-	re := regexp.MustCompile(`([A-Za-z]+)(\d+)(?:\.(\d+))?(?:\.(\d+))?`)
+	// Match the channel + full version token (e.g. "CNBETAWin4.3.51").
+	// Requiring all three version parts avoids latching onto stray
+	// letter+digit fragments like the "c59" inside an asset hash.
+	re := regexp.MustCompile(`([A-Za-z]+)(\d+)\.(\d+)\.(\d+)`)
 	matches := re.FindStringSubmatch(content)
-	if len(matches) < 2 {
+	if len(matches) < 5 {
 		return nil, errors.New("invalid version format")
 	}
 
 	binaryVersion := BinaryVersion{
 		Name: matches[1],
 	}
-	if matches[2] != "" {
-		binaryVersion.Major, _ = strconv.Atoi(matches[2])
-	}
-	if len(matches) > 3 && matches[3] != "" {
-		binaryVersion.Minor, _ = strconv.Atoi(matches[3])
-	}
-	if len(matches) > 4 && matches[4] != "" {
-		binaryVersion.Patch, _ = strconv.Atoi(matches[4])
-	}
+	binaryVersion.Major, _ = strconv.Atoi(matches[2])
+	binaryVersion.Minor, _ = strconv.Atoi(matches[3])
+	binaryVersion.Patch, _ = strconv.Atoi(matches[4])
 
 	binaryVersion.Data = data
 	return &binaryVersion, nil

@@ -7,12 +7,13 @@ import (
 )
 
 type FileEntry struct {
-	NameHash       int32
-	FileByteName   string
-	Size           int64
-	DataCount      int32
-	DataEntries    []DataEntry
-	Unk            uint8
+	NameHash     int32
+	FileByteName string
+	Size         int64
+	DataCount    int32
+	DataEntries  []DataEntry
+	Lang         string
+	Unk          uint8
 }
 
 func FileEntryFromBytes(r io.Reader) (*FileEntry, error) {
@@ -44,9 +45,22 @@ func FileEntryFromBytes(r io.Reader) (*FileEntry, error) {
 		f.DataEntries = append(f.DataEntries, *entry)
 	}
 
-	// read 1 byte
+	// length-prefixed language tag (e.g. "jp"/"kr"/"cn"/"en"; empty for most files)
+	var langLen uint16
+	if err := binary.Read(r, binary.BigEndian, &langLen); err != nil {
+		return nil, err
+	}
+	if langLen > 0 {
+		langBuf := make([]byte, langLen)
+		if _, err := io.ReadFull(r, langBuf); err != nil {
+			return nil, err
+		}
+		f.Lang = string(langBuf)
+	}
+
+	// trailing flag byte
 	b := make([]byte, 1)
-	if _, err := r.Read(b); err != nil {
+	if _, err := io.ReadFull(r, b); err != nil {
 		return nil, err
 	}
 	f.Unk = b[0]
