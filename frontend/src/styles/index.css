@@ -32,3 +32,482 @@
     --radius-field: 0.5rem;
     --radius-box: 1rem;
 }
+
+:root {
+    --launcher-gradient-from: #ec4899;
+    --launcher-gradient-via: #8b5cf6;
+    --launcher-gradient-to: #0ea5e9;
+    --launcher-primary: #ec4899;
+    --launcher-secondary: #0ea5e9;
+    --launcher-accent: #8b5cf6;
+    --launcher-brand-text: #ec4899;
+    --launcher-muted-text: color-mix(in srgb, var(--launcher-brand-text) 72%, white 28%);
+    --launcher-soft-bg: color-mix(in srgb, var(--launcher-primary) 9%, white 91%);
+    --launcher-soft-bg-strong: color-mix(in srgb, var(--launcher-primary) 16%, white 84%);
+    --launcher-soft-border: color-mix(in srgb, var(--launcher-primary) 26%, white 74%);
+    --launcher-soft-shadow: color-mix(in srgb, var(--launcher-primary) 18%, transparent);
+    --launcher-overlay-bg: color-mix(in srgb, var(--launcher-primary) 8%, transparent);
+    --launcher-panel-bg: color-mix(in srgb, var(--launcher-primary) 66%, #120014 34%);
+    --launcher-panel-border: rgb(255 255 255 / 0.16);
+    --launcher-panel-text: #ffffff;
+    --launcher-panel-hover-bg: rgb(255 255 255 / 0.12);
+    --launcher-panel-hover-text: var(--launcher-panel-text);
+    --launcher-gradient: linear-gradient(
+        to right,
+        var(--launcher-gradient-from),
+        var(--launcher-gradient-via),
+        var(--launcher-gradient-to)
+    );
+}
+
+.launcher-gradient {
+    background-image: var(--launcher-gradient);
+}
+
+.launcher-gradient-text {
+    background-image: var(--launcher-gradient);
+}
+
+.launcher-text {
+    color: var(--launcher-primary);
+}
+
+.launcher-secondary-text {
+    color: var(--launcher-secondary);
+}
+
+.launcher-accent-text {
+    color: var(--launcher-accent);
+}
+
+.launcher-themed-dot {
+    background-color: var(--launcher-primary);
+}
+
+.launcher-themed-overlay {
+    background-color: var(--launcher-overlay-bg);
+    backdrop-filter: blur(12px);
+}
+
+.launcher-card {
+    background-color: rgb(255 255 255 / 0.95);
+    border: 1px solid var(--launcher-soft-border);
+    box-shadow: 0 24px 48px -24px var(--launcher-soft-shadow);
+    backdrop-filter: blur(24px);
+}
+
+.launcher-card-hover:hover {
+    border-color: var(--launcher-soft-border);
+    box-shadow: 0 18px 34px -22px color-mix(in srgb, var(--launcher-primary) 42%, transparent);
+}
+
+.launcher-default-panel {
+    background-color: rgb(255 255 255 / 0.6);
+    border: 1px solid rgb(255 255 255 / 0.8);
+    box-shadow: 0 10px 24px -16px var(--launcher-soft-shadow);
+    backdrop-filter: blur(24px);
+}
+
+.launcher-menu {
+    background-color: rgb(255 255 255 / 0.95);
+    border: 1px solid var(--launcher-soft-border);
+    box-shadow: 0 18px 34px -22px var(--launcher-soft-shadow);
+    backdrop-filter: blur(24px);
+}
+
+.launcher-setting-section {
+    background-color: var(--launcher-soft-bg);
+    border: 1px solid var(--launcher-soft-border);
+}
+
+.launcher-setting-title {
+    color: color-mix(in srgb, var(--launcher-primary) 82%, #16091c 18%);
+}
+
+.launcher-setting-muted {
+    color: color-mix(in srgb, var(--launcher-primary) 58%, #5f5264 42%);
+}
+
+.launcher-setting-badge {
+    color: var(--launcher-primary);
+    background-color: rgb(255 255 255 / 0.58);
+    border-color: var(--launcher-soft-border);
+}
+
+.launcher-soft-bg {
+    background-color: var(--launcher-soft-bg);
+}
+
+.launcher-soft-bg-strong {
+    background-color: var(--launcher-soft-bg-strong);
+}
+
+.launcher-soft-border {
+    border-color: var(--launcher-soft-border);
+}
+
+.launcher-soft-border-hover:hover {
+    border-color: var(--launcher-soft-border);
+}
+
+.launcher-theme-border {
+    border-color: var(--launcher-primary);
+}
+
+.launcher-theme-shadow {
+    box-shadow: 0 12px 24px -18px color-mix(in srgb, var(--launcher-primary) 42%, transparent);
+}
+
+.launcher-soft-ring {
+    --tw-ring-color: var(--launcher-soft-border);
+}
+
+.launcher-soft-shadow {
+    box-shadow: 0 12px 24px -18px var(--launcher-soft-shadow);
+}
+
+.launcher-divider {
+    background-color: var(--launcher-soft-border);
+}
+
+.launcher-soft-hover:hover {
+    background-color: var(--launcher-soft-bg);
+}
+
+.launcher-soft-button {
+    color: var(--launcher-primary);
+    background-color: var(--launcher-soft-bg);
+    border-color: var(--launcher-soft-border);
+}
+
+.launcher-soft-button:hover {
+    color: var(--launcher-primary);
+    background-color: var(--launcher-soft-bg-strong);
+    border-color: var(--launcher-soft-border);
+}
+
+.launcher-outline-button {
+    color: var(--launcher-primary);
+    background-color: white;
+    border-color: var(--launcher-soft-border);
+}
+
+.launcher-outline-button:hover {
+    color: var(--launcher-primary);
+    background-color: var(--launcher-soft-bg);
+    border-color: var(--launcher-soft-border);
+}
+
+.launcher-danger-button {
+    color: color-mix(in srgb, var(--color-error) 82%, #351117 18%);
+    background-color: color-mix(in srgb, var(--color-error) 8%, white 92%);
+    border-color: color-mix(in srgb, var(--color-error) 34%, white 66%);
+}
+
+.launcher-danger-button:hover {
+    color: color-mix(in srgb, var(--color-error) 92%, #351117 8%);
+    background-color: color-mix(in srgb, var(--color-error) 14%, white 86%);
+    border-color: color-mix(in srgb, var(--color-error) 46%, white 54%);
+}
+
+.launcher-input {
+    background-color: white;
+    border-color: var(--launcher-soft-border);
+}
+
+.launcher-input:focus {
+    border-color: var(--launcher-primary);
+    outline: none;
+}
+
+.launcher-tool-page {
+    color: color-mix(in srgb, var(--launcher-primary) 18%, #0f1020 82%);
+}
+
+.launcher-tool-shell {
+    background-color: rgb(255 255 255 / 0.72);
+    border: 1px solid color-mix(in srgb, var(--launcher-soft-border) 62%, transparent);
+    box-shadow: 0 24px 48px -34px var(--launcher-soft-shadow);
+    backdrop-filter: blur(16px);
+}
+
+.launcher-tool-title {
+    color: color-mix(in srgb, var(--launcher-primary) 28%, #090b1d 72%);
+}
+
+.launcher-tool-subtitle {
+    color: color-mix(in srgb, var(--launcher-primary) 48%, #3c364a 52%);
+}
+
+.launcher-tool-heading {
+    color: color-mix(in srgb, var(--launcher-primary) 42%, #111326 58%);
+}
+
+.launcher-tool-icon {
+    color: var(--launcher-primary);
+}
+
+.launcher-tool-button {
+    background-image: var(--launcher-gradient);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 10px 18px -8px color-mix(in srgb, var(--launcher-primary) 46%, transparent);
+}
+
+.launcher-tool-button:hover {
+    color: white;
+    box-shadow: 0 12px 24px -8px color-mix(in srgb, var(--launcher-primary) 58%, transparent);
+}
+
+.launcher-tool-button:disabled {
+    color: rgb(255 255 255 / 0.78);
+    opacity: 0.62;
+}
+
+.launcher-path-surface,
+.launcher-code-surface {
+    color: color-mix(in srgb, var(--launcher-primary) 24%, #10111f 76%);
+    background-color: rgb(255 255 255 / 0.72);
+    border: 1px solid var(--launcher-soft-border);
+}
+
+.launcher-code-surface {
+    box-shadow: inset 0 1px 4px rgb(0 0 0 / 0.04);
+}
+
+.launcher-info-panel {
+    color: var(--launcher-setting-muted);
+    background-color: var(--launcher-soft-bg);
+    border: 1px solid var(--launcher-soft-border);
+}
+
+.launcher-info-panel strong,
+.launcher-info-panel h2,
+.launcher-info-panel h3,
+.launcher-info-panel h4 {
+    color: var(--launcher-setting-title);
+}
+
+.launcher-info-card {
+    color: var(--launcher-setting-muted);
+    background-color: rgb(255 255 255 / 0.72);
+    border: 1px solid var(--launcher-soft-border);
+}
+
+.launcher-info-card strong,
+.launcher-info-card h3,
+.launcher-info-card h4 {
+    color: var(--launcher-setting-title);
+}
+
+.launcher-step-index {
+    color: var(--launcher-primary);
+    background-color: var(--launcher-soft-bg-strong);
+}
+
+.launcher-inline-code {
+    color: var(--launcher-primary);
+    background-color: var(--launcher-soft-bg-strong);
+    border: 1px solid var(--launcher-soft-border);
+}
+
+.launcher-status-success {
+    color: color-mix(in srgb, var(--color-success) 78%, #0f2c23 22%);
+    background-color: color-mix(in srgb, var(--color-success) 10%, white 90%);
+    border: 1px solid color-mix(in srgb, var(--color-success) 44%, white 56%);
+}
+
+.launcher-status-badge-success {
+    color: color-mix(in srgb, var(--color-success) 78%, #0f2c23 22%);
+    background-color: color-mix(in srgb, var(--color-success) 12%, white 88%);
+    border: 1px solid color-mix(in srgb, var(--color-success) 38%, white 62%);
+}
+
+.launcher-status-error {
+    color: color-mix(in srgb, var(--color-error) 82%, #351117 18%);
+    background-color: color-mix(in srgb, var(--color-error) 8%, white 92%);
+    border: 1px solid color-mix(in srgb, var(--color-error) 34%, white 66%);
+}
+
+.launcher-status-warning {
+    color: color-mix(in srgb, var(--color-warning) 62%, #3c2b08 38%);
+    background-color: color-mix(in srgb, var(--color-warning) 12%, white 88%);
+    border: 1px solid color-mix(in srgb, var(--color-warning) 38%, white 62%);
+}
+
+.launcher-status-danger {
+    color: color-mix(in srgb, var(--color-error) 72%, #311019 28%);
+    background-color: color-mix(in srgb, var(--color-error) 8%, var(--launcher-soft-bg) 92%);
+    border-left: 4px solid color-mix(in srgb, var(--color-error) 56%, var(--launcher-primary) 44%);
+}
+
+.launcher-status-text-warning {
+    color: color-mix(in srgb, var(--color-warning) 68%, #3c2b08 32%);
+}
+
+.launcher-status-text-success {
+    color: color-mix(in srgb, var(--color-success) 78%, #0f2c23 22%);
+}
+
+.launcher-status-text-error {
+    color: color-mix(in srgb, var(--color-error) 82%, #351117 18%);
+}
+
+.launcher-crop-overlay {
+    background-color: color-mix(in srgb, var(--launcher-primary) 22%, rgb(0 0 0 / 0.74) 78%);
+    backdrop-filter: blur(10px);
+}
+
+.launcher-crop-surface {
+    background-color: color-mix(in srgb, var(--launcher-primary) 28%, #11131f 72%);
+    border: 1px solid color-mix(in srgb, var(--launcher-primary) 36%, rgb(255 255 255 / 0.18) 64%);
+}
+
+.launcher-thumbnail-remove {
+    color: white;
+    background-color: color-mix(in srgb, var(--launcher-panel-bg) 72%, transparent);
+}
+
+.launcher-thumbnail-remove:hover {
+    background-color: color-mix(in srgb, var(--launcher-primary) 74%, black 26%);
+}
+
+.launcher-background-fade {
+    background-color: color-mix(in srgb, var(--launcher-primary) 18%, black 82%);
+}
+
+.launcher-bottom-vignette {
+    background-image: linear-gradient(
+        to top,
+        color-mix(in srgb, var(--launcher-primary) 12%, rgb(0 0 0 / 0.55) 88%),
+        transparent
+    );
+}
+
+.launcher-page-gradient {
+    background-image: linear-gradient(
+        to bottom right,
+        color-mix(in srgb, var(--launcher-gradient-from) 12%, white 88%),
+        color-mix(in srgb, var(--launcher-gradient-via) 12%, white 88%),
+        color-mix(in srgb, var(--launcher-gradient-to) 12%, white 88%)
+    );
+}
+
+.launcher-image-placeholder {
+    background-image: linear-gradient(
+        to bottom right,
+        var(--launcher-soft-bg-strong),
+        color-mix(in srgb, var(--launcher-accent) 14%, white 86%),
+        color-mix(in srgb, var(--launcher-secondary) 14%, white 86%)
+    );
+}
+
+.launcher-gradient-shadow {
+    box-shadow: 0 10px 18px -6px color-mix(in srgb, var(--launcher-secondary) 36%, transparent);
+}
+
+.launcher-gradient-shadow:hover {
+    box-shadow: 0 12px 24px -6px color-mix(in srgb, var(--launcher-secondary) 48%, transparent);
+}
+
+.launcher-hero-button {
+    background-image: var(--launcher-gradient);
+    color: white;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.28);
+    box-shadow: 0 12px 24px -8px color-mix(in srgb, var(--launcher-secondary) 52%, transparent);
+}
+
+.launcher-hero-button:hover {
+    box-shadow: 0 14px 30px -8px color-mix(in srgb, var(--launcher-secondary) 64%, transparent);
+}
+
+.launcher-hero-button:disabled {
+    color: rgb(255 255 255 / 0.78);
+    opacity: 0.72;
+}
+
+.launcher-dark-panel {
+    color: var(--launcher-panel-text);
+    background-color: var(--launcher-panel-bg);
+    border: 1px solid var(--launcher-panel-border);
+    box-shadow: 0 18px 32px -20px color-mix(in srgb, var(--launcher-primary) 78%, black);
+    backdrop-filter: blur(18px);
+}
+
+.launcher-dark-panel a,
+.launcher-dark-panel button,
+.launcher-dark-panel summary {
+    color: inherit;
+}
+
+.launcher-dark-panel .menu-title {
+    color: color-mix(in srgb, var(--launcher-panel-text) 76%, transparent);
+}
+
+.launcher-dark-panel li > a,
+.launcher-dark-panel li > button,
+.launcher-dark-panel li > details > summary {
+    color: var(--launcher-panel-text);
+}
+
+.launcher-dark-panel li > a:hover,
+.launcher-dark-panel li > button:hover,
+.launcher-dark-panel li > details > summary:hover,
+.launcher-dark-panel li > a:focus-visible,
+.launcher-dark-panel li > button:focus-visible,
+.launcher-dark-panel li > details > summary:focus-visible {
+    color: var(--launcher-panel-hover-text);
+    background-color: var(--launcher-panel-hover-bg);
+}
+
+.launcher-dark-panel li > button:disabled {
+    color: color-mix(in srgb, var(--launcher-panel-text) 42%, transparent);
+    background-color: transparent;
+}
+
+.launcher-brand-title {
+    color: var(--launcher-brand-text);
+    text-shadow: 0 1px 7px rgb(0 0 0 / 0.62);
+}
+
+.launcher-muted-text {
+    color: var(--launcher-muted-text);
+    text-shadow: 0 1px 5px rgb(0 0 0 / 0.48);
+}
+
+.launcher-surface-button {
+    color: var(--launcher-panel-text);
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.launcher-surface-button:hover {
+    color: var(--launcher-panel-text);
+    background-color: var(--launcher-panel-hover-bg);
+}
+
+.launcher-panel-hover:hover {
+    color: var(--launcher-panel-hover-text);
+    background-color: var(--launcher-panel-hover-bg);
+}
+
+.launcher-panel-active {
+    color: var(--launcher-panel-hover-text);
+    background-color: var(--launcher-panel-hover-bg);
+}
+
+.launcher-panel-muted-icon {
+    color: color-mix(in srgb, var(--launcher-panel-text) 68%, transparent);
+}
+
+.launcher-primary-hover:hover {
+    color: var(--launcher-primary);
+}
+
+.launcher-hover-group:hover .launcher-hover-text {
+    color: var(--launcher-primary);
+}
+
+.launcher-primary-hover-bg:hover {
+    background-color: color-mix(in srgb, var(--launcher-primary) 12%, transparent);
+}

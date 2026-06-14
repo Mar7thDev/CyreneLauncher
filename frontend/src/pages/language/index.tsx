@@ -129,14 +129,14 @@ export default function LanguagePage() {
     }
 
     return (
-        <div className="p-2 mx-4">
-            <div className="max-w-4xl mx-auto">
+        <div className="launcher-tool-page p-2 mx-4">
+            <div className="max-w-4xl mx-auto launcher-tool-shell rounded-2xl px-6 py-5">
                 {/* Header */}
                 <div className="text-center mb-2">
-                    <h1 className="text-4xl font-bold mb-2">
+                    <h1 className="text-4xl font-bold mb-2 launcher-tool-title">
                         {t("language.header_title")}
                     </h1>
-                    <p className="">{t("language.header_desc")}</p>
+                    <p className="launcher-tool-subtitle">{t("language.header_desc")}</p>
                 </div>
 
                 {/* Main Content */}
@@ -144,8 +144,8 @@ export default function LanguagePage() {
 
                     {/* Folder Selection Section */}
                     <div className="pb-2">
-                        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                            <Folder className="text-primary" size={24} />
+                        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 launcher-tool-heading">
+                            <Folder className="launcher-tool-icon" size={24} />
                             {t("language.game_dir_title")}
                         </h2>
 
@@ -154,7 +154,7 @@ export default function LanguagePage() {
                                 <button
                                     onClick={handlePickFolder}
                                     disabled={isLoading}
-                                    className="btn btn-primary"
+                                    className="btn launcher-tool-button"
                                 >
                                     <Folder size={20} />
                                     {isLoading ? t("language.btn_selecting") : t("language.btn_select_game") }
@@ -162,7 +162,7 @@ export default function LanguagePage() {
 
                                 {gameDir && (
                                     <div className="rounded-lg p-2">
-                                        <p className="font-mono text-sm px-3 py-2 rounded border truncate max-w-full overflow-hidden whitespace-nowrap">
+                                        <p className="font-mono text-sm px-3 py-2 rounded launcher-path-surface truncate max-w-full overflow-hidden whitespace-nowrap">
                                             {gameDir}
                                         </p>
                                     </div>
@@ -170,8 +170,8 @@ export default function LanguagePage() {
                             </div>
                             {folderCheckResult && (
                                 <div className={`flex items-center gap-2 p-3 rounded-lg ${folderCheckResult === 'success'
-                                    ? 'bg-success/5 text-success border border-success'
-                                    : 'bg-error/5 text-error border border-error'
+                                    ? 'launcher-status-success'
+                                    : 'launcher-status-error'
                                     }`}>
                                     {folderCheckResult === 'success' ? (
                                         <>
@@ -192,28 +192,28 @@ export default function LanguagePage() {
                     {/* Current Language Display */}
                     {(textLang && voiceLang) && (
                         <div className="pb-2">
-                            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                                <Globe className="text-primary" size={24} />
+                            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 launcher-tool-heading">
+                                <Globe className="launcher-tool-icon" size={24} />
                                 {t("language.current_languages_title")}
                             </h2>
 
                             <div className="grid md:grid-cols-2 gap-4">
-                                <div className="bg-success/5 rounded-lg p-2 border border-success/30">
+                                <div className="launcher-status-success rounded-lg p-2">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <Globe size={20} className="text-success" />
-                                        <span className="font-bold text-success">{t("language.text_language")}</span>
+                                        <Globe size={20} />
+                                        <span className="font-bold">{t("language.text_language")}</span>
                                     </div>
-                                    <p className="text-2xl font-bold text-success">
+                                    <p className="text-2xl font-bold">
                                         {getLanguageLabel(textLang)}
                                     </p>
                                 </div>
 
-                                <div className="bg-warning/5 rounded-lg p-2 border border-warning/30">
+                                <div className="launcher-status-warning rounded-lg p-2">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <Mic size={20} className="text-accent" />
-                                        <span className="font-bold text-accent">{t("language.voice_language")}</span>
+                                        <Mic size={20} />
+                                        <span className="font-bold">{t("language.voice_language")}</span>
                                     </div>
-                                    <p className="text-2xl font-bold text-accent">
+                                    <p className="text-2xl font-bold">
                                         {getLanguageLabel(voiceLang)}
                                     </p>
                                 </div>
@@ -224,21 +224,21 @@ export default function LanguagePage() {
                     {/* Language Selection */}
                     <div className={`transition-opacity duration-300 ${gameDir === "" ? 'opacity-50 pointer-events-none' : ''
                         }`}>
-                        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                            <Settings className="text-primary" size={24} />
+                        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 launcher-tool-heading">
+                            <Settings className="launcher-tool-icon" size={24} />
                             {t("language.language_settings_title")}
                         </h2>
 
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="space-y-3">
-                                <label className="flex text-sm font-medium text-success items-center gap-2">
+                                <label className="flex text-sm font-medium launcher-setting-title items-center gap-2">
                                     <Globe size={16} />
                                     {t("language.text_language")}
                                 </label>
                                 <select
                                     value={selectedTextLang}
                                     onChange={(e) => setSelectedTextLang(e.target.value)}
-                                    className="w-full select select-success"
+                                    className="w-full select launcher-input"
                                 >
                                     <option value="">{t("language.select_text_placeholder")}</option>
                                     {languageOptions.map(lang => (
@@ -250,14 +250,14 @@ export default function LanguagePage() {
                             </div>
 
                             <div className="space-y-3">
-                                <label className="flex text-sm font-medium text-accent items-center gap-2">
+                                <label className="flex text-sm font-medium launcher-setting-title items-center gap-2">
                                     <Mic size={16} />
                                     {t("language.voice_language")}
                                 </label>
                                 <select
                                     value={selectedVoiceLang}
                                     onChange={(e) => setSelectedVoiceLang(e.target.value)}
-                                    className="w-full select select-warning"
+                                    className="w-full select launcher-input"
                                 >
                                     <option value="">{t("language.select_voice_placeholder")}.</option>
                                     {languageOptions.map(lang => (
@@ -274,7 +274,7 @@ export default function LanguagePage() {
                             <button
                                 onClick={handleSetLanguage}
                                 disabled={!selectedTextLang || !selectedVoiceLang || isSettingLanguage}
-                                className="bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl disabled:cursor-not-allowed cursor-pointer"
+                                className="launcher-gradient text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 launcher-gradient-shadow disabled:cursor-not-allowed cursor-pointer disabled:opacity-60"
                             >
                                 <Settings size={20} />
                                 {isSettingLanguage ? t("language.btn_applying") : t("language.btn_apply")}
@@ -283,9 +283,9 @@ export default function LanguagePage() {
                     </div>
 
                     {/* Instructions */}
-                    <div className="bg-info/5 rounded-lg p-4 border border-info/30 mt-6">
-                        <h3 className="font-medium text-error mb-2">{t("language.inst_title")}</h3>
-                        <ol className="text-sm text-error space-y-1">
+                    <div className="launcher-info-panel rounded-lg p-4 mt-6">
+                        <h3 className="font-medium mb-2">{t("language.inst_title")}</h3>
+                        <ol className="text-sm space-y-1">
                             <li>{t("language.inst_step_1")}</li>
                             <li>{t("language.inst_step_2")}</li>
                             <li>{t("language.inst_step_3")}</li>

@@ -16,21 +16,21 @@ export default function CloseModal({
     const { t } = useTranslation()
 
     return (
-        <div className="fixed inset-0 z-50 h-full flex items-center justify-center bg-pink-50/30 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 h-full flex items-center justify-center launcher-themed-overlay">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 8 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.18 }}
-                className="relative w-[90%] max-w-md bg-white/95 backdrop-blur-xl text-base-content rounded-2xl border border-pink-200/60 shadow-2xl shadow-pink-200/40"
+                className="relative w-[90%] max-w-md launcher-card text-base-content rounded-2xl"
             >
-                <div className="border-b border-pink-100 px-6 py-4 flex justify-between items-center">
-                    <h3 className="font-bold text-xl text-transparent bg-clip-text bg-linear-to-r from-pink-500 to-sky-500">
+                <div className="border-b launcher-soft-border px-6 py-4 flex justify-between items-center">
+                    <h3 className="font-bold text-xl text-transparent bg-clip-text launcher-gradient-text">
                         {t("close.title")}
                     </h3>
                     <motion.button
                         whileHover={{ scale: 1.1, rotate: 90 }}
                         transition={{ duration: 0.2 }}
-                        className="btn btn-circle btn-sm bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-400"
+                        className="btn btn-circle btn-sm launcher-soft-button"
                         onClick={onClose}
                     >
                         ✕
@@ -57,7 +57,7 @@ export default function CloseModal({
 
                     <div className="grid grid-cols-2 gap-3 pt-1">
                         <button
-                            className="btn bg-linear-to-r from-pink-500 to-violet-500 border-none text-white shadow-md shadow-pink-200/50 hover:shadow-pink-300/60 transition-shadow"
+                            className="btn launcher-gradient border-none text-white launcher-gradient-shadow transition-shadow"
                             onClick={async () => {
                                 onClose()
                                 const [success, message] = await AppService.HideApp()
@@ -70,7 +70,7 @@ export default function CloseModal({
                             {t("close.minimize")}
                         </button>
                         <button
-                            className="btn bg-white hover:bg-red-50 border border-red-200 text-red-400 hover:text-red-500 hover:border-red-300 transition-all"
+                            className="btn launcher-danger-button transition-all"
                             onClick={async () => {
                                 onClose()
                                 const [success, message] = await AppService.CloseApp()

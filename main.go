@@ -6,6 +6,7 @@ import (
 
 	accountService "cyrene-launcher/internal/account-service"
 	appService "cyrene-launcher/internal/app-service"
+	"cyrene-launcher/internal/buildconfig"
 	consoleService "cyrene-launcher/internal/console-service"
 	diffService "cyrene-launcher/internal/diff-service"
 	fsService "cyrene-launcher/internal/fs-service"
@@ -34,6 +35,14 @@ var tools embed.FS
 func fileExists(path string) bool {
 	info, err := os.Stat(path)
 	return err == nil && !info.IsDir()
+}
+
+func readEnv(key, fallback string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+	return value
 }
 
 func extractFile(embedPath, outPath string) error {
@@ -70,9 +79,15 @@ func main() {
 		fmt.Println("Old executable path:", oldPath)
 		os.Remove(oldPath)
 	}
+	displayName := buildconfig.LauncherAppName("Cyrene Launcher")
+	internalName := readEnv("LAUNCHER_BUILD_EXE_NAME", "cyrene-launcher")
+
 	// Load app icon once, reused for the window (taskbar / titlebar / alt-tab)
 	// and the system tray.
-	iconBytes, _ := tools.ReadFile("assets/appicon.png")
+	iconBytes, err := tools.ReadFile("assets/local-appicon.png")
+	if err != nil {
+		iconBytes, _ = tools.ReadFile("assets/appicon.png")
+	}
 
 	// CyreneHook.dll: in-process hook DLL injected into the game in
 	// March7thHoney mode (built from HSR-Patch). Missing file → empty bytes
@@ -81,8 +96,8 @@ func main() {
 
 	// Create application
 	app := application.New(application.Options{
-		Name:        "cyrene-launcher",
-		Description: "Cyrene Launcher",
+		Name:        internalName,
+		Description: displayName,
 		Icon:        iconBytes,
 		Services: []application.Service{
 			application.NewService(&fsService.FSService{}),
@@ -106,7 +121,7 @@ func main() {
 
 	// Create window
 	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title: "Cyrene Launcher",
+		Title: displayName,
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
 			Backdrop:                application.MacBackdropTranslucent,
@@ -123,7 +138,7 @@ func main() {
 
 	systemTray := app.SystemTray.New()
 	systemTray.SetIcon(iconBytes)
-	systemTray.SetTooltip("Cyrene Launcher")
+	systemTray.SetTooltip(displayName)
 
 	// Attach the window to the system tray
 	menu := application.NewMenu()
@@ -135,7 +150,7 @@ func main() {
 	})
 
 	systemTray.SetMenu(menu)
-	
+
 	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
 		app.Event.Emit("window:close")
 		e.Cancel()

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { launcherConfig } from '@/config/launcher';
 
 export type GameProfile = "starrail" | "genshin"
 
@@ -15,6 +16,8 @@ interface SettingState {
     // March7thHoney: target server URL for the MITM proxy.
     // Empty → use the built-in default (march7th.hoyotoon.com).
     patchTargetUrl: string;
+    // March7thHoney: optional upstream server port. 0 → use URL/default port.
+    patchServerPort: number;
     // March7thHoney: preferred loopback port for the proxy. 0 → random free port.
     proxyPort: number;
     // March7thHoney patch options. Defaults match the reference project.
@@ -42,6 +45,7 @@ interface SettingState {
     setGenshinServerDir: (newServerDir: string) => void;
     setGenshinServerVersion: (newServerVersion: string) => void;
     setPatchTargetUrl: (url: string) => void;
+    setPatchServerPort: (port: number) => void;
     setProxyPort: (port: number) => void;
     setRsaPatch: (v: boolean) => void;
     setRsaKey: (v: string) => void;
@@ -61,6 +65,7 @@ const useSettingStore = create<SettingState>()(
             genshinServerDir: "",
             genshinServerVersion: "",
             patchTargetUrl: "",
+            patchServerPort: 0,
             proxyPort: 8080,
             rsaPatch: true,
             rsaKey: "",
@@ -70,8 +75,8 @@ const useSettingStore = create<SettingState>()(
                 isMinimize: false,
                 isAsk: true,
             },
-            background: "bg-17.jpg",
-            starRailBackground: "bg-17.jpg",
+            background: launcherConfig.defaultBackground,
+            starRailBackground: launcherConfig.starRailBackground,
             extraBackgrounds: [],
             setExtraBackgrounds: (newExtraBackgrounds: string[]) => set({ extraBackgrounds: newExtraBackgrounds }),
             setBackground: (newBackground: string) => set({ background: newBackground }),
@@ -86,6 +91,7 @@ const useSettingStore = create<SettingState>()(
             setGenshinServerDir: (newServerDir: string) => set({ genshinServerDir: newServerDir }),
             setGenshinServerVersion: (newServerVersion: string) => set({ genshinServerVersion: newServerVersion }),
             setPatchTargetUrl: (url: string) => set({ patchTargetUrl: url }),
+            setPatchServerPort: (port: number) => set({ patchServerPort: port }),
             setProxyPort: (port: number) => set({ proxyPort: port }),
             setRsaPatch: (v: boolean) => set({ rsaPatch: v }),
             setRsaKey: (v: string) => set({ rsaKey: v }),

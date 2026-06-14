@@ -10,6 +10,8 @@ package injector
 import (
 	"fmt"
 	"path/filepath"
+	"sort"
+	"strings"
 	"syscall"
 	"unicode/utf16"
 	"unsafe"
@@ -200,20 +202,30 @@ func injectDLL(hProcess windows.Handle, dllPath string) error {
 // buildEnvBlock returns a UTF-16 environment block (each entry NULL-terminated,
 // double-NULL at the end) merging os.Environ with overrides.
 func buildEnvBlock(overrides map[string]string) []uint16 {
-	merged := map[string]string{}
+	replaced := make(map[string]struct{}, len(overrides))
+	for k := range overrides {
+		replaced[strings.ToLower(k)] = struct{}{}
+	}
+
+	entries := make([]string, 0, len(syscall.Environ())+len(overrides))
 	for _, e := range syscall.Environ() {
 		k, v, ok := splitEnv(e)
 		if ok {
-			merged[k] = v
+			if _, exists := replaced[strings.ToLower(k)]; exists {
+				continue
+			}
+			entries = append(entries, k+"="+v)
 		}
 	}
 	for k, v := range overrides {
-		merged[k] = v
+		entries = append(entries, k+"="+v)
 	}
+	sort.Slice(entries, func(i, j int) bool {
+		return strings.ToLower(entries[i]) < strings.ToLower(entries[j])
+	})
 
 	var out []uint16
-	for k, v := range merged {
-		entry := k + "=" + v
+	for _, entry := range entries {
 		out = append(out, utf16.Encode([]rune(entry))...)
 		out = append(out, 0)
 	}

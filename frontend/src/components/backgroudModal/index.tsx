@@ -8,25 +8,10 @@ import getCroppedImg from '@/utils/cropImage'
 import { useTranslation } from 'react-i18next'
 import { toast } from "react-toastify"
 import { motion } from 'motion/react'
+import { features } from '@/config/features'
+import { launcherConfig } from '@/config/launcher'
 
-const GENSHIN_BACKGROUND = "bg-columbina.jpg"
-
-const initialImages = {
-  "bg-columbina": "bg-columbina.jpg",
-  "bg-17": "bg-17.jpg",
-  "bg-11": "bg-11.jpeg",
-  "bg-1": "bg-1.jpeg",
-  "bg-2": "bg-2.png",
-  "bg-3": "bg-3.png",
-  "bg-6": "bg-6.png",
-  "bg-7": "bg-7.jpeg",
-  "bg-8": "bg-8.png",
-  "bg-9": "bg-9.jpeg",
-  "bg-10": "bg-10.jpg",
-  "bg-12": "bg-12.jpg",
-  "bg-13": "bg-13.jpg",
-  "bg-16": "bg-16.jpg",
-}
+const initialImages = launcherConfig.backgroundOptions
 
 export const BackgroundSelector = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -54,10 +39,10 @@ export const BackgroundSelector = () => {
   const handleGameSelect = (profile: "genshin" | "starrail") => {
     setGameProfile(profile)
     if (profile === "genshin") {
-      setBackground(GENSHIN_BACKGROUND)
+      setBackground(launcherConfig.genshinBackground)
       return
     }
-    setBackground(starRailBackground || "bg-17.jpg")
+    setBackground(starRailBackground || launcherConfig.starRailBackground)
   }
   const isImageUrl = (url: string) => {
     return /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(url)
@@ -94,46 +79,48 @@ export const BackgroundSelector = () => {
     setCroppingImage(null)
   }
 
-  const allBackgrounds = [...extraBackgrounds, ...Object.values(initialImages)]
+  const allBackgrounds = [...extraBackgrounds, ...initialImages]
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full">
-      <div className="flex flex-col items-center gap-3">
-        {([
-          { id: "genshin", icon: "game-genshin.png", label: t("home.game_profile_genshin") },
-          { id: "starrail", icon: "game-starrail.png", label: t("home.game_profile_starrail") },
-        ] as const).map((game) => {
-          const isActive = gameProfile === game.id
-          return (
-            <div key={game.id} className="tooltip tooltip-right" data-tip={game.label}>
-              <motion.button
-                type="button"
-                whileHover={{ y: -5, scale: 1.08 }}
-                whileTap={{ scale: 0.92, opacity: 0.62 }}
-                transition={{ type: "spring", stiffness: 420, damping: 24 }}
-                onClick={() => handleGameSelect(game.id)}
-                className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 bg-white/65 backdrop-blur-md shadow-md shadow-pink-100/50 transition-all duration-200 ${
-                  isActive
-                    ? "border-pink-300 ring-2 ring-white/90"
-                    : "border-white/70 hover:border-pink-200"
-                }`}
-                aria-label={game.label}
-              >
-                <img
-                  src={game.icon}
-                  alt=""
-                  className="h-10 w-10 rounded-full object-cover"
-                  draggable={false}
-                />
-              </motion.button>
-            </div>
-          )
-        })}
-      </div>
+      {features.gameProfileSwitcher && (
+        <div className="flex flex-col items-center gap-3">
+          {([
+            { id: "genshin", icon: "game-genshin.png", label: t("home.game_profile_genshin") },
+            { id: "starrail", icon: "game-starrail.png", label: t("home.game_profile_starrail") },
+          ] as const).map((game) => {
+            const isActive = gameProfile === game.id
+            return (
+              <div key={game.id} className="tooltip tooltip-right" data-tip={game.label}>
+                <motion.button
+                  type="button"
+                  whileHover={{ y: -5, scale: 1.08 }}
+                  whileTap={{ scale: 0.92, opacity: 0.62 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 24 }}
+                  onClick={() => handleGameSelect(game.id)}
+                  className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 bg-white/65 backdrop-blur-md launcher-soft-shadow transition-all duration-200 ${
+                    isActive
+                      ? "launcher-theme-border ring-2 ring-white/90"
+                      : "border-white/70 launcher-soft-border-hover"
+                  }`}
+                  aria-label={game.label}
+                >
+                  <img
+                    src={game.icon}
+                    alt=""
+                    className="h-10 w-10 rounded-full object-cover"
+                    draggable={false}
+                  />
+                </motion.button>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       <div className="tooltip tooltip-right" data-tip={t("background.select_bg")}>
         <button
-          className="group btn btn-primary btn-circle flex items-center justify-center shadow-md transition-all duration-300 hover:scale-110 hover:shadow-lg hover:bg-primary/80"
+          className="group btn launcher-tool-button btn-circle flex items-center justify-center transition-all duration-300 hover:scale-110"
           onClick={() => setIsOpen(true)}
         >
           <ImageIcon size={22} className="transition-all duration-300 group-hover:rotate-6 group-hover:scale-110" />
@@ -141,8 +128,8 @@ export const BackgroundSelector = () => {
       </div>
 
       {isOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-pink-50/40 backdrop-blur-md pt-10">
-          <div className="bg-white/95 backdrop-blur-xl text-base-content rounded-2xl shadow-2xl shadow-pink-100/50 border border-pink-200/60 p-6 w-[90%] max-w-2xl relative">
+        <div className="fixed inset-0 z-40 flex items-center justify-center launcher-themed-overlay pt-10">
+          <div className="launcher-card text-base-content rounded-2xl p-6 w-[90%] max-w-2xl relative">
             <button className="btn btn-ghost btn-circle absolute top-3 right-3" onClick={() => setIsOpen(false)}>
               <X size={20} />
             </button>
@@ -154,11 +141,11 @@ export const BackgroundSelector = () => {
               <input
                 type="text"
                 placeholder={t("background.paste_url")}
-                className="input input-bordered w-full text-info"
+                className="input launcher-input w-full"
                 value={newUrl}
                 onChange={(e) => setNewUrl(e.target.value)}
               />
-              <button className="btn btn-success flex items-center gap-1" onClick={handleAddUrl}>
+              <button className="btn launcher-tool-button flex items-center gap-1" onClick={handleAddUrl}>
                 <Plus size={16} /> {t("background.add")}
               </button>
             </div>
@@ -166,7 +153,7 @@ export const BackgroundSelector = () => {
             {/* Upload from computer */}
             <div className="flex mb-4">
               <button
-                className="btn btn-warning flex items-center gap-1"
+                className="btn launcher-outline-button flex items-center gap-1"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload size={16} /> {t("background.upload_from_computer")}
@@ -186,8 +173,8 @@ export const BackgroundSelector = () => {
 
             {/* Crop Modal */}
             {(croppingImage != null && croppingImage != "") && (
-              <div className="fixed inset-0 z-60 flex flex-col items-center justify-center bg-black/70 p-4">
-                <div className="relative w-full max-w-5xl h-150 bg-gray-800 rounded-lg">
+              <div className="fixed inset-0 z-60 flex flex-col items-center justify-center launcher-crop-overlay p-4">
+                <div className="relative w-full max-w-5xl h-150 launcher-crop-surface rounded-lg">
                   <Cropper
                     image={croppingImage}
                     crop={crop}
@@ -198,7 +185,7 @@ export const BackgroundSelector = () => {
                     onCropComplete={(_, croppedAreaPixels) => setCroppedAreaPixels(croppedAreaPixels)}
                   />
                   <button
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 btn btn-success"
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 btn launcher-tool-button"
                     onClick={handleCropComplete}
                   >
                     <Check size={20} /> {t("background.done")}
@@ -219,14 +206,14 @@ export const BackgroundSelector = () => {
                 return (
                   <div
                     key={i}
-                    className={`relative rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${value === background ? 'border-pink-400 shadow-md shadow-pink-200/50' : 'border-transparent hover:border-pink-200'
+                    className={`relative rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${value === background ? 'launcher-theme-border launcher-theme-shadow' : 'border-transparent launcher-soft-border-hover'
                       }`}
                     onClick={() => handleSelect(value)}
                   >
                     <img src={value} alt={`bg-${i}`} loading="lazy" className="w-full h-28 object-cover" />
                     {isExtra && (
                       <button
-                        className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white rounded-full p-1"
+                        className="absolute top-1 right-1 launcher-thumbnail-remove rounded-full p-1"
                         onClick={(e) => {
                           e.stopPropagation()
                           handleRemoveExtra(value)

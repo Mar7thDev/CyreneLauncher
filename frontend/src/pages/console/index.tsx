@@ -6,16 +6,17 @@ import { Terminal, Plug, PlugZap, Send, Eraser, ChevronRight, BookText, Search, 
 import useSettingStore from "@/stores/settingStore";
 import { ConsoleService } from "@bindings/cyrene-launcher/internal/console-service";
 import { HandbookService } from "@bindings/cyrene-launcher/internal/handbook-service";
+import { launcherConfig, resolvePatchServerUrl } from "@/config/launcher";
 
-const DEFAULT_SERVER = "https://march7th.hoyotoon.com";
+const DEFAULT_SERVER = launcherConfig.defaultPatchUrl;
 const LANG_MAP: Record<string, string> = { zh: "CHS", en: "EN", ja: "JP", ko: "KR", vi: "VI" };
 
 export default function ConsolePage() {
     const { t, i18n } = useTranslation();
-    const { patchTargetUrl } = useSettingStore();
+    const { patchTargetUrl, patchServerPort } = useSettingStore();
 
     // Reuse the server address configured in Settings; fall back to the default.
-    const serverUrl = (patchTargetUrl || "").trim() || DEFAULT_SERVER;
+    const serverUrl = resolvePatchServerUrl((patchTargetUrl || "").trim() || DEFAULT_SERVER, patchServerPort);
 
     const [uid, setUid] = useState("");
     const [password, setPassword] = useState("");
@@ -165,28 +166,28 @@ export default function ConsolePage() {
     };
 
     return (
-        <div className="min-h-screen bg-base-200 flex items-center justify-center p-6">
-            <div className="w-full bg-base-100 shadow-xl rounded-2xl p-8 space-y-8">
+        <div className="launcher-tool-page min-h-screen flex items-center justify-center p-6">
+            <div className="w-full launcher-tool-shell rounded-2xl p-8 space-y-8">
                 <div className="flex flex-col items-center gap-3">
-                    <h1 className="text-4xl font-bold text-primary text-center flex items-center gap-3">
+                    <h1 className="text-4xl font-bold launcher-tool-title text-center flex items-center gap-3">
                         <Terminal className="w-8 h-8" /> {t("console.title")}
                     </h1>
-                    <p className="text-base-content/60 text-center max-w-2xl">{t("console.subtitle")}</p>
+                    <p className="launcher-tool-subtitle text-center max-w-2xl">{t("console.subtitle")}</p>
                 </div>
 
                 {/* Connection */}
-                <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
-                    <h2 className="text-2xl font-bold text-blue-800 flex items-center gap-2 mb-4">
+                <div className="launcher-info-panel p-6 rounded-r-lg border-l-4">
+                    <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
                         <Plug size={20} /> {t("console.conn_title")}
                     </h2>
                     <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                                <span className="text-sm font-medium text-blue-800">{t("console.label_uid")}</span>
+                                <span className="text-sm font-medium launcher-setting-title">{t("console.label_uid")}</span>
                                 <input
                                     type="text"
                                     inputMode="numeric"
-                                    className="input w-full"
+                                    className="input w-full launcher-input"
                                     placeholder={t("console.ph_uid")}
                                     value={uid}
                                     disabled={connected}
@@ -194,10 +195,10 @@ export default function ConsolePage() {
                                 />
                             </div>
                             <div className="flex flex-col gap-1">
-                                <span className="text-sm font-medium text-blue-800">{t("console.label_password")}</span>
+                                <span className="text-sm font-medium launcher-setting-title">{t("console.label_password")}</span>
                                 <input
                                     type="password"
-                                    className="input w-full"
+                                    className="input w-full launcher-input"
                                     placeholder={t("console.ph_password")}
                                     value={password}
                                     disabled={connected}
@@ -209,7 +210,7 @@ export default function ConsolePage() {
                         <div className="flex items-center gap-3 pt-1">
                             {!connected ? (
                                 <button
-                                    className="btn btn-primary"
+                                    className="btn launcher-tool-button"
                                     onClick={handleConnect}
                                     disabled={connecting}
                                 >
@@ -219,7 +220,7 @@ export default function ConsolePage() {
                                 </button>
                             ) : (
                                 <>
-                                    <span className="badge badge-success gap-1 py-3">
+                                    <span className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium launcher-status-badge-success">
                                         <PlugZap size={14} /> {t("console.connected")}
                                     </span>
                                     <button className="btn btn-ghost" onClick={handleDisconnect}>
@@ -232,20 +233,20 @@ export default function ConsolePage() {
                 </div>
 
                 {/* Command console */}
-                <div className={`bg-violet-50 border-l-4 border-violet-400 p-6 rounded-r-lg transition-opacity ${connected ? "" : "opacity-50 pointer-events-none"}`}>
-                    <h2 className="text-2xl font-bold text-violet-800 flex items-center gap-2 mb-4">
+                <div className={`launcher-info-panel p-6 rounded-r-lg border-l-4 transition-opacity ${connected ? "" : "opacity-50 pointer-events-none"}`}>
+                    <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
                         <Terminal size={20} /> {t("console.exec_title")}
                     </h2>
 
                     {/* Output */}
                     <div
                         ref={logRef}
-                        className="bg-white/70 border border-violet-200 text-base-content/80 font-mono text-sm rounded-xl p-4 h-72 overflow-y-auto whitespace-pre-wrap break-words shadow-inner"
+                        className="launcher-code-surface font-mono text-sm rounded-xl p-4 h-72 overflow-y-auto whitespace-pre-wrap break-words"
                     >
                         {log.length === 0
                             ? <span className="text-base-content/30">{t("console.output_empty")}</span>
                             : log.map((line, i) => (
-                                <div key={i} className={line.startsWith("!") ? "text-error" : line.startsWith(">") ? "text-violet-600 font-medium" : ""}>
+                                <div key={i} className={line.startsWith("!") ? "launcher-status-text-error" : line.startsWith(">") ? "launcher-text font-medium" : ""}>
                                     {line}
                                 </div>
                             ))}
@@ -253,8 +254,8 @@ export default function ConsolePage() {
 
                     {/* Input */}
                     <div className="flex items-center gap-2 mt-4">
-                        <label className="input flex-1 flex items-center gap-2 font-mono">
-                            <ChevronRight size={16} className="text-violet-400 shrink-0" />
+                        <label className="input launcher-input flex-1 flex items-center gap-2 font-mono">
+                            <ChevronRight size={16} className="launcher-tool-icon shrink-0" />
                             <input
                                 type="text"
                                 className="grow"
@@ -266,7 +267,7 @@ export default function ConsolePage() {
                             />
                         </label>
                         <button
-                            className="btn btn-primary"
+                            className="btn launcher-tool-button"
                             onClick={handleExecute}
                             disabled={!connected || executing || !command.trim()}
                         >
@@ -287,15 +288,15 @@ export default function ConsolePage() {
                 </div>
 
                 {/* Handbook lookup */}
-                <div className="bg-emerald-50 border-l-4 border-emerald-400 p-6 rounded-r-lg">
-                    <h2 className="text-2xl font-bold text-emerald-800 flex items-center gap-2 mb-1">
+                <div className="launcher-info-panel p-6 rounded-r-lg border-l-4">
+                    <h2 className="text-2xl font-bold flex items-center gap-2 mb-1">
                         <BookText size={20} /> {t("console.hb_title")}
                     </h2>
-                    <p className="text-emerald-700/70 text-sm mb-4">{t("console.hb_subtitle")}</p>
+                    <p className="text-sm mb-4">{t("console.hb_subtitle")}</p>
 
                     <div className="flex flex-col sm:flex-row items-stretch gap-2">
                         <select
-                            className="select w-full sm:w-40"
+                            className="select launcher-input w-full sm:w-40"
                             value={hbLang}
                             disabled={hbLangs.length === 0}
                             onChange={(e) => setHbLang(e.target.value)}
@@ -304,8 +305,8 @@ export default function ConsolePage() {
                                 ? <option value="">{t("console.hb_no_langs")}</option>
                                 : hbLangs.map((l) => <option key={l} value={l}>{l}</option>)}
                         </select>
-                        <label className="input flex-1 flex items-center gap-2">
-                            <Search size={16} className="text-emerald-500 shrink-0" />
+                        <label className="input launcher-input flex-1 flex items-center gap-2">
+                            <Search size={16} className="launcher-tool-icon shrink-0" />
                             <input
                                 type="text"
                                 className="grow"
@@ -315,13 +316,13 @@ export default function ConsolePage() {
                                 onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
                             />
                         </label>
-                        <button className="btn btn-primary" onClick={handleSearch} disabled={hbSearching || !hbLang}>
+                        <button className="btn launcher-tool-button" onClick={handleSearch} disabled={hbSearching || !hbLang}>
                             {hbSearching ? <span className="loading loading-spinner loading-sm" /> : <Search size={18} />}
                             {t("console.hb_search")}
                         </button>
                     </div>
 
-                    <div className="mt-4 bg-white/70 border border-emerald-200 text-base-content/80 font-mono text-sm rounded-xl overflow-hidden shadow-inner">
+                    <div className="mt-4 launcher-code-surface font-mono text-sm rounded-xl overflow-hidden">
                         <div className="max-h-80 overflow-y-auto p-3">
                             {hbResults.length === 0 ? (
                                 <div className="p-3 text-center text-base-content/30">
@@ -331,7 +332,7 @@ export default function ConsolePage() {
                                 hbResults.map((line, i) => (
                                     <div
                                         key={i}
-                                        className="px-1 py-0.5 rounded hover:bg-emerald-100/70 cursor-pointer whitespace-pre-wrap break-words"
+                                        className="px-1 py-0.5 rounded launcher-soft-hover cursor-pointer whitespace-pre-wrap break-words"
                                         onClick={() => copyLine(line)}
                                         title={t("console.hb_copy_hint")}
                                     >
@@ -342,20 +343,20 @@ export default function ConsolePage() {
                         </div>
                     </div>
                     {hbResults.length > 0 && (
-                        <p className="text-emerald-700/60 text-xs mt-2">{t("console.hb_count", { count: hbResults.length })}</p>
+                        <p className="text-xs mt-2">{t("console.hb_count", { count: hbResults.length })}</p>
                     )}
                 </div>
 
                 {/* Danger zone: self reset */}
-                <div className="bg-red-50 border-l-4 border-red-400 p-6 rounded-r-lg">
-                    <h2 className="text-2xl font-bold text-red-800 flex items-center gap-2 mb-1">
+                <div className="launcher-status-danger p-6 rounded-r-lg">
+                    <h2 className="text-2xl font-bold flex items-center gap-2 mb-1">
                         <AlertTriangle size={20} /> {t("console.reset_title")}
                     </h2>
-                    <p className="text-red-700/80 text-sm mb-4">{t("console.reset_desc")}</p>
+                    <p className="text-sm mb-4">{t("console.reset_desc")}</p>
 
                     {!resetConfirming ? (
                         <button
-                            className="btn btn-error btn-outline"
+                            className="btn launcher-danger-button"
                             onClick={() => setResetConfirming(true)}
                             disabled={!uid.trim() || !password}
                         >
@@ -363,9 +364,9 @@ export default function ConsolePage() {
                         </button>
                     ) : (
                         <div className="space-y-3">
-                            <p className="text-red-800 font-semibold">{t("console.reset_confirm_q")}</p>
+                            <p className="font-semibold">{t("console.reset_confirm_q")}</p>
                             <div className="flex items-center gap-3">
-                                <button className="btn btn-error" onClick={handleSelfReset} disabled={resetting}>
+                                <button className="btn launcher-danger-button" onClick={handleSelfReset} disabled={resetting}>
                                     {resetting
                                         ? <span className="loading loading-spinner loading-sm" />
                                         : <Trash2 size={18} />}
@@ -380,7 +381,7 @@ export default function ConsolePage() {
                 </div>
 
                 <div className="text-center pt-2">
-                    <Link to="/" className="btn btn-wide bg-linear-to-r from-pink-500 to-sky-500 border-none text-white shadow-md shadow-pink-200/50 hover:shadow-pink-300/60 transition-shadow">
+                    <Link to="/" className="btn btn-wide launcher-gradient border-none text-white launcher-gradient-shadow transition-shadow">
                         {t("console.btn_back")}
                     </Link>
                 </div>

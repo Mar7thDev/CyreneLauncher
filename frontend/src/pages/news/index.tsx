@@ -145,8 +145,8 @@ export default function NewsPage() {
         if (activeTab === "server" && error === SERVER_NOT_CONFIGURED) {
             return (
                 <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
-                    <div className="p-4 rounded-full bg-pink-100/60">
-                        <Settings size={36} className="text-pink-400" />
+                    <div className="p-4 rounded-full launcher-soft-bg">
+                        <Settings size={36} className="launcher-text" />
                     </div>
                     <p className="text-base-content/70 font-medium">{t("news.empty_server_not_configured")}</p>
                     <p className="text-sm text-base-content/40 max-w-md">{t("news.empty_server_hint")}</p>
@@ -156,14 +156,14 @@ export default function NewsPage() {
         if (error) {
             return (
                 <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
-                    <div className="p-4 rounded-full bg-red-100/60">
-                        <AlertCircle size={36} className="text-red-400" />
+                    <div className="p-4 rounded-full launcher-status-error">
+                        <AlertCircle size={36} />
                     </div>
                     <p className="text-base-content/70 font-medium">{t("news.empty_error")}</p>
                     <p className="text-sm text-base-content/40 max-w-md break-all">{error}</p>
                     <button
                         onClick={onRefresh}
-                        className="btn btn-sm mt-2 bg-linear-to-r from-pink-500 to-sky-500 border-none text-white"
+                        className="btn btn-sm mt-2 launcher-gradient border-none text-white"
                     >
                         <RefreshCw size={14} /> {t("news.btn_retry")}
                     </button>
@@ -172,8 +172,8 @@ export default function NewsPage() {
         }
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
-                <div className="p-4 rounded-full bg-pink-100/60">
-                    <Newspaper size={36} className="text-pink-300" />
+                <div className="p-4 rounded-full launcher-soft-bg">
+                    <Newspaper size={36} className="launcher-text" />
                 </div>
                 <p className="text-base-content/50">{t("news.empty")}</p>
             </div>
@@ -185,7 +185,7 @@ export default function NewsPage() {
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-6">
-                    <h1 className="text-4xl font-bold mb-1 text-transparent bg-clip-text bg-linear-to-r from-pink-500 via-violet-500 to-sky-500">
+                    <h1 className="text-4xl font-bold mb-1 text-transparent bg-clip-text launcher-gradient-text">
                         {t("news.header_title")}
                     </h1>
                     <p className="text-base-content/50 text-sm">{t("news.header_desc")}</p>
@@ -193,7 +193,7 @@ export default function NewsPage() {
 
                 {/* Tabs + Refresh */}
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-                    <div className="flex flex-wrap gap-1 bg-white/70 backdrop-blur-md border border-pink-200/50 rounded-2xl p-1 shadow-sm">
+                    <div className="flex flex-wrap gap-1 launcher-default-panel rounded-2xl p-1">
                         {TABS.map(tab => {
                             const Icon = tab.icon
                             const isActive = activeTab === tab.id
@@ -203,8 +203,8 @@ export default function NewsPage() {
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                                         isActive
-                                            ? "bg-linear-to-r from-pink-500 to-sky-500 text-white shadow-md shadow-pink-200/50"
-                                            : "text-base-content/60 hover:text-pink-500 hover:bg-pink-50/70"
+                                            ? "launcher-gradient text-white launcher-gradient-shadow"
+                                            : "text-base-content/60 launcher-primary-hover launcher-primary-hover-bg"
                                     }`}
                                 >
                                     <Icon size={15} />
@@ -215,7 +215,7 @@ export default function NewsPage() {
                     </div>
 
                     <button
-                        className="btn btn-sm bg-white/70 backdrop-blur-md border border-pink-200/50 text-base-content/70 hover:bg-pink-50 hover:text-pink-500 gap-2 shadow-sm"
+                        className="btn btn-sm bg-white/70 backdrop-blur-md border launcher-soft-border text-base-content/70 launcher-soft-hover launcher-primary-hover gap-2 launcher-soft-shadow"
                         onClick={onRefresh}
                         disabled={loading}
                     >
@@ -234,7 +234,7 @@ export default function NewsPage() {
                             exit={{ opacity: 0 }}
                             className="flex flex-col items-center justify-center py-20 gap-3"
                         >
-                            <span className="loading loading-spinner loading-lg text-primary"></span>
+                            <span className="loading loading-spinner loading-lg launcher-text"></span>
                             <p className="text-base-content/50 text-sm">{t("news.loading")}</p>
                         </motion.div>
                     ) : items.length === 0 ? (
@@ -281,7 +281,7 @@ function NewsCard({ item, delay, onOpen }: { item: NewsItem, delay: number, onOp
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.25 }}
             whileHover={{ y: -3 }}
-            className="group bg-white/90 backdrop-blur-md border border-pink-100 rounded-2xl overflow-hidden hover:border-pink-300 hover:shadow-lg hover:shadow-pink-200/50 transition-all cursor-pointer"
+            className="group launcher-hover-group launcher-card launcher-card-hover rounded-2xl overflow-hidden transition-all cursor-pointer"
             onClick={onOpen}
         >
             <div className="h-36 overflow-hidden relative">
@@ -294,18 +294,18 @@ function NewsCard({ item, delay, onOpen }: { item: NewsItem, delay: number, onOp
                         onError={() => setImgError(true)}
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-pink-100 via-violet-100 to-sky-100">
-                        <ImageOff size={28} className="text-pink-300" />
+                    <div className="w-full h-full flex items-center justify-center launcher-image-placeholder">
+                        <ImageOff size={28} className="launcher-text" />
                     </div>
                 )}
             </div>
             <div className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
                     <h3 className="font-semibold text-sm leading-snug line-clamp-2 flex-1 text-base-content">
-                        {item.pinned && <Pin size={13} className="inline-block text-pink-500 mr-1 -mt-0.5" />}
+                        {item.pinned && <Pin size={13} className="inline-block launcher-text mr-1 -mt-0.5" />}
                         {item.title}
                     </h3>
-                    <ExternalLink size={14} className="text-base-content/30 group-hover:text-pink-500 transition-colors shrink-0 mt-0.5" />
+                    <ExternalLink size={14} className="text-base-content/30 launcher-hover-text transition-colors shrink-0 mt-0.5" />
                 </div>
                 {item.intro && (
                     <p className="text-xs text-base-content/50 line-clamp-2 mb-3">{item.intro}</p>

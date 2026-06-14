@@ -1,5 +1,8 @@
 version: '3'
 
+dotenv:
+  - .env.local
+
 includes:
   common: ./build/Taskfile.yml
   windows: ./build/windows/Taskfile.yml
@@ -7,7 +10,7 @@ includes:
   linux: ./build/linux/Taskfile.yml
 
 vars:
-  APP_NAME: "cyrene-launcher"
+  APP_NAME: '{{.LAUNCHER_BUILD_EXE_NAME | default "cyrene-launcher"}}'
   BIN_DIR: "bin"
   VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
 

@@ -1,6 +1,7 @@
 package appService
 
 import (
+	"cyrene-launcher/internal/buildconfig"
 	"cyrene-launcher/pkg/constant"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 type AppService struct{}
 
 func (a *AppService) GetCurrentLauncherVersion() (bool, string) {
-	return true, constant.CurrentLauncherVersion
+	return true, buildconfig.LauncherVersion(constant.CurrentLauncherVersion)
 }
 
 func (a *AppService) CloseAppAfterTimeout(timeout int) (bool, string) {

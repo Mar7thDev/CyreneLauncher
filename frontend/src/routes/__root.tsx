@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { createRootRoute, Outlet, useLocation } from '@tanstack/react-router'
 import { ToastContainer } from 'react-toastify'
 import { useGlobalEvents } from '@/hooks';
@@ -7,6 +8,8 @@ import CloseModal from '@/components/closeModal';
 import Header from '@/components/header';
 import LoginGate from '@/components/loginGate';
 import { motion, AnimatePresence } from 'motion/react'
+import { features } from '@/config/features';
+import { applyLauncherTheme } from '@/config/launcher';
 
 export const Route = createRootRoute({
     component: RootLayout
@@ -17,6 +20,7 @@ function RootLayout() {
     const location = useLocation()
 
     useGlobalEvents();
+    useEffect(() => applyLauncherTheme(), [])
 
     return (
         <>
@@ -38,7 +42,7 @@ function RootLayout() {
 
             <CloseModal isOpen={isOpenCloseModal} onClose={() => setIsOpenCloseModal(false)} />
             <SettingModal isOpen={isOpenSettingModal} onClose={() => setIsOpenSettingModal(false)} />
-            <LoginGate />
+            {features.account && <LoginGate />}
             <ToastContainer />
         </>
     )

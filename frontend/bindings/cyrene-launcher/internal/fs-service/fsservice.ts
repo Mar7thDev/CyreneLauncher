@@ -21,6 +21,10 @@ export function GetDir(path: string): $CancellablePromise<string> {
     return $Call.ByID(607772389, path);
 }
 
+export function GetGameVersion(gamePath: string): $CancellablePromise<string> {
+    return $Call.ByID(2374017048, gamePath);
+}
+
 export function IsGenshinServerRunning(): $CancellablePromise<boolean> {
     return $Call.ByID(1264053998);
 }

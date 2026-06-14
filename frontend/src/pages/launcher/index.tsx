@@ -24,8 +24,10 @@ import UpdateModal from '@/components/updateModal';
 import { BackgroundSelector } from '@/components/backgroudModal';
 import NewsWidget from '@/components/newsWidget';
 import { useTranslation } from 'react-i18next';
+import { features } from '@/config/features';
+import { launcherConfig, resolvePatchServerUrl } from '@/config/launcher';
 
-const DEFAULT_PATCH_URL = "https://march7th.hoyotoon.com"
+const DEFAULT_PATCH_URL = launcherConfig.defaultPatchUrl
 
 export default function LauncherPage() {
     const {
@@ -33,7 +35,7 @@ export default function LauncherPage() {
         genshinGamePath, genshinGameDir, genshinServerDir, genshinServerVersion,
         setGenshinGamePath, setGenshinGameDir, setGenshinServerDir,
         gameDir, background, gameProfile,
-        patchTargetUrl, proxyPort,
+        patchTargetUrl, patchServerPort, proxyPort,
         rsaPatch, rsaKey, webRedirect, webHosts,
     } = useSettingStore()
     const { t } = useTranslation()
@@ -78,13 +80,36 @@ export default function LauncherPage() {
         }
     }, [background])
 
-    const widgetLinks = gameProfile === "starrail"
+    const widgetLinks = isStarRail && features.externalToolLinks
         ? [
-            { tooltip: "Firefly SRAnalysis", href: "https://sranalysis.punklorde.org", img: "https://sranalysis.punklorde.org/ff-sranalysis.png" },
-            { tooltip: "Firefly SRTools",    href: "https://srtools.punklorde.org",    img: "https://srtools.punklorde.org/ff-srtool.png" },
-            { tooltip: "Amazing's SRTools", href: "https://srtools.neonteam.dev",      img: "https://icons.duckduckgo.com/ip3/srtools.neonteam.dev.ico" },
-        ]
+            features.homeLinkFireflyAnalysis && { tooltip: "Firefly SRAnalysis", href: "https://sranalysis.punklorde.org", img: "https://sranalysis.punklorde.org/ff-sranalysis.png" },
+            features.homeLinkFireflySrTools && { tooltip: "Firefly SRTools", href: "https://srtools.punklorde.org", img: "https://srtools.punklorde.org/ff-srtool.png" },
+            features.homeLinkAmazingSrTools && { tooltip: "Amazing's SRTools", href: "https://srtools.neonteam.dev", img: "https://icons.duckduckgo.com/ip3/srtools.neonteam.dev.ico" },
+        ].filter((link): link is { tooltip: string; href: string; img: string } => Boolean(link))
         : []
+    const showDiscordLink = features.discordLink && features.homeLinkDiscord
+    const showHowToShortcut = features.howTo && features.homeLinkHowTo
+    const showSidePanel = widgetLinks.length > 0 || showDiscordLink || showHowToShortcut
+    const showNewsWidget = isStarRail && features.news
+    const showBottomLeftPanel = showNewsWidget || features.backgroundSelector
+    const brandedChrome = launcherConfig.brandedChrome
+    const floatingPanelClass = brandedChrome
+        ? "launcher-dark-panel"
+        : "launcher-default-panel"
+    const floatingButtonClass = brandedChrome
+        ? "launcher-surface-button"
+        : "bg-transparent border-none text-base-content/60 launcher-soft-hover launcher-primary-hover"
+    const discordButtonClass = brandedChrome
+        ? floatingButtonClass
+        : "bg-transparent hover:bg-[#5865F2]/15 border-none text-[#5865F2]"
+    const menuTriggerClass = brandedChrome
+        ? "launcher-dark-panel"
+        : "bg-white/80 border launcher-soft-border launcher-soft-shadow launcher-soft-hover text-base-content"
+    const menuPanelClass = brandedChrome
+        ? "launcher-dark-panel"
+        : "launcher-menu"
+    const themeGlow = "0 0 24px color-mix(in srgb, var(--launcher-primary) 45%, transparent)"
+    const themeStrongGlow = "0 0 28px color-mix(in srgb, var(--launcher-primary) 55%, transparent)"
 
     const openExternal = async (url: string) => {
         try { await AppService.OpenURL(url) }
@@ -265,7 +290,7 @@ export default function LauncherPage() {
                 toast.error(t("home.toast_march7th_needs_starrail"))
                 return
             }
-            const target = patchTargetUrl || DEFAULT_PATCH_URL
+            const target = resolvePatchServerUrl(patchTargetUrl || DEFAULT_PATCH_URL, patchServerPort)
             const [ok, err] = await March7thHoneyService.Start(gamePath, target, proxyPort, {
                 rsaPatch, rsaKey, webRedirect, webHosts,
             })
@@ -365,76 +390,85 @@ export default function LauncherPage() {
                 src={visibleBackground}
                 alt="background"
                 className="fixed inset-0 w-full h-full object-cover z-0"
-                onError={(e) => { (e.currentTarget as HTMLImageElement).src = "bg-17.jpg" }}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = launcherConfig.defaultBackground }}
             />
 
             <div
-                className={`fixed inset-0 z-0 bg-black pointer-events-none transition-opacity duration-500 ease-in-out ${
+                className={`fixed inset-0 z-0 launcher-background-fade pointer-events-none transition-opacity duration-500 ease-in-out ${
                     isBackgroundBlackout ? "opacity-100" : "opacity-0"
                 }`}
             />
 
             {/* Bottom vignette */}
-            <div className="fixed inset-x-0 bottom-0 h-40 z-1 pointer-events-none
-                            bg-linear-to-t from-black/55 to-transparent" />
+            <div className="fixed inset-x-0 bottom-0 h-40 z-1 pointer-events-none launcher-bottom-vignette" />
 
             {/* Right side panel */}
-            <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                    key={gameProfile}
-                    initial={{ x: 96, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: 96, opacity: 0 }}
-                    transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-                    className="hidden sm:flex fixed right-4 top-1/2 -translate-y-1/2 z-10 flex-col gap-2"
-                >
-                    <div className="flex flex-col gap-1.5 bg-white/50 backdrop-blur-md border border-white/80 rounded-2xl p-1.5 shadow-lg shadow-pink-100/40">
-                        {widgetLinks.map((link, idx) => (
-                            <div key={idx} className="tooltip tooltip-left" data-tip={link.tooltip}>
-                                <button
-                                    className="btn btn-circle btn-sm bg-transparent hover:bg-pink-100/60 border-none transition-all"
-                                    onClick={() => openExternal(link.href)}
-                                >
-                                    <img src={link.img} alt={link.tooltip} className="w-5 h-5 rounded-full" />
-                                </button>
-                            </div>
-                        ))}
+            {showSidePanel && (
+                <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                        key={gameProfile}
+                        initial={{ x: 96, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: 96, opacity: 0 }}
+                        transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+                        className="hidden sm:flex fixed right-4 top-1/2 -translate-y-1/2 z-10 flex-col gap-2"
+                    >
+                        <div className={`flex flex-col gap-1.5 ${floatingPanelClass} rounded-2xl p-1.5`}>
+                            {widgetLinks.map((link, idx) => (
+                                <div key={idx} className="tooltip tooltip-left" data-tip={link.tooltip}>
+                                    <button
+                                        className={`btn btn-circle btn-sm ${floatingButtonClass} transition-all`}
+                                        onClick={() => openExternal(link.href)}
+                                    >
+                                        <img src={link.img} alt={link.tooltip} className="w-5 h-5 rounded-full" />
+                                    </button>
+                                </div>
+                            ))}
 
-                        {widgetLinks.length > 0 && (
-                            <div className="w-full h-px bg-pink-200/40 my-0.5" />
-                        )}
+                            {widgetLinks.length > 0 && (showDiscordLink || showHowToShortcut) && (
+                                <div className="w-full h-px launcher-divider my-0.5" />
+                            )}
 
-                        <div className="tooltip tooltip-left" data-tip="Join our Discord">
-                            <button
-                                onClick={() => openExternal("https://discord.gg/CyreneEchoes")}
-                                className="btn btn-circle btn-sm bg-transparent hover:bg-[#5865F2]/15 border-none text-[#5865F2] transition-all"
-                                aria-label="Discord"
-                            >
-                                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" aria-hidden="true">
-                                    <path d="M20.317 4.369A19.79 19.79 0 0 0 16.558 3.2a.075.075 0 0 0-.079.037c-.21.371-.444.857-.608 1.234a18.27 18.27 0 0 0-5.487 0 12.78 12.78 0 0 0-.617-1.234.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 5.928 4.37a.07.07 0 0 0-.032.027C2.533 9.046 1.622 13.58 2.07 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.873-1.295 1.226-1.994a.076.076 0 0 0-.041-.105 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.106c.36.698.772 1.363 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .031-.056c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.028zM8.02 15.331c-1.182 0-2.157-1.085-2.157-2.419 0-1.333.956-2.418 2.157-2.418 1.21 0 2.175 1.094 2.157 2.418 0 1.334-.956 2.42-2.157 2.42zm7.974 0c-1.182 0-2.156-1.085-2.156-2.419 0-1.333.955-2.418 2.156-2.418 1.21 0 2.176 1.094 2.157 2.418 0 1.334-.946 2.42-2.157 2.42z"/>
-                                </svg>
-                            </button>
+                            {showDiscordLink && (
+                                <div className="tooltip tooltip-left" data-tip="Join our Discord">
+                                    <button
+                                        onClick={() => openExternal(launcherConfig.discordUrl)}
+                                        className={`btn btn-circle btn-sm ${discordButtonClass} transition-all`}
+                                        aria-label="Discord"
+                                    >
+                                        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" aria-hidden="true">
+                                            <path d="M20.317 4.369A19.79 19.79 0 0 0 16.558 3.2a.075.075 0 0 0-.079.037c-.21.371-.444.857-.608 1.234a18.27 18.27 0 0 0-5.487 0 12.78 12.78 0 0 0-.617-1.234.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 5.928 4.37a.07.07 0 0 0-.032.027C2.533 9.046 1.622 13.58 2.07 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.873-1.295 1.226-1.994a.076.076 0 0 0-.041-.105 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.106c.36.698.772 1.363 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .031-.056c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.028zM8.02 15.331c-1.182 0-2.157-1.085-2.157-2.419 0-1.333.956-2.418 2.157-2.418 1.21 0 2.175 1.094 2.157 2.418 0 1.334-.956 2.42-2.157 2.42zm7.974 0c-1.182 0-2.156-1.085-2.156-2.419 0-1.333.955-2.418 2.156-2.418 1.21 0 2.176 1.094 2.157 2.418 0 1.334-.946 2.42-2.157 2.42z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            )}
+
+                            {showDiscordLink && showHowToShortcut && (
+                                <div className="w-full h-px launcher-divider my-0.5" />
+                            )}
+
+                            {showHowToShortcut && (
+                                <div className="tooltip tooltip-left" data-tip={t("home.tooltip_how_to")}>
+                                    <Link
+                                        to="/howto"
+                                        className={`btn btn-circle btn-sm ${floatingButtonClass} transition-all`}
+                                    >
+                                        <MessageCircleQuestionMark className="w-4 h-4" />
+                                    </Link>
+                                </div>
+                            )}
                         </div>
-
-                        <div className="w-full h-px bg-pink-200/40 my-0.5" />
-
-                        <div className="tooltip tooltip-left" data-tip={t("home.tooltip_how_to")}>
-                            <Link
-                                to="/howto"
-                                className="btn btn-circle btn-sm bg-transparent hover:bg-pink-100/60 border-none text-base-content/60 hover:text-pink-500 transition-all"
-                            >
-                                <MessageCircleQuestionMark className="w-4 h-4" />
-                            </Link>
-                        </div>
-                    </div>
-                </motion.div>
-            </AnimatePresence>
+                    </motion.div>
+                </AnimatePresence>
+            )}
 
             {/* Bottom-left: server news + background selector */}
-            <div className="hidden sm:flex fixed bottom-5 left-5 z-10 flex-col items-start gap-3">
-                {isStarRail && <NewsWidget />}
-                <BackgroundSelector />
-            </div>
+            {showBottomLeftPanel && (
+                <div className="hidden sm:flex fixed bottom-5 left-5 z-10 flex-col items-start gap-3">
+                    {showNewsWidget && <NewsWidget />}
+                    {features.backgroundSelector && <BackgroundSelector />}
+                </div>
+            )}
 
             {/* Bottom action bar */}
             <div className="fixed bottom-5 right-5 z-10 flex items-center gap-2">
@@ -444,11 +478,11 @@ export default function LauncherPage() {
                         role="button"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="btn btn-circle btn-md bg-white/80 backdrop-blur-md border border-pink-200/60 hover:bg-pink-50 text-base-content cursor-pointer shadow-md shadow-pink-100/40"
+                        className={`btn btn-circle btn-md ${menuTriggerClass} cursor-pointer`}
                     >
                         <Menu className="w-5 h-5" />
                     </motion.div>
-                    <ul tabIndex={0} className="dropdown-content menu bg-white/95 backdrop-blur-xl border border-pink-100 rounded-2xl z-20 w-52 p-2 shadow-xl shadow-pink-100/50 mb-2">
+                    <ul tabIndex={0} className={`dropdown-content menu ${menuPanelClass} rounded-2xl z-20 w-52 p-2 mb-2`}>
                         <li>
                             <button onClick={handlePickCurrentGameFile}>
                                 {isGenshin ? t("home.menu_change_genshin_path") : t("home.menu_change_path")}
@@ -471,7 +505,7 @@ export default function LauncherPage() {
                 {isDownloading ? (
                     <button
                         disabled
-                        className="btn btn-lg font-bold bg-linear-to-r from-pink-300 to-sky-300 border-none text-white/90 shadow-lg shadow-pink-200/50 cursor-not-allowed"
+                        className="btn btn-lg font-bold launcher-hero-button border-none cursor-not-allowed"
                     >
                         <Play className="w-5 h-5" />
                         {t("home.status_wait")}
@@ -479,9 +513,9 @@ export default function LauncherPage() {
                 ) : isGenshin ? (
                     !serverReady ? (
                         <motion.button
-                            whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(244,114,182,0.45)' }}
+                            whileHover={{ scale: 1.04, boxShadow: themeGlow }}
                             whileTap={{ scale: 0.97 }}
-                            className="btn btn-lg font-bold bg-linear-to-r from-pink-500 via-violet-500 to-sky-500 border-none text-white shadow-lg shadow-pink-300/50"
+                            className="btn btn-lg font-bold launcher-hero-button border-none"
                             onClick={handleOpenDownloadDataModal}
                         >
                             <Download className="w-5 h-5" />
@@ -489,9 +523,9 @@ export default function LauncherPage() {
                         </motion.button>
                     ) : serverRunning ? (
                         <motion.button
-                            whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(244,63,94,0.42)' }}
+                            whileHover={{ scale: 1.04 }}
                             whileTap={{ scale: 0.97 }}
-                            className="btn btn-lg font-bold bg-linear-to-r from-rose-500 via-orange-500 to-pink-500 border-none text-white shadow-lg shadow-rose-300/50"
+                            className="btn btn-lg font-bold launcher-danger-button border-none"
                             onClick={handleStopGenshinServer}
                             title={t("home.tip_close_genshin_server")}
                             aria-label={t("home.tip_close_genshin_server")}
@@ -501,9 +535,9 @@ export default function LauncherPage() {
                         </motion.button>
                     ) : genshinGamePath === "" ? (
                         <motion.button
-                            whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(244,114,182,0.45)' }}
+                            whileHover={{ scale: 1.04, boxShadow: themeGlow }}
                             whileTap={{ scale: 0.97 }}
-                            className="btn btn-lg font-bold bg-linear-to-r from-pink-500 to-sky-500 border-none text-white shadow-lg shadow-pink-300/50"
+                            className="btn btn-lg font-bold launcher-hero-button border-none"
                             onClick={handlePickGenshinFile}
                         >
                             <FolderOpen className="w-5 h-5" />
@@ -511,9 +545,9 @@ export default function LauncherPage() {
                         </motion.button>
                     ) : (
                         <motion.button
-                            whileHover={{ scale: 1.04, boxShadow: '0 0 28px rgba(244,114,182,0.55)' }}
+                            whileHover={{ scale: 1.04, boxShadow: themeStrongGlow }}
                             whileTap={{ scale: 0.97 }}
-                            className="btn btn-lg font-bold bg-linear-to-r from-pink-500 via-violet-500 to-sky-500 border-none text-white shadow-lg shadow-pink-300/50"
+                            className="btn btn-lg font-bold launcher-hero-button border-none"
                             onClick={handleStartCurrentGame}
                         >
                             <Play className="w-5 h-5" />
@@ -522,9 +556,9 @@ export default function LauncherPage() {
                     )
                 ) : gamePath === "" ? (
                     <motion.button
-                        whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(244,114,182,0.45)' }}
+                        whileHover={{ scale: 1.04, boxShadow: themeGlow }}
                         whileTap={{ scale: 0.97 }}
-                        className="btn btn-lg font-bold bg-linear-to-r from-pink-500 to-sky-500 border-none text-white shadow-lg shadow-pink-300/50"
+                        className="btn btn-lg font-bold launcher-hero-button border-none"
                         onClick={handlePickCurrentGameFile}
                     >
                         <FolderOpen className="w-5 h-5" />
@@ -532,9 +566,9 @@ export default function LauncherPage() {
                     </motion.button>
                 ) : (
                     <motion.button
-                        whileHover={{ scale: 1.04, boxShadow: '0 0 28px rgba(244,114,182,0.55)' }}
+                        whileHover={{ scale: 1.04, boxShadow: themeStrongGlow }}
                         whileTap={{ scale: 0.97 }}
-                        className="btn btn-lg font-bold bg-linear-to-r from-pink-500 via-violet-500 to-sky-500 border-none text-white shadow-lg shadow-pink-300/50"
+                        className="btn btn-lg font-bold launcher-hero-button border-none"
                         onClick={handleStartCurrentGame}
                     >
                         <Play className="w-5 h-5" />
@@ -545,18 +579,18 @@ export default function LauncherPage() {
 
             {/* Download progress */}
             {isDownloading && !updateData.launcher.isUpdate && isGenshin && (
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-10 w-[55vw] bg-white/80 backdrop-blur-xl border border-pink-200/60 rounded-2xl p-4 shadow-xl shadow-pink-100/50">
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-10 w-[55vw] launcher-card rounded-2xl p-4">
                     <div className="space-y-2">
                         <div className="flex justify-between items-center text-sm">
                             <span className="text-base-content/50">{downloadType}</span>
                             <div className="flex gap-3">
-                                <span className="text-sky-500 font-semibold">{downloadSpeed}</span>
+                                <span className="launcher-secondary-text font-semibold">{downloadSpeed}</span>
                                 <span className="text-base-content font-bold">{progressDownload.toFixed(1)}%</span>
                             </div>
                         </div>
                         <div className="relative w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
                             <motion.div
-                                className="h-full bg-linear-to-r from-pink-400 via-violet-400 to-sky-400 rounded-full"
+                                className="h-full launcher-gradient rounded-full"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${progressDownload}%` }}
                                 transition={{ type: "tween", ease: "linear", duration: 0.03 }}
@@ -575,11 +609,11 @@ export default function LauncherPage() {
             )}
 
             {isDownloading && updateData.launcher.isUpdate && (
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-10 w-[55vw] bg-white/80 backdrop-blur-xl border border-pink-200/60 rounded-2xl p-4 shadow-xl shadow-pink-100/50 text-center">
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-10 w-[55vw] launcher-card rounded-2xl p-4 text-center">
                     {["update:launcher:downloading", "update:launcher:success", "update:launcher:failed"].includes(downloadType) && (
                         <span className={`font-bold text-xl ${
-                            downloadType === "update:launcher:downloading" ? "text-yellow-200" :
-                            downloadType === "update:launcher:success"    ? "text-emerald-300" : "text-red-300"
+                            downloadType === "update:launcher:downloading" ? "launcher-status-text-warning" :
+                            downloadType === "update:launcher:success"    ? "launcher-status-text-success" : "launcher-status-text-error"
                         }`}>
                             {downloadType === "update:launcher:downloading" && t("home.status_updating_launcher")}
                             {downloadType === "update:launcher:success"    && t("home.status_update_success")}
