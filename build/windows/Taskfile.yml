@@ -8,6 +8,7 @@ tasks:
     summary: Builds the application for Windows
     deps:
       - task: common:go:mod:tidy
+      - task: common:prepare:local:branding
       - task: common:build:frontend
         vars:
           BUILD_FLAGS:
@@ -16,8 +17,9 @@ tasks:
             ref: .PRODUCTION
       - task: common:generate:icons
     cmds:
+      - powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prepare-local-update-config.ps1
       - task: generate:syso
-      - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}.exe
+      - go build {{.BUILD_FLAGS}} -o "{{.BIN_DIR}}/{{.APP_NAME}}.exe"
       - cmd: powershell Remove-item *.syso
         platforms: [windows]
       - cmd: rm -f *.syso
@@ -41,7 +43,7 @@ tasks:
     summary: Generates Windows `.syso` file
     dir: build
     cmds:
-      - wails3 generate syso -arch {{.ARCH}} -icon windows/icon.ico -manifest windows/wails.exe.manifest -info windows/info.json -out ../wails_windows_{{.ARCH}}.syso
+      - powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/generate-windows-syso.ps1 -Arch {{.ARCH}}
     vars:
       ARCH: '{{.ARCH | default ARCH}}'
 
@@ -92,4 +94,4 @@ tasks:
 
   run:
     cmds:
-      - '{{.BIN_DIR}}/{{.APP_NAME}}.exe'
+      - '"{{.BIN_DIR}}/{{.APP_NAME}}.exe"'

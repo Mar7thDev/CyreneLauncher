@@ -179,14 +179,14 @@ export default function DiffPage() {
 
 
     return (
-        <div className="p-2 mx-4">
-            <div className="max-w-4xl mx-auto">
+        <div className="launcher-tool-page p-2 mx-4">
+            <div className="max-w-4xl mx-auto launcher-tool-shell rounded-2xl px-6 py-5">
                 {/* Header */}
                 <div className="text-center mb-2">
-                    <h1 className="text-4xl font-bold mb-2">
+                    <h1 className="text-4xl font-bold mb-2 launcher-tool-title">
                         {t("diff.header_title")}
                     </h1>
-                    <p className="">{t("diff.header_desc")}</p>
+                    <p className="launcher-tool-subtitle">{t("diff.header_desc")}</p>
                 </div>
 
                 {/* Main Content */}
@@ -194,8 +194,8 @@ export default function DiffPage() {
 
                     {/* Folder Selection Section */}
                     <div className="pb-2">
-                        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                            <Folder className="text-primary" size={24} />
+                        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 launcher-tool-heading">
+                            <Folder className="launcher-tool-icon" size={24} />
                             {t("diff.game_dir_title")}
                         </h2>
 
@@ -204,7 +204,7 @@ export default function DiffPage() {
                                 <button
                                     onClick={handlePickGameFolder}
                                     disabled={isLoading.game}
-                                    className="btn btn-primary"
+                                    className="btn launcher-tool-button"
                                 >
                                     <Folder size={20} />
                                     {isLoading.game ? t("diff.btn_selecting") : t("diff.btn_select_game")}
@@ -212,7 +212,7 @@ export default function DiffPage() {
 
                                 {gameDir && (
                                     <div className="rounded-lg p-2">
-                                        <p className="font-mono text-sm px-3 py-2 rounded border truncate max-w-full overflow-hidden whitespace-nowrap">
+                                        <p className="font-mono text-sm px-3 py-2 rounded launcher-path-surface truncate max-w-full overflow-hidden whitespace-nowrap">
                                             {gameDir}
                                         </p>
                                     </div>
@@ -220,8 +220,8 @@ export default function DiffPage() {
                             </div>
                             {folderCheckResult && (
                                 <div className={`flex items-center gap-2 p-3 rounded-lg ${folderCheckResult === 'success'
-                                    ? 'bg-success/5 text-success border border-success'
-                                    : 'bg-error/5 text-error border border-error'
+                                    ? 'launcher-status-success'
+                                    : 'launcher-status-error'
                                     }`}>
                                     {folderCheckResult === 'success' ? (
                                         <>
@@ -241,8 +241,8 @@ export default function DiffPage() {
 
                     {/* Folder Selection Section */}
                     <div className="pb-2">
-                        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                            <File className="text-primary" size={24} />
+                        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 launcher-tool-heading">
+                            <File className="launcher-tool-icon" size={24} />
                             {t("diff.diff_file_title")}
                         </h2>
 
@@ -251,7 +251,7 @@ export default function DiffPage() {
                                 <button
                                     onClick={handlePickDiffFile}
                                     disabled={isLoading.diff}
-                                    className="btn btn-primary"
+                                    className="btn launcher-tool-button"
                                 >
                                     <File size={20} />
                                     {isLoading.diff ? t("diff.btn_selecting") : t("diff.btn_select_diff")}
@@ -259,7 +259,7 @@ export default function DiffPage() {
 
                                 {diffDir && (
                                     <div className="rounded-lg p-2">
-                                        <p className="font-mono text-sm px-3 py-2 rounded border truncate max-w-full overflow-hidden whitespace-nowrap">
+                                        <p className="font-mono text-sm px-3 py-2 rounded launcher-path-surface truncate max-w-full overflow-hidden whitespace-nowrap">
                                             {diffDir}
                                         </p>
                                     </div>
@@ -267,8 +267,8 @@ export default function DiffPage() {
                             </div>
                             {diffCheckResult && (
                                 <div className={`flex items-center gap-2 p-3 mt-2 rounded-lg ${diffCheckResult === 'success'
-                                    ? 'bg-success/5 text-success border border-success'
-                                    : 'bg-error/5 text-error border border-error'
+                                    ? 'launcher-status-success'
+                                    : 'launcher-status-error'
                                     }`}>
                                     {diffCheckResult === 'success' ? (
                                         <>
@@ -290,7 +290,7 @@ export default function DiffPage() {
                             <button
                                 onClick={handleUpdateGame}
                                 disabled={!diffDir || !gameDir || isLoading.game || isLoading.diff}
-                                className="bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl disabled:cursor-not-allowed cursor-pointer"
+                                className="launcher-gradient text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 launcher-gradient-shadow disabled:cursor-not-allowed cursor-pointer disabled:opacity-60"
                             >
                                 <Settings size={20} />
                                 {isDiffLoading ? t("diff.btn_updating") : t("diff.btn_update_game") }
@@ -299,10 +299,10 @@ export default function DiffPage() {
                     </div>
 
                     {isDiffLoading && (
-                        <div className="fixed inset-0 z-50 h-full flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                            <div className="relative w-[90%] max-w-5xl bg-base-100 text-base-content rounded-xl border border-purple-500/50 shadow-lg shadow-purple-500/20">
-                                <div className="border-b border-purple-500/30 px-6 py-4 mb-4 text-center">
-                                    <h3 className="font-bold text-2xl text-transparent bg-clip-text bg-linear-to-r from-pink-400 to-cyan-400">
+                        <div className="fixed inset-0 z-50 h-full flex items-center justify-center launcher-themed-overlay">
+                            <div className="relative w-[90%] max-w-5xl launcher-card text-base-content rounded-xl">
+                                <div className="border-b launcher-soft-border px-6 py-4 mb-4 text-center">
+                                    <h3 className="font-bold text-2xl text-transparent bg-clip-text launcher-gradient-text">
                                         {t("diff.modal_update_title")}
                                     </h3>
                                 </div>
@@ -310,22 +310,22 @@ export default function DiffPage() {
                                 <div className="px-6 pb-6">
                                     <div className="w-full p-4">
                                         <div className="space-y-3">
-                                            <div className="flex justify-center items-center text-sm text-white/80">
-                                                <span className="font-bold text-lg text-accent">{stageType}:</span>
+                                            <div className="flex justify-center items-center text-sm launcher-tool-subtitle">
+                                                <span className="font-bold text-lg launcher-accent-text">{stageType}:</span>
                                                 <div className="flex items-center gap-4 ml-2">
-                                                    {stageType !== 'Cut Data' && <span className="text-white font-bold">{progressUpdate.toFixed(0)} / {maxProgressUpdate.toFixed(0)}</span>}
-                                                    {stageType === 'Cut Data' && <span className="text-white font-bold truncate max-w-full overflow-hidden whitespace-nowrap">{messageUpdate}</span>}
+                                                    {stageType !== 'Cut Data' && <span className="launcher-tool-heading font-bold">{progressUpdate.toFixed(0)} / {maxProgressUpdate.toFixed(0)}</span>}
+                                                    {stageType === 'Cut Data' && <span className="launcher-tool-heading font-bold truncate max-w-full overflow-hidden whitespace-nowrap">{messageUpdate}</span>}
                                                 </div>
                                             </div>
-                                            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                                            <div className="w-full launcher-soft-bg rounded-full h-2 overflow-hidden">
                                                 <motion.div
-                                                    className="h-full bg-linear-to-r from-pink-400 via-violet-400 to-sky-400 rounded-full"
+                                                    className="h-full launcher-gradient rounded-full"
                                                     initial={{ width: 0 }}
                                                     animate={{ width: `${(progressUpdate / maxProgressUpdate) * 100}%` }}
                                                     transition={{ duration: 0.3 }}
                                                 />
                                             </div>
-                                            <div className="text-center text-lg text-white/60">
+                                            <div className="text-center text-lg launcher-tool-subtitle">
                                                 {t("diff.status_wait")}
                                             </div>
                                         </div>
@@ -337,9 +337,9 @@ export default function DiffPage() {
                     )}
 
                     {/* Instructions */}
-                    <div className="bg-info/5 rounded-lg p-4 border border-info/30 mt-6">
-                        <h3 className="font-medium text-error mb-2">{t("diff.inst_title")}</h3>
-                        <ol className="text-sm text-error space-y-1">
+                    <div className="launcher-info-panel rounded-lg p-4 mt-6">
+                        <h3 className="font-medium mb-2">{t("diff.inst_title")}</h3>
+                        <ol className="text-sm space-y-1">
                             <li>{t("diff.inst_step_1")}</li>
                             <li>{t("diff.inst_step_2")}</li>
                             <li>{t("diff.inst_step_3")}</li>

@@ -2,10 +2,13 @@ package fsService
 
 import (
 	"cyrene-launcher/pkg/sevenzip"
+	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -61,6 +64,67 @@ func (f *FSService) FileExists(path string) bool {
 		return info.Mode().IsRegular()
 	}
 	return false
+}
+
+func (f *FSService) GetGameVersion(gamePath string) string {
+	gamePath = strings.TrimSpace(gamePath)
+	if gamePath == "" {
+		return ""
+	}
+
+	gameDir := filepath.Dir(gamePath)
+	gameName := strings.TrimSuffix(filepath.Base(gamePath), filepath.Ext(gamePath))
+	streamingAssets := filepath.Join(gameDir, gameName+"_Data", "StreamingAssets")
+
+	if raw, err := os.ReadFile(filepath.Join(streamingAssets, "asb_settings.json")); err == nil {
+		var settings struct {
+			Variance string `json:"variance"`
+		}
+		if json.Unmarshal(raw, &settings) == nil {
+			if version := normalizeGameVersion(settings.Variance); version != "" {
+				return version
+			}
+		}
+	}
+
+	if raw, err := os.ReadFile(filepath.Join(streamingAssets, "BinaryVersion.bytes")); err == nil {
+		return normalizeGameVersion(string(raw))
+	}
+
+	return ""
+}
+
+func normalizeGameVersion(raw string) string {
+	raw = strings.TrimSpace(strings.ReplaceAll(raw, "\x00", ""))
+	if raw == "" {
+		return ""
+	}
+
+	versionMatch := regexp.MustCompile(`(?i)v?(\d+)\.(\d+)(?:[._](\d+))?`).FindStringSubmatch(raw)
+	if versionMatch == nil {
+		return ""
+	}
+
+	major, errMajor := strconv.Atoi(versionMatch[1])
+	minor, errMinor := strconv.Atoi(versionMatch[2])
+	if errMajor != nil || errMinor != nil {
+		return ""
+	}
+
+	release := 0
+	hasRelease := versionMatch[3] != ""
+	if hasRelease {
+		if parsed, err := strconv.Atoi(versionMatch[3]); err == nil {
+			release = parsed
+		} else {
+			hasRelease = false
+		}
+	}
+
+	if hasRelease && release != 0 {
+		return "V" + strconv.Itoa(major) + "." + strconv.Itoa(minor) + "." + strconv.Itoa(release)
+	}
+	return "V" + strconv.Itoa(major) + "." + strconv.Itoa(minor)
 }
 
 func (f *FSService) GetDir(path string) string {

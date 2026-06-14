@@ -17,9 +17,36 @@ export async function CheckUpdateLauncher(): Promise<{ isUpdate: boolean; isExis
         return { isUpdate: false, isExists: true, version: currentVersion }
     }
 
-    const normalize = (v: string) => v.replace(/^v/i, "")
-    const isUpdate = normalize(latestVersion) !== normalize(currentVersion)
+    const isUpdate = compareLauncherVersions(latestVersion, currentVersion) > 0
     return { isUpdate, isExists: true, version: latestVersion }
+}
+
+function compareLauncherVersions(remoteVersion: string, localVersion: string): number {
+    const remote = parseLauncherVersion(remoteVersion)
+    const local = parseLauncherVersion(localVersion)
+
+    if (!remote || !local) {
+        return normalizeVersion(remoteVersion).localeCompare(normalizeVersion(localVersion), undefined, { numeric: true })
+    }
+
+    for (let i = 0; i < Math.max(remote.length, local.length); i++) {
+        const diff = (remote[i] ?? 0) - (local[i] ?? 0)
+        if (diff !== 0) return diff
+    }
+
+    return 0
+}
+
+function parseLauncherVersion(version: string): number[] | null {
+    const normalized = normalizeVersion(version)
+    const match = normalized.match(/^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:[.-].*)?$/)
+    if (!match) return null
+
+    return match.slice(1).filter(Boolean).map(Number)
+}
+
+function normalizeVersion(version: string): string {
+    return version.trim().replace(/^v/i, "")
 }
 
 

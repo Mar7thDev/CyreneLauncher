@@ -30,6 +30,7 @@ tasks:
     generates:
       - dist/**/*
     deps:
+      - task: prepare:local:branding
       - task: install:frontend:deps
       - task: generate:bindings
         vars:
@@ -37,11 +38,18 @@ tasks:
             ref: .BUILD_FLAGS
     cmds:
       - npm run {{.BUILD_COMMAND}} -q
+      - powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/prune-local-backgrounds.ps1
     env:
       PRODUCTION: '{{.PRODUCTION | default "false"}}'
     vars:
       BUILD_COMMAND: '{{if eq .PRODUCTION "true"}}build{{else}}build:dev{{end}}'
 
+
+  prepare:local:branding:
+    summary: Prepares ignored local branding assets
+    internal: true
+    cmds:
+      - powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prepare-local-branding.ps1
 
   generate:bindings:
     label: generate:bindings (BUILD_FLAGS={{.BUILD_FLAGS}})
@@ -58,7 +66,7 @@ tasks:
     generates:
       - frontend/bindings/**/*
     cmds:
-      - wails3 generate bindings -f '{{.BUILD_FLAGS}}' -clean=true
+      - wails3 generate bindings -ts -f '{{.BUILD_FLAGS}}' -clean=true
 
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
@@ -75,6 +83,7 @@ tasks:
     summary: Runs the frontend in development mode
     dir: frontend
     deps:
+      - task: prepare:local:branding
       - task: install:frontend:deps
     cmds:
       - npm run dev -- --port {{.VITE_PORT}} --strictPort

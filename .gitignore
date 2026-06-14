@@ -10,6 +10,7 @@ server/
 proxy/
 temp/
 .codex-tools/
+.local/
 
 # Editor
 .history/
@@ -20,6 +21,15 @@ temp/
 frontend/dist
 frontend/node_modules
 frontend/.vite/
+frontend/public/local-appicon.*
+
+# Local embedded branding
+assets/local-appicon.*
+internal/buildconfig/local.json
+
+# Local env overrides
+.env.local
+.env.*.local
 
 # Build artifacts
 build/linux/appimage/build

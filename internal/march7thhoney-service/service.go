@@ -32,11 +32,18 @@ import (
 )
 
 const (
-	dllStoragePath  = "./patch/CyreneHook.dll"
-	ec2bStoragePath = "./patch/ClientSecretKey.bin"
-	envProxyKey     = "CYRENE_PROXY"
-	envEc2bKey      = "CYRENE_EC2B_FILE"
-	envWebTargetKey = "CYRENE_WEB_TARGET"
+	dllStoragePath      = "./patch/CyreneHook.dll"
+	ec2bStoragePath     = "./patch/ClientSecretKey.bin"
+	envProxyKey         = "CYRENE_PROXY"
+	envEc2bKey          = "CYRENE_EC2B_FILE"
+	envWebTargetKey     = "CYRENE_WEB_TARGET"
+	envHoyoProxyKey     = "HOYOTOON_PROXY"
+	envHoyoEc2bKey      = "HOYOTOON_EC2B_FILE"
+	envHoyoWebTargetKey = "HOYOTOON_WEB_TARGET"
+	envHTTPProxyKey     = "HTTP_PROXY"
+	envHTTPSProxyKey    = "HTTPS_PROXY"
+	envAllProxyKey      = "ALL_PROXY"
+	envNoProxyKey       = "NO_PROXY"
 )
 
 // March7thHoneyService is constructed via New so the embedded CyreneHook.dll
@@ -94,14 +101,23 @@ func (m *March7thHoneyService) Start(gamePath, targetURL string, preferredPort i
 	if err != nil {
 		return false, "proxy start: " + err.Error()
 	}
+	proxyAddr := fmt.Sprintf("127.0.0.1:%d", port)
+	proxyURL := "http://" + proxyAddr
 
 	env := map[string]string{
-		envProxyKey:     fmt.Sprintf("127.0.0.1:%d", port),
-		envEc2bKey:      ec2bPath,
+		envProxyKey: proxyAddr,
+		envEc2bKey:  ec2bPath,
 		// In-game register/webview redirect target: the patch rewrites the SDK
 		// webview URL to this base so the page loads from the configured server
 		// during remote play (instead of the build-time local default).
-		envWebTargetKey: targetURL,
+		envWebTargetKey:     targetURL,
+		envHoyoProxyKey:     proxyAddr,
+		envHoyoEc2bKey:      ec2bPath,
+		envHoyoWebTargetKey: targetURL,
+		envHTTPProxyKey:     proxyURL,
+		envHTTPSProxyKey:    proxyURL,
+		envAllProxyKey:      proxyURL,
+		envNoProxyKey:       "",
 	}
 
 	proc, err := injector.Launch(gamePath, dllPath, env)

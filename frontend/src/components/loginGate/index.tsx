@@ -6,6 +6,7 @@ import { Events } from "@wailsio/runtime";
 import { AccountService } from "@bindings/cyrene-launcher/internal/account-service";
 import { AppService } from "@bindings/cyrene-launcher/internal/app-service";
 import useAccountStore, { type GateError } from "@/stores/accountStore";
+import { launcherConfig } from "@/config/launcher";
 
 function mapError(code: string): GateError {
     if (code.includes("banned")) return "banned";
@@ -81,38 +82,38 @@ export default function LoginGate() {
 
     return (
         <div
-            className="fixed inset-0 z-100 flex flex-col bg-gradient-to-br from-pink-50 via-violet-50 to-sky-50"
+            className="fixed inset-0 z-100 flex flex-col launcher-page-gradient"
             style={{ '--wails-draggable': 'drag' } as any}
         >
             <div className="flex justify-end gap-1 p-2" style={{ '--wails-draggable': 'no-drag' } as any}>
                 <button
                     onClick={() => AppService.MinimizeApp()}
-                    className="btn btn-ghost btn-sm btn-circle hover:bg-pink-100"
+                    className="btn btn-ghost btn-sm btn-circle launcher-soft-hover"
                 >
                     <Minus className="w-4 h-4" />
                 </button>
                 <button
                     onClick={() => AppService.CloseApp()}
-                    className="btn btn-ghost btn-sm btn-circle hover:bg-pink-100"
+                    className="btn btn-ghost btn-sm btn-circle launcher-soft-hover"
                 >
                     <X className="w-4 h-4" />
                 </button>
             </div>
 
             <div className="flex flex-1 flex-col items-center justify-center gap-5 -mt-10 px-6">
-                <img src="/appicon.png" alt="" className="w-20 h-20 rounded-2xl shadow-xl shadow-pink-200/60" />
+                <img src={launcherConfig.appIcon} alt="" className="w-20 h-20 rounded-2xl launcher-soft-shadow" />
                 <h1 className="text-3xl font-bold">
-                    <span className="bg-clip-text text-transparent bg-linear-to-r from-pink-500 via-violet-500 to-sky-500">
-                        Cyrene Launcher
+                    <span className="bg-clip-text text-transparent launcher-gradient-text">
+                        {launcherConfig.appName}
                     </span>
                 </h1>
 
                 {checking ? (
-                    <span className="loading loading-spinner loading-md text-pink-400 mt-2" />
+                    <span className="loading loading-spinner loading-md launcher-text mt-2" />
                 ) : pending ? (
                     <div className="flex flex-col items-center gap-4" style={{ '--wails-draggable': 'no-drag' } as any}>
                         <p className="text-base-content/55 text-sm">{t("account.waiting")}</p>
-                        <span className="loading loading-spinner loading-md text-pink-400" />
+                        <span className="loading loading-spinner loading-md launcher-text" />
                         <button onClick={handleCancel} className="btn btn-ghost btn-sm text-base-content/50">
                             {t("account.cancel")}
                         </button>
@@ -120,11 +121,11 @@ export default function LoginGate() {
                 ) : (
                     <div className="flex flex-col items-center gap-4" style={{ '--wails-draggable': 'no-drag' } as any}>
                         <p className="text-base-content/55 text-sm">{t("account.gate_hint")}</p>
-                        {errorKey && <p className="text-error text-sm">{t(errorKey)}</p>}
+                        {errorKey && <p className="launcher-status-text-error text-sm">{t(errorKey)}</p>}
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={handleLogin}
-                                className="btn bg-linear-to-r from-pink-500 via-violet-500 to-sky-500 border-none text-white shadow-lg shadow-pink-300/50 px-8"
+                                className="btn launcher-gradient border-none text-white launcher-gradient-shadow px-8"
                             >
                                 {t("account.sign_in")}
                             </button>
