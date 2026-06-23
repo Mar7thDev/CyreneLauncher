@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { X, Image as ImageIcon, Plus, Upload, Check } from 'lucide-react'
 import useSettingStore from '@/stores/settingStore'
 import Cropper from 'react-easy-crop'
@@ -10,6 +10,7 @@ import { toast } from "react-toastify"
 import { motion } from 'motion/react'
 
 const GENSHIN_BACKGROUND = "bg-columbina.jpg"
+const SHOW_GENSHIN_PROFILE = false
 
 const initialImages = {
   "bg-columbina": "bg-columbina.jpg",
@@ -59,6 +60,13 @@ export const BackgroundSelector = () => {
     }
     setBackground(starRailBackground || "bg-17.jpg")
   }
+
+  useEffect(() => {
+    if (SHOW_GENSHIN_PROFILE || gameProfile !== "genshin") return
+    setGameProfile("starrail")
+    setBackground(starRailBackground || "bg-17.jpg")
+  }, [gameProfile, setBackground, setGameProfile, starRailBackground])
+
   const isImageUrl = (url: string) => {
     return /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(url)
   }
@@ -100,7 +108,7 @@ export const BackgroundSelector = () => {
     <div className="flex flex-col items-center justify-center gap-4 w-full">
       <div className="flex flex-col items-center gap-3">
         {([
-          { id: "genshin", icon: "game-genshin.png", label: t("home.game_profile_genshin") },
+          ...(SHOW_GENSHIN_PROFILE ? [{ id: "genshin" as const, icon: "game-genshin.png", label: t("home.game_profile_genshin") }] : []),
           { id: "starrail", icon: "game-starrail.png", label: t("home.game_profile_starrail") },
         ] as const).map((game) => {
           const isActive = gameProfile === game.id
