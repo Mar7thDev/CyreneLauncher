@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type GameProfile = "starrail" | "genshin"
+export type ServerTarget = "hoyotoon" | "local" | "custom"
 
 interface SettingState {
     locale: string;
@@ -12,8 +13,9 @@ interface SettingState {
     genshinGameDir: string;
     genshinServerDir: string;
     genshinServerVersion: string;
-    // March7thHoney: target server URL for the MITM proxy.
-    // Empty → use the built-in default (march7th.hoyotoon.com).
+    // March7thHoney: which server to play on — "hoyotoon" (remote), "local" (launcher-managed), or "custom" (patchTargetUrl).
+    serverTarget: ServerTarget;
+    // March7thHoney: custom target server URL for the MITM proxy (serverTarget="custom").
     patchTargetUrl: string;
     // March7thHoney: preferred loopback port for the proxy. 0 → random free port.
     proxyPort: number;
@@ -41,6 +43,7 @@ interface SettingState {
     setGenshinGameDir: (newGameDir: string) => void;
     setGenshinServerDir: (newServerDir: string) => void;
     setGenshinServerVersion: (newServerVersion: string) => void;
+    setServerTarget: (t: ServerTarget) => void;
     setPatchTargetUrl: (url: string) => void;
     setProxyPort: (port: number) => void;
     setRsaPatch: (v: boolean) => void;
@@ -60,6 +63,7 @@ const useSettingStore = create<SettingState>()(
             genshinGameDir: "",
             genshinServerDir: "",
             genshinServerVersion: "",
+            serverTarget: "hoyotoon",
             patchTargetUrl: "",
             proxyPort: 8080,
             rsaPatch: true,
@@ -85,6 +89,7 @@ const useSettingStore = create<SettingState>()(
             setGenshinGameDir: (newGameDir: string) => set({ genshinGameDir: newGameDir }),
             setGenshinServerDir: (newServerDir: string) => set({ genshinServerDir: newServerDir }),
             setGenshinServerVersion: (newServerVersion: string) => set({ genshinServerVersion: newServerVersion }),
+            setServerTarget: (t: ServerTarget) => set({ serverTarget: t }),
             setPatchTargetUrl: (url: string) => set({ patchTargetUrl: url }),
             setProxyPort: (port: number) => set({ proxyPort: port }),
             setRsaPatch: (v: boolean) => set({ rsaPatch: v }),

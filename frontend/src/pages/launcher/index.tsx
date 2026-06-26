@@ -8,6 +8,7 @@ import path from 'path-browserify'
 import useSettingStore from '@/stores/settingStore';
 import useModalStore from '@/stores/modalStore';
 import useLauncherStore from '@/stores/launcherStore';
+import useAccountStore from '@/stores/accountStore';
 import { AnimatePresence, motion } from 'motion/react';
 import { Link } from '@tanstack/react-router';
 import {
@@ -26,6 +27,7 @@ import NewsWidget from '@/components/newsWidget';
 import { useTranslation } from 'react-i18next';
 
 const DEFAULT_PATCH_URL = "https://march7th.hoyotoon.com"
+const LOCAL_TARGET_URL = "http://127.0.0.1:21000"
 
 export default function LauncherPage() {
     const {
@@ -33,9 +35,10 @@ export default function LauncherPage() {
         genshinGamePath, genshinGameDir, genshinServerDir, genshinServerVersion,
         setGenshinGamePath, setGenshinGameDir, setGenshinServerDir,
         gameDir, background, gameProfile,
-        patchTargetUrl, proxyPort,
+        serverTarget, patchTargetUrl, proxyPort,
         rsaPatch, rsaKey, webRedirect, webHosts,
     } = useSettingStore()
+    const { user, setSkipped } = useAccountStore()
     const { t } = useTranslation()
     const [visibleBackground, setVisibleBackground] = useState(background)
     const [isBackgroundBlackout, setIsBackgroundBlackout] = useState(false)
@@ -265,7 +268,29 @@ export default function LauncherPage() {
                 toast.error(t("home.toast_march7th_needs_starrail"))
                 return
             }
-            const target = patchTargetUrl || DEFAULT_PATCH_URL
+
+            let target = DEFAULT_PATCH_URL
+            if (serverTarget === "custom") {
+                target = patchTargetUrl || DEFAULT_PATCH_URL
+            } else if (serverTarget === "local") {
+                if (!user) {
+                    toast.error(t("account.login_required"))
+                    setSkipped(false)
+                    return
+                }
+                const [sok, serr] = await March7thHoneyService.StartLocalServer()
+                if (!sok) {
+                    const msg =
+                        serr === "not_logged_in" ? t("account.login_required") :
+                        serr === "server_not_found" ? t("home.toast_local_server_missing") :
+                        serr === "server_not_ready" ? t("home.toast_local_server_not_ready") :
+                        t("home.toast_start_server_failed") + serr
+                    toast.error(msg)
+                    return
+                }
+                target = LOCAL_TARGET_URL
+            }
+
             const [ok, err] = await March7thHoneyService.Start(gamePath, target, proxyPort, {
                 rsaPatch, rsaKey, webRedirect, webHosts,
             })

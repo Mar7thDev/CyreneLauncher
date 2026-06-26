@@ -20,15 +20,20 @@
 package march7thhoneyService
 
 import (
+	accountService "cyrene-launcher/internal/account-service"
 	"cyrene-launcher/pkg/constant"
 	"cyrene-launcher/pkg/injector"
 	patchproxy "cyrene-launcher/pkg/patch-proxy"
 	"errors"
 	"fmt"
+	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"golang.org/x/sys/windows"
 )
 
 const (
@@ -43,13 +48,15 @@ const (
 // bytes can be supplied from main.
 type March7thHoneyService struct {
 	dllBytes []byte
+	acct     *accountService.AccountService
 }
 
 // New returns a service that will extract the given DLL bytes to
 // ./patch/CyreneHook.dll on first launch. dllBytes may be empty — in that
 // case the service refuses to launch (and reports a clear error to the UI).
-func New(dllBytes []byte) *March7thHoneyService {
-	return &March7thHoneyService{dllBytes: dllBytes}
+// acct supplies the login token/device id handed to a local server.
+func New(dllBytes []byte, acct *accountService.AccountService) *March7thHoneyService {
+	return &March7thHoneyService{dllBytes: dllBytes, acct: acct}
 }
 
 // Start launches gamePath with the local proxy + CyreneHook injection.
@@ -142,4 +149,78 @@ func (m *March7thHoneyService) ensureDLL() (string, error) {
 		return "", fmt.Errorf("write dll: %w", err)
 	}
 	return abs, nil
+}
+
+// StartLocalServer launches the bundled public server in its own console via `cmd /c start` (token/device id via env, no browser), probing the dispatch port for readiness; the user stops it by closing the window.
+func (m *March7thHoneyService) StartLocalServer() (bool, string) {
+	if portOpen(constant.LocalServerProbeAddr) {
+		return true, "" // already running
+	}
+
+	token := ""
+	if m.acct != nil {
+		token = m.acct.ServerToken()
+	}
+	if token == "" {
+		return false, "not_logged_in"
+	}
+
+	exePath, err := filepath.Abs(constant.LocalServerExe)
+	if err != nil {
+		return false, "resolve server path: " + err.Error()
+	}
+	if info, statErr := os.Stat(exePath); statErr != nil {
+		return false, "server_not_found"
+	} else if info.IsDir() {
+		return false, "server path is a directory: " + exePath
+	}
+
+	// Empty "" is the window title (else `start` misreads the exe as title); the hidden cmd exits at once while `start` opens honey's own console.
+	cmd := exec.Command("cmd", "/c", "start", "", exePath)
+	cmd.Dir = filepath.Dir(exePath)
+	envv := append(os.Environ(),
+		"M7H_ACTIVATION_TOKEN="+token,
+		"M7H_LAUNCHER_MODE=1",
+	)
+	if id := m.acct.DeviceID(); id != "" {
+		envv = append(envv, "M7H_DEVICE_ID="+id)
+	}
+	cmd.Env = envv
+	cmd.SysProcAttr = &windows.SysProcAttr{HideWindow: true, CreationFlags: windows.CREATE_NO_WINDOW}
+
+	if err := cmd.Run(); err != nil {
+		return false, "start server: " + err.Error()
+	}
+
+	if !waitPort(constant.LocalServerProbeAddr, 40*time.Second) {
+		return false, "server_not_ready"
+	}
+	return true, ""
+}
+
+// IsLocalServerRunning reports whether a local March7thHoney server is up.
+func (m *March7thHoneyService) IsLocalServerRunning() bool {
+	return portOpen(constant.LocalServerProbeAddr)
+}
+
+// portOpen reports whether something is accepting TCP connections on addr.
+func portOpen(addr string) bool {
+	conn, err := net.DialTimeout("tcp", addr, time.Second)
+	if err != nil {
+		return false
+	}
+	conn.Close()
+	return true
+}
+
+// waitPort polls addr until it accepts a connection or the timeout elapses.
+func waitPort(addr string, timeout time.Duration) bool {
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		if portOpen(addr) {
+			return true
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	return false
 }

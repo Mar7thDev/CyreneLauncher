@@ -1,6 +1,6 @@
 import { CheckUpdateLauncher } from "@/helper"
 import useModalStore from "@/stores/modalStore"
-import useSettingStore from "@/stores/settingStore"
+import useSettingStore, { type ServerTarget } from "@/stores/settingStore"
 import useLauncherStore from "@/stores/launcherStore"
 import { toast } from "react-toastify"
 import { useTranslation } from "react-i18next"
@@ -24,6 +24,7 @@ export default function SettingModal({
     const {
         closingOption, setClosingOption,
         gameProfile,
+        serverTarget, setServerTarget,
         patchTargetUrl, setPatchTargetUrl,
         proxyPort, setProxyPort,
         rsaPatch, setRsaPatch, rsaKey, setRsaKey,
@@ -75,14 +76,27 @@ export default function SettingModal({
                                 <div>
                                     <h4 className="font-bold text-base mb-1">{t("setting.patch_url_title")}</h4>
                                     <p className="text-sm text-base-content/50 mb-2">{t("setting.patch_url_desc")}</p>
-                                    <input
-                                        type="text"
-                                        className="input input-sm w-full bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
-                                        placeholder={DEFAULT_PATCH_URL}
-                                        value={patchTargetUrl}
-                                        onChange={e => setPatchTargetUrl(e.target.value)}
-                                    />
-                                    <p className="text-xs text-base-content/40 mt-1">{t("setting.patch_url_hint")}</p>
+                                    <select
+                                        className="select select-sm w-full bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
+                                        value={serverTarget}
+                                        onChange={e => setServerTarget(e.target.value as ServerTarget)}
+                                    >
+                                        <option value="hoyotoon">{t("setting.server_target_hoyotoon")}</option>
+                                        <option value="local">{t("setting.server_target_local")}</option>
+                                        <option value="custom">{t("setting.server_target_custom")}</option>
+                                    </select>
+                                    {serverTarget === "custom" && (
+                                        <input
+                                            type="text"
+                                            className="input input-sm w-full mt-2 bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
+                                            placeholder={DEFAULT_PATCH_URL}
+                                            value={patchTargetUrl}
+                                            onChange={e => setPatchTargetUrl(e.target.value)}
+                                        />
+                                    )}
+                                    <p className="text-xs text-base-content/40 mt-1">
+                                        {serverTarget === "local" ? t("setting.server_target_local_hint") : t("setting.patch_url_hint")}
+                                    </p>
                                 </div>
 
                                 <div>

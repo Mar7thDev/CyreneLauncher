@@ -65,6 +65,21 @@ func (a *AccountService) IsLoggedIn() bool {
 	return a.profile != nil
 }
 
+// ServerToken returns the persisted launcher token for a launcher-managed local March7thHoney server.
+func (a *AccountService) ServerToken() string {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.token == "" {
+		a.token, _ = loadToken()
+	}
+	return a.token
+}
+
+// DeviceID exposes the machine fingerprint so the local server presents the same device identity to the backend.
+func (a *AccountService) DeviceID() string {
+	return deviceID()
+}
+
 // GetProfile validates the stored token against the website and returns the
 // account profile. Called on app start to restore the session.
 func (a *AccountService) GetProfile() (bool, Profile, string) {
