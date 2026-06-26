@@ -174,20 +174,12 @@ export default function SettingModal({
                                     <p className="text-xs text-base-content/40 mb-3">
                                         {t("setting.honey_server_version")}: {honeyServerVersion || t("setting.honey_server_not_installed")}
                                     </p>
-                                    <div className="flex gap-2">
-                                        <button
-                                            className="btn btn-sm bg-linear-to-r from-pink-500 to-sky-500 border-none text-white shadow-sm"
-                                            onClick={CheckHoneyUpdate}
-                                        >
-                                            {t("setting.honey_server_check_btn")}
-                                        </button>
-                                        <button
-                                            className="btn btn-sm btn-outline border-pink-300 text-pink-500"
-                                            onClick={DownloadHoney}
-                                        >
-                                            {t("setting.honey_server_download_btn")}
-                                        </button>
-                                    </div>
+                                    <button
+                                        className="btn btn-sm bg-linear-to-r from-pink-500 to-sky-500 border-none text-white shadow-sm"
+                                        onClick={honeyServerVersion ? CheckHoneyUpdate : DownloadHoney}
+                                    >
+                                        {honeyServerVersion ? t("setting.honey_server_check_btn") : t("setting.honey_server_download_btn")}
+                                    </button>
                                 </div>
                             )}
 
