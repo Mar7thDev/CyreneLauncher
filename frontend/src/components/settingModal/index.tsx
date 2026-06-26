@@ -1,4 +1,4 @@
-import { CheckUpdateLauncher } from "@/helper"
+import { CheckUpdateHoneyServer, CheckUpdateLauncher } from "@/helper"
 import useModalStore from "@/stores/modalStore"
 import useSettingStore, { type ServerTarget } from "@/stores/settingStore"
 import useLauncherStore from "@/stores/launcherStore"
@@ -20,11 +20,11 @@ export default function SettingModal({
 }) {
     if (!isOpen) return null
     const { t } = useTranslation()
-    const { setIsOpenSelfUpdateModal } = useModalStore()
+    const { setIsOpenSelfUpdateModal, setIsOpenHoneyDownloadModal, setIsOpenHoneyUpdateModal } = useModalStore()
     const {
         closingOption, setClosingOption,
         gameProfile,
-        serverTarget, setServerTarget,
+        serverTarget, setServerTarget, honeyServerVersion,
         patchTargetUrl, setPatchTargetUrl,
         proxyPort, setProxyPort,
         rsaPatch, setRsaPatch, rsaKey, setRsaKey,
@@ -46,6 +46,15 @@ export default function SettingModal({
         })
         setIsOpenSelfUpdateModal(true)
     }
+
+    const CheckHoneyUpdate = async () => {
+        const data = await CheckUpdateHoneyServer(honeyServerVersion)
+        if (!data.version) { toast.error(t("setting.honey_server_none")); return }
+        if (!data.isUpdate) { toast.success(t("setting.honey_update_success")); return }
+        setUpdateData({ ...updateData, server: { isUpdate: true, isExists: data.isExists, version: data.version } })
+        onClose(); setIsOpenHoneyUpdateModal(true)
+    }
+    const DownloadHoney = () => { onClose(); setIsOpenHoneyDownloadModal(true) }
 
     return (
         <div className="fixed inset-0 z-10 flex items-center justify-center bg-pink-50/30 backdrop-blur-md">
@@ -156,6 +165,31 @@ export default function SettingModal({
                                     )}
                                 </div>
                             </div>
+
+                            {/* Local server (download / update) */}
+                            {serverTarget === "local" && (
+                                <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">
+                                    <h4 className="font-bold text-base mb-1">{t("setting.honey_server_title")}</h4>
+                                    <p className="text-sm text-base-content/50 mb-2">{t("setting.honey_server_desc")}</p>
+                                    <p className="text-xs text-base-content/40 mb-3">
+                                        {t("setting.honey_server_version")}: {honeyServerVersion || t("setting.honey_server_not_installed")}
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <button
+                                            className="btn btn-sm bg-linear-to-r from-pink-500 to-sky-500 border-none text-white shadow-sm"
+                                            onClick={CheckHoneyUpdate}
+                                        >
+                                            {t("setting.honey_server_check_btn")}
+                                        </button>
+                                        <button
+                                            className="btn btn-sm btn-outline border-pink-300 text-pink-500"
+                                            onClick={DownloadHoney}
+                                        >
+                                            {t("setting.honey_server_download_btn")}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Launcher Update */}
                             <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">

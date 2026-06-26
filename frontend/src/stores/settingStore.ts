@@ -13,6 +13,8 @@ interface SettingState {
     genshinGameDir: string;
     genshinServerDir: string;
     genshinServerVersion: string;
+    // March7thHoney: installed local-server version (latest release tag), for update checks.
+    honeyServerVersion: string;
     // March7thHoney: which server to play on — "hoyotoon" (remote), "local" (launcher-managed), or "custom" (patchTargetUrl).
     serverTarget: ServerTarget;
     // March7thHoney: custom target server URL for the MITM proxy (serverTarget="custom").
@@ -43,6 +45,7 @@ interface SettingState {
     setGenshinGameDir: (newGameDir: string) => void;
     setGenshinServerDir: (newServerDir: string) => void;
     setGenshinServerVersion: (newServerVersion: string) => void;
+    setHoneyServerVersion: (v: string) => void;
     setServerTarget: (t: ServerTarget) => void;
     setPatchTargetUrl: (url: string) => void;
     setProxyPort: (port: number) => void;
@@ -63,6 +66,7 @@ const useSettingStore = create<SettingState>()(
             genshinGameDir: "",
             genshinServerDir: "",
             genshinServerVersion: "",
+            honeyServerVersion: "",
             serverTarget: "hoyotoon",
             patchTargetUrl: "",
             proxyPort: 8080,
@@ -89,6 +93,7 @@ const useSettingStore = create<SettingState>()(
             setGenshinGameDir: (newGameDir: string) => set({ genshinGameDir: newGameDir }),
             setGenshinServerDir: (newServerDir: string) => set({ genshinServerDir: newServerDir }),
             setGenshinServerVersion: (newServerVersion: string) => set({ genshinServerVersion: newServerVersion }),
+            setHoneyServerVersion: (v: string) => set({ honeyServerVersion: v }),
             setServerTarget: (t: ServerTarget) => set({ serverTarget: t }),
             setPatchTargetUrl: (url: string) => set({ patchTargetUrl: url }),
             setProxyPort: (port: number) => set({ proxyPort: port }),
