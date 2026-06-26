@@ -203,6 +203,27 @@ func (m *March7thHoneyService) IsLocalServerRunning() bool {
 	return portOpen(constant.LocalServerProbeAddr)
 }
 
+// OpenLocalServerFolder opens the local-server folder, telling apart "missing" vs "empty" so the UI warns instead of opening a useless window.
+func (m *March7thHoneyService) OpenLocalServerFolder() (bool, string) {
+	dir, err := filepath.Abs(constant.LocalServerDir)
+	if err != nil {
+		return false, "resolve server folder: " + err.Error()
+	}
+	info, statErr := os.Stat(dir)
+	if statErr != nil || !info.IsDir() {
+		return false, "server_folder_missing"
+	}
+	entries, readErr := os.ReadDir(dir)
+	if readErr != nil {
+		return false, "server_folder_missing"
+	}
+	if len(entries) == 0 {
+		return false, "server_folder_empty"
+	}
+	application.Get().Browser.OpenURL("file:///" + filepath.ToSlash(dir))
+	return true, ""
+}
+
 // portOpen reports whether something is accepting TCP connections on addr.
 func portOpen(addr string) bool {
 	conn, err := net.DialTimeout("tcp", addr, time.Second)

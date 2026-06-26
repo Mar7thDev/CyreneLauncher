@@ -316,6 +316,16 @@ export default function LauncherPage() {
         await handlePickFile()
     }
 
+    const handleOpenServerFolder = async () => {
+        const [ok, err] = await March7thHoneyService.OpenLocalServerFolder()
+        if (ok) return
+        const msg =
+            err === "server_folder_missing" ? t("home.toast_server_folder_missing") :
+            err === "server_folder_empty" ? t("home.toast_server_folder_empty") :
+            t("home.toast_start_server_failed") + err
+        toast.error(msg)
+    }
+
     const handleOpenDownloadDataModal = async () => {
         if (isGenshin) {
             const serverData = await CheckUpdateGenshinServer(genshinServerVersion)
@@ -480,7 +490,10 @@ export default function LauncherPage() {
                             </button>
                         </li>
                         {isStarRail && (
-                            <li><button disabled={!gameDir} onClick={() => gameDir && FSService.OpenFolder(gameDir + "/StarRail_Data/Persistent/Audio/AudioPackage/Windows")}>{t("home.menu_open_voice")}</button></li>
+                            <>
+                                <li><button disabled={!gameDir} onClick={() => gameDir && FSService.OpenFolder(gameDir + "/StarRail_Data/Persistent/Audio/AudioPackage/Windows")}>{t("home.menu_open_voice")}</button></li>
+                                <li><button onClick={handleOpenServerFolder}>{t("home.menu_open_server")}</button></li>
+                            </>
                         )}
                         {isGenshin && (
                             <>

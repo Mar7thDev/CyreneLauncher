@@ -23,6 +23,13 @@ export function IsLocalServerRunning(): $CancellablePromise<boolean> {
 }
 
 /**
+ * OpenLocalServerFolder opens the local-server folder, telling apart "missing" vs "empty" so the UI warns instead of opening a useless window.
+ */
+export function OpenLocalServerFolder(): $CancellablePromise<[boolean, string]> {
+    return $Call.ByID(2613507552);
+}
+
+/**
  * Start launches gamePath with the local proxy + CyreneHook injection.
  * 
  * targetURL is the private-server base URL (e.g. "https://march7th.hoyotoon.com").
