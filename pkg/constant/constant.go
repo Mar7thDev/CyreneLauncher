@@ -30,7 +30,19 @@ const DefaultPatchTargetURL = "https://march7th.hoyotoon.com"
 // uses the March7thHoney proxy mode and has no artifacts to download.
 const SourceGenshin = "genshin"
 
-const CurrentLauncherVersion = "1.0.7"
+// March7thHoney local-server mode: the public AOT build ships in the ./server folder next to the launcher (Phase 2 will download it from a GitHub release).
+const LocalServerDir = "./server"
+const LocalServerExe = "./server/March7thHoney.exe"
+const LocalServerImageName = "March7thHoney.exe"
+const LocalServerProbeAddr = "127.0.0.1:21000"
+const LocalServerTargetURL = "http://127.0.0.1:21000"
+
+// March7thHoney downloadable build: published as releases on the public mirror; one fixed-name zip whose contents sit at the zip root.
+const SourceHoney = "honey"
+const HoneyServerGitUrl = "https://api.github.com/repos/Mar7thLover/March7thHoney-Public/releases"
+const HoneyServerAsset = "win-x64.zip"
+
+const CurrentLauncherVersion = "1.0.8"
 
 // === News module ===
 //

@@ -8,16 +8,20 @@ import path from 'path-browserify'
 import useSettingStore from '@/stores/settingStore';
 import useModalStore from '@/stores/modalStore';
 import useLauncherStore from '@/stores/launcherStore';
+import useAccountStore from '@/stores/accountStore';
 import { AnimatePresence, motion } from 'motion/react';
 import { Link } from '@tanstack/react-router';
 import {
     CheckUpdateGenshinServer,
+    CheckUpdateHoneyServer,
     CheckUpdateLauncher,
     GENSHIN_INJECTOR_PATH,
     GENSHIN_SERVER_MANIFEST,
     GENSHIN_SERVER_ROOT,
+    HONEY_SERVER_EXE,
     sleep,
     UpdateGenshinServer,
+    UpdateHoneyServer,
     UpdateLauncher,
 } from '@/helper';
 import UpdateModal from '@/components/updateModal';
@@ -26,6 +30,7 @@ import NewsWidget from '@/components/newsWidget';
 import { useTranslation } from 'react-i18next';
 
 const DEFAULT_PATCH_URL = "https://march7th.hoyotoon.com"
+const LOCAL_TARGET_URL = "http://127.0.0.1:21000"
 
 export default function LauncherPage() {
     const {
@@ -33,9 +38,10 @@ export default function LauncherPage() {
         genshinGamePath, genshinGameDir, genshinServerDir, genshinServerVersion,
         setGenshinGamePath, setGenshinGameDir, setGenshinServerDir,
         gameDir, background, gameProfile,
-        patchTargetUrl, proxyPort,
+        serverTarget, patchTargetUrl, proxyPort, honeyServerVersion,
         rsaPatch, rsaKey, webRedirect, webHosts,
     } = useSettingStore()
+    const { user, setSkipped } = useAccountStore()
     const { t } = useTranslation()
     const [visibleBackground, setVisibleBackground] = useState(background)
     const [isBackgroundBlackout, setIsBackgroundBlackout] = useState(false)
@@ -43,7 +49,9 @@ export default function LauncherPage() {
     const backgroundTimerRef = useRef<number | null>(null)
     const {
         isOpenDownloadDataModal, isOpenUpdateDataModal, isOpenSelfUpdateModal,
+        isOpenHoneyDownloadModal, isOpenHoneyUpdateModal,
         setIsOpenDownloadDataModal, setIsOpenUpdateDataModal, setIsOpenSelfUpdateModal,
+        setIsOpenHoneyDownloadModal, setIsOpenHoneyUpdateModal,
     } = useModalStore()
     const {
         isLoading, downloadType, serverReady, isDownloading,
@@ -177,6 +185,22 @@ export default function LauncherPage() {
         checkStartUp()
     }, [isGenshin]);
 
+    // Local server: when "local" is selected (and on startup, since serverTarget persists), prompt download if missing, else auto-check for updates.
+    useEffect(() => {
+        if (isGenshin || serverTarget !== "local") return
+        let cancelled = false
+        ;(async () => {
+            const exists = await FSService.FileExists(HONEY_SERVER_EXE)
+            if (cancelled) return
+            if (!exists) { setIsOpenHoneyDownloadModal(true); return }
+            const data = await CheckUpdateHoneyServer(honeyServerVersion)
+            if (cancelled || !data.isUpdate) return
+            setUpdateData({ ...useLauncherStore.getState().updateData, server: { isUpdate: true, isExists: true, version: data.version } })
+            setIsOpenHoneyUpdateModal(true)
+        })()
+        return () => { cancelled = true }
+    }, [serverTarget, gameProfile])
+
     const handlePickFile = async () => {
         try {
             setIsLoading(true)
@@ -265,7 +289,29 @@ export default function LauncherPage() {
                 toast.error(t("home.toast_march7th_needs_starrail"))
                 return
             }
-            const target = patchTargetUrl || DEFAULT_PATCH_URL
+
+            let target = DEFAULT_PATCH_URL
+            if (serverTarget === "custom") {
+                target = patchTargetUrl || DEFAULT_PATCH_URL
+            } else if (serverTarget === "local") {
+                if (!user) {
+                    toast.error(t("account.login_required"))
+                    setSkipped(false)
+                    return
+                }
+                const [sok, serr] = await March7thHoneyService.StartLocalServer()
+                if (!sok) {
+                    if (serr === "server_not_found") { setIsOpenHoneyDownloadModal(true); return }
+                    const msg =
+                        serr === "not_logged_in" ? t("account.login_required") :
+                        serr === "server_not_ready" ? t("home.toast_local_server_not_ready") :
+                        t("home.toast_start_server_failed") + serr
+                    toast.error(msg)
+                    return
+                }
+                target = LOCAL_TARGET_URL
+            }
+
             const [ok, err] = await March7thHoneyService.Start(gamePath, target, proxyPort, {
                 rsaPatch, rsaKey, webRedirect, webHosts,
             })
@@ -289,6 +335,16 @@ export default function LauncherPage() {
             return
         }
         await handlePickFile()
+    }
+
+    const handleOpenServerFolder = async () => {
+        const [ok, err] = await March7thHoneyService.OpenLocalServerFolder()
+        if (ok) return
+        const msg =
+            err === "server_folder_missing" ? t("home.toast_server_folder_missing") :
+            err === "server_folder_empty" ? t("home.toast_server_folder_empty") :
+            t("home.toast_start_server_failed") + err
+        toast.error(msg)
     }
 
     const handleOpenDownloadDataModal = async () => {
@@ -346,12 +402,29 @@ export default function LauncherPage() {
         setDownloadType(""); setIsDownloading(false)
     }
 
+    const handleHoneyServer = async () => {
+        setIsDownloading(true)
+        try {
+            let version = updateData.server.version
+            if (!version) { version = (await CheckUpdateHoneyServer(honeyServerVersion)).version }
+            if (!version) { toast.error(t("setting.honey_server_none")); return }
+            const ok = await UpdateHoneyServer(version)
+            if (ok) setUpdateData({ ...updateData, server: { isUpdate: false, isExists: true, version } })
+        } catch (err: any) {
+            toast.error("Local server update failed: " + err)
+        } finally {
+            setDownloadType(""); setIsDownloading(false)
+        }
+    }
+
     useEffect(() => {
         const handleEscKey = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 setIsOpenDownloadDataModal(false)
                 setIsOpenUpdateDataModal(false)
                 setIsOpenSelfUpdateModal(false)
+                setIsOpenHoneyDownloadModal(false)
+                setIsOpenHoneyUpdateModal(false)
             }
         }
         window.addEventListener('keydown', handleEscKey)
@@ -455,7 +528,10 @@ export default function LauncherPage() {
                             </button>
                         </li>
                         {isStarRail && (
-                            <li><button disabled={!gameDir} onClick={() => gameDir && FSService.OpenFolder(gameDir + "/StarRail_Data/Persistent/Audio/AudioPackage/Windows")}>{t("home.menu_open_voice")}</button></li>
+                            <>
+                                <li><button disabled={!gameDir} onClick={() => gameDir && FSService.OpenFolder(gameDir + "/StarRail_Data/Persistent/Audio/AudioPackage/Windows")}>{t("home.menu_open_voice")}</button></li>
+                                <li><button onClick={handleOpenServerFolder}>{t("home.menu_open_server")}</button></li>
+                            </>
                         )}
                         {isGenshin && (
                             <>
@@ -544,7 +620,7 @@ export default function LauncherPage() {
             </div>
 
             {/* Download progress */}
-            {isDownloading && !updateData.launcher.isUpdate && isGenshin && (
+            {isDownloading && !updateData.launcher.isUpdate && (isGenshin || (isStarRail && serverTarget === "local")) && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-10 w-[55vw] bg-white/80 backdrop-blur-xl border border-pink-200/60 rounded-2xl p-4 shadow-xl shadow-pink-100/50">
                     <div className="space-y-2">
                         <div className="flex justify-between items-center text-sm">
@@ -617,6 +693,26 @@ export default function LauncherPage() {
                 buttons={[
                     { text: t("home.btn_no"),  onClick: () => setIsOpenSelfUpdateModal(false), variant: "outline" },
                     { text: t("home.btn_yes"), onClick: async () => { setIsOpenSelfUpdateModal(false); await handlerUpdateData() }, variant: "primary" }
+                ]}
+            />
+            <UpdateModal
+                isOpen={isOpenHoneyDownloadModal}
+                onClose={() => setIsOpenHoneyDownloadModal(false)}
+                title={t("home.modal_honey_download_title")}
+                message={t("home.modal_honey_download_msg")}
+                buttons={[
+                    { text: t("home.btn_no"),       onClick: () => setIsOpenHoneyDownloadModal(false), variant: "outline" },
+                    { text: t("home.btn_download"), onClick: async () => { setIsOpenHoneyDownloadModal(false); await handleHoneyServer() }, variant: "primary" }
+                ]}
+            />
+            <UpdateModal
+                isOpen={isOpenHoneyUpdateModal}
+                onClose={() => setIsOpenHoneyUpdateModal(false)}
+                title={t("home.modal_honey_update_title")}
+                message={t("home.modal_honey_update_msg")}
+                buttons={[
+                    { text: t("home.btn_no"),  onClick: () => setIsOpenHoneyUpdateModal(false), variant: "outline" },
+                    { text: t("home.btn_yes"), onClick: async () => { setIsOpenHoneyUpdateModal(false); await handleHoneyServer() }, variant: "primary" }
                 ]}
             />
         </div>

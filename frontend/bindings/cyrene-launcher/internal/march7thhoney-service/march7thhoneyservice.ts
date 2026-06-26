@@ -16,6 +16,20 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 import * as patchproxy$0 from "../../pkg/patch-proxy/models.js";
 
 /**
+ * IsLocalServerRunning reports whether a local March7thHoney server is up.
+ */
+export function IsLocalServerRunning(): $CancellablePromise<boolean> {
+    return $Call.ByID(166262603);
+}
+
+/**
+ * OpenLocalServerFolder opens the local-server folder, telling apart "missing" vs "empty" so the UI warns instead of opening a useless window.
+ */
+export function OpenLocalServerFolder(): $CancellablePromise<[boolean, string]> {
+    return $Call.ByID(2613507552);
+}
+
+/**
  * Start launches gamePath with the local proxy + CyreneHook injection.
  * 
  * targetURL is the private-server base URL (e.g. "https://march7th.hoyotoon.com").
@@ -28,4 +42,11 @@ import * as patchproxy$0 from "../../pkg/patch-proxy/models.js";
  */
 export function Start(gamePath: string, targetURL: string, preferredPort: number, opts: patchproxy$0.PatchOptions): $CancellablePromise<[boolean, string]> {
     return $Call.ByID(3347991480, gamePath, targetURL, preferredPort, opts);
+}
+
+/**
+ * StartLocalServer launches the bundled public server in its own console via `cmd /c start` (token/device id via env, no browser), probing the dispatch port for readiness; the user stops it by closing the window.
+ */
+export function StartLocalServer(): $CancellablePromise<[boolean, string]> {
+    return $Call.ByID(720074128);
 }

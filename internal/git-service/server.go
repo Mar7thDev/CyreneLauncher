@@ -19,74 +19,132 @@ import (
 )
 
 var lastServerArchivePath string
+var lastServerArchiveSource string // "genshin" | "honey" — picks the UnzipServer destination
 
-// GetLatestServerVersion resolves the newest Genshin launcher-runtime package.
-// The source parameter is kept for binding compatibility; only "genshin" is
-// supported now that the FireflyGo mode is gone.
+// GetLatestServerVersion resolves the newest downloadable package for a source (genshin: runtime asset name; honey: latest release tag).
 func (g *GitService) GetLatestServerVersion(source string) (bool, string, string) {
-	if source != constant.SourceGenshin {
+	switch source {
+	case constant.SourceGenshin:
+		asset, ok, err := g.getGenshinRuntimeAsset("")
+		if err != nil {
+			return false, "", err.Error()
+		}
+		if !ok {
+			return false, "", "no Columbina-GI launcher runtime package found"
+		}
+		return true, asset.Name, ""
+	case constant.SourceHoney:
+		tag, ok := g.getLatestReleaseTagWithAsset(constant.HoneyServerGitUrl, constant.HoneyServerAsset)
+		if !ok {
+			return false, "", "no March7thHoney release asset found"
+		}
+		return true, tag, ""
+	default:
 		return false, "", "unknown server source: " + source
 	}
-	asset, ok, err := g.getGenshinRuntimeAsset("")
-	if err != nil {
-		return false, "", err.Error()
-	}
-	if !ok {
-		return false, "", "no Columbina-GI launcher runtime package found"
-	}
-	return true, asset.Name, ""
 }
 
 func (g *GitService) DownloadServerProgress(source string, version string) (bool, string) {
-	if source != constant.SourceGenshin {
+	switch source {
+	case constant.SourceGenshin:
+		asset, ok, err := g.getGenshinRuntimeAsset(version)
+		if err != nil {
+			return false, err.Error()
+		}
+		if !ok {
+			return false, "no Columbina-GI launcher runtime package found"
+		}
+		downloadURL := asset.BrowserDownloadURL
+		if downloadURL == "" {
+			downloadURL = fmt.Sprintf(
+				"https://github.com/PrliStrxs/ZGN-SR/releases/download/%s/%s",
+				constant.GenshinServerReleaseTag,
+				asset.Name,
+			)
+		}
+		if err := os.MkdirAll(constant.GenshinServerStorageUrl, 0755); err != nil {
+			return false, err.Error()
+		}
+		saveFile := filepath.Join(constant.GenshinServerStorageUrl, asset.Name)
+		os.Remove(saveFile)
+		os.Remove(saveFile + ".tmp")
+		tmpPath, err := g.downloadFileParallel(saveFile, downloadURL, 4, func(percent float64, speed string) {
+			application.Get().Event.Emit("download:server", map[string]interface{}{
+				"percent": fmt.Sprintf("%.2f", percent),
+				"speed":   speed,
+			})
+		})
+		if err != nil {
+			return false, err.Error()
+		}
+		for i := 0; i < 3; i++ {
+			if err := os.Rename(tmpPath, saveFile); err == nil {
+				lastServerArchivePath = saveFile
+				lastServerArchiveSource = constant.SourceGenshin
+				return true, ""
+			}
+			time.Sleep(300 * time.Millisecond)
+		}
+		return false, "failed to rename tmp file after retries"
+	case constant.SourceHoney:
+		tag := version
+		if tag == "" {
+			t, ok := g.getLatestReleaseTagWithAsset(constant.HoneyServerGitUrl, constant.HoneyServerAsset)
+			if !ok {
+				return false, "no March7thHoney release asset found"
+			}
+			tag = t
+		}
+		asset, ok := g.getReleaseAsset(tag, constant.HoneyServerGitUrl, constant.HoneyServerAsset)
+		if !ok {
+			return false, "March7thHoney asset not found for " + tag
+		}
+		downloadURL := asset.BrowserDownloadURL
+		if downloadURL == "" {
+			downloadURL = fmt.Sprintf(
+				"https://github.com/Mar7thLover/March7thHoney-Public/releases/download/%s/%s",
+				tag,
+				constant.HoneyServerAsset,
+			)
+		}
+		if err := os.MkdirAll(constant.TempUrl, 0755); err != nil {
+			return false, err.Error()
+		}
+		saveFile := filepath.Join(constant.TempUrl, constant.HoneyServerAsset)
+		os.Remove(saveFile)
+		os.Remove(saveFile + ".tmp")
+		tmpPath, err := g.downloadFileParallel(saveFile, downloadURL, 4, func(percent float64, speed string) {
+			application.Get().Event.Emit("download:server", map[string]interface{}{
+				"percent": fmt.Sprintf("%.2f", percent),
+				"speed":   speed,
+			})
+		})
+		if err != nil {
+			return false, err.Error()
+		}
+		for i := 0; i < 3; i++ {
+			if err := os.Rename(tmpPath, saveFile); err == nil {
+				lastServerArchivePath = saveFile
+				lastServerArchiveSource = constant.SourceHoney
+				return true, ""
+			}
+			time.Sleep(300 * time.Millisecond)
+		}
+		return false, "failed to rename tmp file after retries"
+	default:
 		return false, "unknown server source: " + source
 	}
-
-	asset, ok, err := g.getGenshinRuntimeAsset(version)
-	if err != nil {
-		return false, err.Error()
-	}
-	if !ok {
-		return false, "no Columbina-GI launcher runtime package found"
-	}
-	downloadURL := asset.BrowserDownloadURL
-	if downloadURL == "" {
-		downloadURL = fmt.Sprintf(
-			"https://github.com/PrliStrxs/ZGN-SR/releases/download/%s/%s",
-			constant.GenshinServerReleaseTag,
-			asset.Name,
-		)
-	}
-
-	if err := os.MkdirAll(constant.GenshinServerStorageUrl, 0755); err != nil {
-		return false, err.Error()
-	}
-
-	saveFile := filepath.Join(constant.GenshinServerStorageUrl, asset.Name)
-	os.Remove(saveFile)
-	os.Remove(saveFile + ".tmp")
-
-	tmpPath, err := g.downloadFileParallel(saveFile, downloadURL, 4, func(percent float64, speed string) {
-		application.Get().Event.Emit("download:server", map[string]interface{}{
-			"percent": fmt.Sprintf("%.2f", percent),
-			"speed":   speed,
-		})
-	})
-	if err != nil {
-		return false, err.Error()
-	}
-	for i := 0; i < 3; i++ {
-		if err := os.Rename(tmpPath, saveFile); err == nil {
-			lastServerArchivePath = saveFile
-			return true, ""
-		}
-		time.Sleep(300 * time.Millisecond)
-	}
-	return false, "failed to rename tmp file after retries"
 }
 
 func (g *GitService) UnzipServer() {
 	if lastServerArchivePath == "" {
+		return
+	}
+	if lastServerArchiveSource == constant.SourceHoney {
+		// Overwrite-update: keep ./server so Config/Database save + activation.token survive; just overlay new files.
+		if err := g.unzipParallel(lastServerArchivePath, constant.LocalServerDir); err == nil {
+			os.Remove(lastServerArchivePath)
+		}
 		return
 	}
 	os.RemoveAll(constant.GenshinServerBundleDir)

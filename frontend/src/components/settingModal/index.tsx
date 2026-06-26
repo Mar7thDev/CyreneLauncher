@@ -1,6 +1,6 @@
-import { CheckUpdateLauncher } from "@/helper"
+import { CheckUpdateHoneyServer, CheckUpdateLauncher } from "@/helper"
 import useModalStore from "@/stores/modalStore"
-import useSettingStore from "@/stores/settingStore"
+import useSettingStore, { type ServerTarget } from "@/stores/settingStore"
 import useLauncherStore from "@/stores/launcherStore"
 import { toast } from "react-toastify"
 import { useTranslation } from "react-i18next"
@@ -20,10 +20,11 @@ export default function SettingModal({
 }) {
     if (!isOpen) return null
     const { t } = useTranslation()
-    const { setIsOpenSelfUpdateModal } = useModalStore()
+    const { setIsOpenSelfUpdateModal, setIsOpenHoneyDownloadModal, setIsOpenHoneyUpdateModal } = useModalStore()
     const {
         closingOption, setClosingOption,
         gameProfile,
+        serverTarget, setServerTarget, honeyServerVersion,
         patchTargetUrl, setPatchTargetUrl,
         proxyPort, setProxyPort,
         rsaPatch, setRsaPatch, rsaKey, setRsaKey,
@@ -45,6 +46,15 @@ export default function SettingModal({
         })
         setIsOpenSelfUpdateModal(true)
     }
+
+    const CheckHoneyUpdate = async () => {
+        const data = await CheckUpdateHoneyServer(honeyServerVersion)
+        if (!data.version) { toast.error(t("setting.honey_server_none")); return }
+        if (!data.isUpdate) { toast.success(t("setting.honey_update_success")); return }
+        setUpdateData({ ...updateData, server: { isUpdate: true, isExists: data.isExists, version: data.version } })
+        onClose(); setIsOpenHoneyUpdateModal(true)
+    }
+    const DownloadHoney = () => { onClose(); setIsOpenHoneyDownloadModal(true) }
 
     return (
         <div className="fixed inset-0 z-10 flex items-center justify-center bg-pink-50/30 backdrop-blur-md">
@@ -75,14 +85,27 @@ export default function SettingModal({
                                 <div>
                                     <h4 className="font-bold text-base mb-1">{t("setting.patch_url_title")}</h4>
                                     <p className="text-sm text-base-content/50 mb-2">{t("setting.patch_url_desc")}</p>
-                                    <input
-                                        type="text"
-                                        className="input input-sm w-full bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
-                                        placeholder={DEFAULT_PATCH_URL}
-                                        value={patchTargetUrl}
-                                        onChange={e => setPatchTargetUrl(e.target.value)}
-                                    />
-                                    <p className="text-xs text-base-content/40 mt-1">{t("setting.patch_url_hint")}</p>
+                                    <select
+                                        className="select select-sm w-full bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
+                                        value={serverTarget}
+                                        onChange={e => setServerTarget(e.target.value as ServerTarget)}
+                                    >
+                                        <option value="hoyotoon">{t("setting.server_target_hoyotoon")}</option>
+                                        <option value="local">{t("setting.server_target_local")}</option>
+                                        <option value="custom">{t("setting.server_target_custom")}</option>
+                                    </select>
+                                    {serverTarget === "custom" && (
+                                        <input
+                                            type="text"
+                                            className="input input-sm w-full mt-2 bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
+                                            placeholder={DEFAULT_PATCH_URL}
+                                            value={patchTargetUrl}
+                                            onChange={e => setPatchTargetUrl(e.target.value)}
+                                        />
+                                    )}
+                                    <p className="text-xs text-base-content/40 mt-1">
+                                        {serverTarget === "local" ? t("setting.server_target_local_hint") : t("setting.patch_url_hint")}
+                                    </p>
                                 </div>
 
                                 <div>
@@ -142,6 +165,23 @@ export default function SettingModal({
                                     )}
                                 </div>
                             </div>
+
+                            {/* Local server (download / update) */}
+                            {serverTarget === "local" && (
+                                <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">
+                                    <h4 className="font-bold text-base mb-1">{t("setting.honey_server_title")}</h4>
+                                    <p className="text-sm text-base-content/50 mb-2">{t("setting.honey_server_desc")}</p>
+                                    <p className="text-xs text-base-content/40 mb-3">
+                                        {t("setting.honey_server_version")}: {honeyServerVersion || t("setting.honey_server_not_installed")}
+                                    </p>
+                                    <button
+                                        className="btn btn-sm bg-linear-to-r from-pink-500 to-sky-500 border-none text-white shadow-sm"
+                                        onClick={honeyServerVersion ? CheckHoneyUpdate : DownloadHoney}
+                                    >
+                                        {honeyServerVersion ? t("setting.honey_server_check_btn") : t("setting.honey_server_download_btn")}
+                                    </button>
+                                </div>
+                            )}
 
                             {/* Launcher Update */}
                             <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">

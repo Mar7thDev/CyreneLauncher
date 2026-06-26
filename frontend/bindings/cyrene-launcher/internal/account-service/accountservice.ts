@@ -14,6 +14,13 @@ export function CancelLogin(): $CancellablePromise<void> {
 }
 
 /**
+ * DeviceID exposes the machine fingerprint so the local server presents the same device identity to the backend.
+ */
+export function DeviceID(): $CancellablePromise<string> {
+    return $Call.ByID(1805274335);
+}
+
+/**
  * GetProfile validates the stored token against the website and returns the
  * account profile. Called on app start to restore the session.
  */
@@ -37,6 +44,13 @@ export function IsLoggedIn(): $CancellablePromise<boolean> {
 
 export function Logout(): $CancellablePromise<[boolean, string]> {
     return $Call.ByID(2486771742);
+}
+
+/**
+ * ServerToken returns the persisted launcher token for a launcher-managed local March7thHoney server.
+ */
+export function ServerToken(): $CancellablePromise<string> {
+    return $Call.ByID(2409911808);
 }
 
 /**

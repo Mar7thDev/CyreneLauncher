@@ -14,9 +14,7 @@ export function GetLatestLauncherVersion(): $CancellablePromise<[boolean, string
 }
 
 /**
- * GetLatestServerVersion resolves the newest Genshin launcher-runtime package.
- * The source parameter is kept for binding compatibility; only "genshin" is
- * supported now that the FireflyGo mode is gone.
+ * GetLatestServerVersion resolves the newest downloadable package for a source (genshin: runtime asset name; honey: latest release tag).
  */
 export function GetLatestServerVersion(source: string): $CancellablePromise<[boolean, string, string]> {
     return $Call.ByID(1666694076, source);
