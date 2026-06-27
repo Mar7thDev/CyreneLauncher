@@ -55,14 +55,22 @@ export default function LoginGate() {
         return () => { offSuccess(); offFailed(); offLogout() }
     }, [])
 
+    // 点登录后拿设备码:连不上则在 2 分钟内重试(期间显示连接页),拿到设备码即打开浏览器进入等待;被封禁/待激活则直接提示。
     const handleLogin = async () => {
         setGateError("")
-        try {
-            const [ok, err] = await AccountService.StartLogin()
-            if (!ok) { setGateError(err ? mapError(err) : "offline"); return }
-            setPending(true)
-        } catch {
-            setGateError("offline")
+        setChecking(true)
+        const deadline = Date.now() + 2 * 60 * 1000
+        while (true) {
+            const st = useAccountStore.getState()
+            if (st.user || st.skipped) { setChecking(false); return }
+            try {
+                const [ok, err] = await AccountService.StartLogin()
+                if (ok) { setChecking(false); setPending(true); return }
+                const mapped = err ? mapError(err) : ""
+                if (mapped === "banned" || mapped === "pending") { setChecking(false); setGateError(mapped); return }
+            } catch { /* 连不上,继续重试 */ }
+            if (Date.now() >= deadline) { setChecking(false); setGateError("offline"); return }
+            await new Promise((r) => setTimeout(r, 5000))
         }
     }
 
