@@ -389,6 +389,7 @@
         "reset_err": "Đặt lại thất bại."
     },
     "account": {
+        "connecting": "Đang kết nối máy chủ…",
         "sign_in": "Đăng nhập",
         "waiting": "Hoàn tất đăng nhập trong trình duyệt. Nhấn để hủy",
         "profile": "Trang cá nhân",

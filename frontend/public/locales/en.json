@@ -396,6 +396,7 @@
         "reset_err": "Reset failed."
     },
     "account": {
+        "connecting": "Connecting to the server…",
         "sign_in": "Sign in",
         "waiting": "Finish signing in from your browser. Click to cancel.",
         "profile": "Profile",

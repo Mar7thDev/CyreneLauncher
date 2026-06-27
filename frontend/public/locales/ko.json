@@ -389,6 +389,7 @@
         "reset_err": "초기화 실패."
     },
     "account": {
+        "connecting": "서버에 연결 중…",
         "sign_in": "로그인",
         "waiting": "브라우저에서 로그인을 완료하세요. 클릭하면 취소됩니다",
         "profile": "프로필",
