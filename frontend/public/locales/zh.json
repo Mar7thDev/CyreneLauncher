@@ -396,6 +396,7 @@
         "reset_err": "重置失败。"
     },
     "account": {
+        "connecting": "正在连接服务器…",
         "sign_in": "登录",
         "waiting": "请在浏览器中完成登录，点击可取消",
         "profile": "个人主页",

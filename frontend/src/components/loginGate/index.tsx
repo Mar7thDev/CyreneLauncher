@@ -19,17 +19,22 @@ export default function LoginGate() {
     const { t } = useTranslation()
     const { user, pending, checking, skipped, gateError, setUser, setPending, setChecking, setSkipped, setGateError } = useAccountStore()
 
+    // 每次打开 launcher 自动恢复登录态:连不上服务器则在 2 分钟内持续重试,期间显示带"暂不登录"的连接页,拿到 profile 即登录,未登录(401)则显示登录页。
     const restore = async () => {
-        setChecking(true)
         setGateError("")
-        try {
-            const [ok, profile, err] = await AccountService.GetProfile()
-            if (ok) setUser(profile)
-            else if (err) setGateError("offline")
-        } catch {
-            setGateError("offline")
+        setChecking(true)
+        const deadline = Date.now() + 2 * 60 * 1000
+        while (true) {
+            const st = useAccountStore.getState()
+            if (st.user || st.skipped) { setChecking(false); return }
+            try {
+                const [ok, profile, err] = await AccountService.GetProfile()
+                if (ok) { setUser(profile); setChecking(false); return }
+                if (!err) { setChecking(false); return } // 未登录(401/无 token):显示登录页
+            } catch { /* 连不上,继续重试 */ }
+            if (Date.now() >= deadline) { setGateError("offline"); setChecking(false); return }
+            await new Promise((r) => setTimeout(r, 5000))
         }
-        setChecking(false)
     }
 
     useEffect(() => {
@@ -50,14 +55,22 @@ export default function LoginGate() {
         return () => { offSuccess(); offFailed(); offLogout() }
     }, [])
 
+    // 点登录后拿设备码:连不上则在 2 分钟内重试(期间显示连接页),拿到设备码即打开浏览器进入等待;被封禁/待激活则直接提示。
     const handleLogin = async () => {
         setGateError("")
-        try {
-            const [ok, err] = await AccountService.StartLogin()
-            if (!ok) { setGateError(err ? mapError(err) : "offline"); return }
-            setPending(true)
-        } catch {
-            setGateError("offline")
+        setChecking(true)
+        const deadline = Date.now() + 2 * 60 * 1000
+        while (true) {
+            const st = useAccountStore.getState()
+            if (st.user || st.skipped) { setChecking(false); return }
+            try {
+                const [ok, err] = await AccountService.StartLogin()
+                if (ok) { setChecking(false); setPending(true); return }
+                const mapped = err ? mapError(err) : ""
+                if (mapped === "banned" || mapped === "pending") { setChecking(false); setGateError(mapped); return }
+            } catch { /* 连不上,继续重试 */ }
+            if (Date.now() >= deadline) { setChecking(false); setGateError("offline"); return }
+            await new Promise((r) => setTimeout(r, 5000))
         }
     }
 
@@ -108,7 +121,13 @@ export default function LoginGate() {
                 </h1>
 
                 {checking ? (
-                    <span className="loading loading-spinner loading-md text-pink-400 mt-2" />
+                    <div className="flex flex-col items-center gap-4" style={{ '--wails-draggable': 'no-drag' } as any}>
+                        <p className="text-base-content/55 text-sm">{t("account.connecting")}</p>
+                        <span className="loading loading-spinner loading-md text-pink-400" />
+                        <button onClick={handleSkip} className="btn btn-ghost btn-sm text-base-content/40">
+                            {t("account.skip")}
+                        </button>
+                    </div>
                 ) : pending ? (
                     <div className="flex flex-col items-center gap-4" style={{ '--wails-draggable': 'no-drag' } as any}>
                         <p className="text-base-content/55 text-sm">{t("account.waiting")}</p>
