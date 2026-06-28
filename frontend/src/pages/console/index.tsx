@@ -97,6 +97,16 @@ export default function ConsolePage() {
     };
 
     useEffect(() => {
+        // Server target changed: drop every per-server session state so the console and handbook never show data from the previous server.
+        setConnected(false);
+        setCommand("");
+        setLog([]);
+        setResetConfirming(false);
+        setHbLangs([]);
+        setHbLang("");
+        setHbResults([]);
+        setHbSearched(false);
+
         let cancelled = false;
         (async () => {
             try {
