@@ -126,6 +126,13 @@ export default function ConsolePage() {
         if (!hbLang || hbSearching) return;
         setHbSearching(true);
         try {
+            // Re-probe liveness first (uncached) so a stopped server can't keep serving cached handbook content.
+            const [live, langs] = await HandbookService.Languages(serverUrl);
+            if (!live || !langs || langs.length === 0) {
+                setHbLangs([]); setHbLang(""); setHbResults([]); setHbSearched(false);
+                toast.error(t("console.hb_no_langs"));
+                return;
+            }
             const [ok, results, err] = await HandbookService.Search(serverUrl, hbLang, hbQuery.trim());
             if (!ok) {
                 toast.error(err || t("console.hb_err"));
