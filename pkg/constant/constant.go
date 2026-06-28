@@ -42,7 +42,7 @@ const SourceHoney = "honey"
 const HoneyServerGitUrl = "https://api.github.com/repos/Mar7thLover/March7thHoney-Public/releases"
 const HoneyServerAsset = "win-x64.zip"
 
-const CurrentLauncherVersion = "1.0.9"
+const CurrentLauncherVersion = "1.0.10"
 
 // === News module ===
 //
