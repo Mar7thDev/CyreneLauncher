@@ -1,6 +1,6 @@
 import { CheckUpdateHoneyServer, CheckUpdateLauncher } from "@/helper"
 import useModalStore from "@/stores/modalStore"
-import useSettingStore, { type ServerTarget } from "@/stores/settingStore"
+import useSettingStore, { DEFAULT_PATCH_URL, type ServerTarget } from "@/stores/settingStore"
 import useLauncherStore from "@/stores/launcherStore"
 import { toast } from "react-toastify"
 import { useTranslation } from "react-i18next"
@@ -9,7 +9,6 @@ import { ExternalLink } from "lucide-react"
 const PROJECT_NAME = "Cyrene Launcher"
 const PROJECT_AUTHOR = "Firefly Shelter (original) · Cyrene (fork)"
 const PROJECT_REPO_URL = "https://git.kain.io.vn/Firefly-Shelter/Firefly_Launcher"
-const DEFAULT_PATCH_URL = "https://march7th.hoyotoon.com"
 
 export default function SettingModal({
     isOpen,

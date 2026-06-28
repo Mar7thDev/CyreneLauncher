@@ -3,19 +3,18 @@ import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { Terminal, Plug, PlugZap, Send, Eraser, ChevronRight, BookText, Search, AlertTriangle, Trash2 } from "lucide-react";
-import useSettingStore from "@/stores/settingStore";
+import useSettingStore, { resolveServerBaseUrl } from "@/stores/settingStore";
 import { ConsoleService } from "@bindings/cyrene-launcher/internal/console-service";
 import { HandbookService } from "@bindings/cyrene-launcher/internal/handbook-service";
 
-const DEFAULT_SERVER = "https://march7th.hoyotoon.com";
 const LANG_MAP: Record<string, string> = { zh: "CHS", en: "EN", ja: "JP", ko: "KR", vi: "VI" };
 
 export default function ConsolePage() {
     const { t, i18n } = useTranslation();
-    const { patchTargetUrl } = useSettingStore();
+    const { serverTarget, patchTargetUrl } = useSettingStore();
 
-    // Reuse the server address configured in Settings; fall back to the default.
-    const serverUrl = (patchTargetUrl || "").trim() || DEFAULT_SERVER;
+    // Resolve the server address from the Settings dropdown, same as game launch.
+    const serverUrl = resolveServerBaseUrl(serverTarget, patchTargetUrl);
 
     const [uid, setUid] = useState("");
     const [password, setPassword] = useState("");

@@ -5,7 +5,7 @@ import { FSService } from '@bindings/cyrene-launcher/internal/fs-service';
 import { March7thHoneyService } from '@bindings/cyrene-launcher/internal/march7thhoney-service';
 import { toast } from 'react-toastify';
 import path from 'path-browserify'
-import useSettingStore from '@/stores/settingStore';
+import useSettingStore, { DEFAULT_PATCH_URL, LOCAL_SERVER_URL } from '@/stores/settingStore';
 import useModalStore from '@/stores/modalStore';
 import useLauncherStore from '@/stores/launcherStore';
 import useAccountStore from '@/stores/accountStore';
@@ -28,9 +28,6 @@ import UpdateModal from '@/components/updateModal';
 import { BackgroundSelector } from '@/components/backgroudModal';
 import NewsWidget from '@/components/newsWidget';
 import { useTranslation } from 'react-i18next';
-
-const DEFAULT_PATCH_URL = "https://march7th.hoyotoon.com"
-const LOCAL_TARGET_URL = "http://127.0.0.1:21000"
 
 export default function LauncherPage() {
     const {
@@ -309,7 +306,7 @@ export default function LauncherPage() {
                     toast.error(msg)
                     return
                 }
-                target = LOCAL_TARGET_URL
+                target = LOCAL_SERVER_URL
             }
 
             const [ok, err] = await March7thHoneyService.Start(gamePath, target, proxyPort, {

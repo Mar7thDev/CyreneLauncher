@@ -4,6 +4,19 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 export type GameProfile = "starrail" | "genshin"
 export type ServerTarget = "hoyotoon" | "local" | "custom"
 
+// March7thHoney server base URLs, shared by game launch and the console tab.
+export const DEFAULT_PATCH_URL = "https://march7th.hoyotoon.com"
+export const LOCAL_SERVER_URL = "http://127.0.0.1:21000"
+
+// Map a dropdown option to its private-server base URL — same mapping as game launch (pure).
+export function resolveServerBaseUrl(serverTarget: ServerTarget, patchTargetUrl: string): string {
+    switch (serverTarget) {
+        case "local":  return LOCAL_SERVER_URL
+        case "custom": return (patchTargetUrl || "").trim() || DEFAULT_PATCH_URL
+        default:       return DEFAULT_PATCH_URL // "hoyotoon"
+    }
+}
+
 interface SettingState {
     locale: string;
     gameProfile: GameProfile;
