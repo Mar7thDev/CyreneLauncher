@@ -59,7 +59,7 @@ const (
 )
 
 // WebBaseURL is the Cyrene website (account system, news, device login).
-const WebBaseURL = "https://cyrene-web-one.vercel.app"
+const WebBaseURL = "https://cyrene.hoyotoon.com"
 
 // AnnouncementUrl returns the website's server announcements as a JSON
 // []NewsItem array (pinned first). Each entry becomes one card in the News
