@@ -36,8 +36,9 @@ desktop.ini
 # Logs
 *.log
 
-# CLAUDE
+# coding agent
 CLAUDE.md
+AGENTS.md
 
 # test dir
 tmp/
