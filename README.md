@@ -8,7 +8,7 @@ A lightweight and modern launcher for Anime game — designed to make launching,
 
 ## ✨ Features
 
-- 🔄 Automatically update Firefly Go and proxy tools on launch
+- 🔄 Automatically update March7thHoney and proxy tools on launch
 - 🎮 Launch the game with correct parameters and environment
 - 🌐 Switch in-game language (EN, JP, CN, KR) via Language Tools
 - 📦 Apply game patches using Hdiffz Tool (HDiffPatch-based)
