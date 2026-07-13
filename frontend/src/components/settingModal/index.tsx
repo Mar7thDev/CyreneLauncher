@@ -1,6 +1,6 @@
 import { CheckUpdateHoneyServer, CheckUpdateLauncher } from "@/helper"
 import useModalStore from "@/stores/modalStore"
-import useSettingStore, { DEFAULT_PATCH_URL, type ServerTarget } from "@/stores/settingStore"
+import useSettingStore, { DEFAULT_PATCH_URL, honeyChannelFromTarget, type ServerTarget } from "@/stores/settingStore"
 import useLauncherStore from "@/stores/launcherStore"
 import { toast } from "react-toastify"
 import { useTranslation } from "react-i18next"
@@ -19,17 +19,21 @@ export default function SettingModal({
 }) {
     if (!isOpen) return null
     const { t } = useTranslation()
-    const { setIsOpenSelfUpdateModal, setIsOpenHoneyDownloadModal, setIsOpenHoneyUpdateModal } = useModalStore()
+    const { setIsOpenSelfUpdateModal, openHoneyDownloadModal, openHoneyUpdateModal } = useModalStore()
     const {
         closingOption, setClosingOption,
         gameProfile,
-        serverTarget, setServerTarget, honeyServerVersion,
+        serverTarget, setServerTarget, honeyTestServerVersion, honeyProdServerVersion,
         patchTargetUrl, setPatchTargetUrl,
         proxyPort, setProxyPort,
         rsaPatch, setRsaPatch, rsaKey, setRsaKey,
         webRedirect, setWebRedirect, webHosts, setWebHosts,
     } = useSettingStore()
     const { setUpdateData, updateData, launcherVersion } = useLauncherStore()
+    const honeyChannel = honeyChannelFromTarget(serverTarget)
+    const honeyServerVersion = honeyChannel === "prod" ? honeyProdServerVersion : honeyTestServerVersion
+    const honeyChannelLabel = honeyChannel ? t(`setting.server_channel_${honeyChannel}`) : ""
+    const honeyDirectory = honeyChannel === "prod" ? "server_prod" : "server"
 
     const CheckUpdate = async () => {
         const launcherData = await CheckUpdateLauncher()
@@ -47,13 +51,14 @@ export default function SettingModal({
     }
 
     const CheckHoneyUpdate = async () => {
-        const data = await CheckUpdateHoneyServer(honeyServerVersion)
-        if (!data.version) { toast.error(t("setting.honey_server_none")); return }
-        if (!data.isUpdate) { toast.success(t("setting.honey_update_success")); return }
+        if (!honeyChannel) return
+        const data = await CheckUpdateHoneyServer(honeyChannel, honeyServerVersion)
+        if (!data.version) { toast.error(t("setting.honey_server_none", { channel: honeyChannelLabel })); return }
+        if (!data.isUpdate) { toast.success(t("setting.honey_update_success", { channel: honeyChannelLabel })); return }
         setUpdateData({ ...updateData, server: { isUpdate: true, isExists: data.isExists, version: data.version } })
-        onClose(); setIsOpenHoneyUpdateModal(true)
+        onClose(); openHoneyUpdateModal(honeyChannel, data.version)
     }
-    const DownloadHoney = () => { onClose(); setIsOpenHoneyDownloadModal(true) }
+    const DownloadHoney = () => { if (honeyChannel) { onClose(); openHoneyDownloadModal(honeyChannel) } }
 
     return (
         <div className="fixed inset-0 z-10 flex items-center justify-center bg-pink-50/30 backdrop-blur-md">
@@ -90,7 +95,8 @@ export default function SettingModal({
                                         onChange={e => setServerTarget(e.target.value as ServerTarget)}
                                     >
                                         <option value="hoyotoon">{t("setting.server_target_hoyotoon")}</option>
-                                        <option value="local">{t("setting.server_target_local")}</option>
+                                        <option value="local_test">{t("setting.server_target_local_test")}</option>
+                                        <option value="local_prod">{t("setting.server_target_local_prod")}</option>
                                         <option value="custom">{t("setting.server_target_custom")}</option>
                                     </select>
                                     {serverTarget === "custom" && (
@@ -103,7 +109,7 @@ export default function SettingModal({
                                         />
                                     )}
                                     <p className="text-xs text-base-content/40 mt-1">
-                                        {serverTarget === "local" ? t("setting.server_target_local_hint") : t("setting.patch_url_hint")}
+                                        {honeyChannel ? t("setting.server_target_local_hint", { directory: honeyDirectory }) : t("setting.patch_url_hint")}
                                     </p>
                                 </div>
 
@@ -166,10 +172,10 @@ export default function SettingModal({
                             </div>
 
                             {/* Local server (download / update) */}
-                            {serverTarget === "local" && (
+                            {honeyChannel && (
                                 <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">
-                                    <h4 className="font-bold text-base mb-1">{t("setting.honey_server_title")}</h4>
-                                    <p className="text-sm text-base-content/50 mb-2">{t("setting.honey_server_desc")}</p>
+                                    <h4 className="font-bold text-base mb-1">{t("setting.honey_server_title", { channel: honeyChannelLabel })}</h4>
+                                    <p className="text-sm text-base-content/50 mb-2">{t("setting.honey_server_desc", { channel: honeyChannelLabel })}</p>
                                     <p className="text-xs text-base-content/40 mb-3">
                                         {t("setting.honey_server_version")}: {honeyServerVersion || t("setting.honey_server_not_installed")}
                                     </p>

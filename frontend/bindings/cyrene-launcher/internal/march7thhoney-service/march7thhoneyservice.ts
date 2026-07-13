@@ -23,10 +23,10 @@ export function IsLocalServerRunning(): $CancellablePromise<boolean> {
 }
 
 /**
- * OpenLocalServerFolder opens the local-server folder, telling apart "missing" vs "empty" so the UI warns instead of opening a useless window.
+ * OpenLocalServerFolder opens the selected local-server folder.
  */
-export function OpenLocalServerFolder(): $CancellablePromise<[boolean, string]> {
-    return $Call.ByID(2613507552);
+export function OpenLocalServerFolder(mode: string): $CancellablePromise<[boolean, string]> {
+    return $Call.ByID(2613507552, mode);
 }
 
 /**
@@ -45,8 +45,8 @@ export function Start(gamePath: string, targetURL: string, preferredPort: number
 }
 
 /**
- * StartLocalServer launches the bundled public server in its own console via `cmd /c start` (token/device id via env, no browser), probing the dispatch port for readiness; the user stops it by closing the window.
+ * StartLocalServer launches the selected bundled server in its own console.
  */
-export function StartLocalServer(): $CancellablePromise<[boolean, string]> {
-    return $Call.ByID(720074128);
+export function StartLocalServer(mode: string): $CancellablePromise<[boolean, string]> {
+    return $Call.ByID(720074128, mode);
 }

@@ -2,8 +2,9 @@ package gitService
 
 import (
 	"archive/zip"
-	"encoding/json"
+	"cyrene-launcher/pkg/constant"
 	"cyrene-launcher/pkg/models"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math"
@@ -11,9 +12,9 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
-
 )
 
 func HumanFormat(bytes float64) string {
@@ -172,11 +173,17 @@ func (g *GitService) getReleaseAsset(version, url, fileName string) (models.Asse
 	return models.AssetType{}, false
 }
 
-// getLatestReleaseTagWithAsset walks releases newest-first and returns the
-// tag of the first one that ships fileName. Used when one release feed mixes
-// multiple kinds of releases (launcher exe + patch DLLs) and we want each
-// fetcher to find its own latest without one missing asset masking the other.
+// getLatestReleaseTagWithAsset selects the newest ordinary release with the requested asset.
 func (g *GitService) getLatestReleaseTagWithAsset(url, fileName string) (string, bool) {
+	return g.getLatestReleaseTagWithAssetMatching(url, fileName, isOrdinaryRelease)
+}
+
+// getLatestHoneyProductionReleaseTag selects the newest prod-* prerelease with the requested asset.
+func (g *GitService) getLatestHoneyProductionReleaseTag(url, fileName string) (string, bool) {
+	return g.getLatestReleaseTagWithAssetMatching(url, fileName, isHoneyProductionRelease)
+}
+
+func (g *GitService) getLatestReleaseTagWithAssetMatching(url, fileName string, matches func(*models.ReleaseType) bool) (string, bool) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", false
@@ -189,8 +196,12 @@ func (g *GitService) getLatestReleaseTagWithAsset(url, fileName string) (string,
 		return "", false
 	}
 
+	return findLatestReleaseTagWithAsset(releases, fileName, matches)
+}
+
+func findLatestReleaseTagWithAsset(releases []*models.ReleaseType, fileName string, matches func(*models.ReleaseType) bool) (string, bool) {
 	for _, release := range releases {
-		if release.Draft || release.Prerelease {
+		if !matches(release) {
 			continue
 		}
 		for _, asset := range release.Assets {
@@ -200,6 +211,14 @@ func (g *GitService) getLatestReleaseTagWithAsset(url, fileName string) (string,
 		}
 	}
 	return "", false
+}
+
+func isOrdinaryRelease(release *models.ReleaseType) bool {
+	return !release.Draft && !release.Prerelease
+}
+
+func isHoneyProductionRelease(release *models.ReleaseType) bool {
+	return !release.Draft && release.Prerelease && strings.HasPrefix(release.TagName, constant.HoneyServerProdTagPrefix)
 }
 
 func (g *GitService) unzipParallel(src string, dest string) error {

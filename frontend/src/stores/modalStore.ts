@@ -1,5 +1,6 @@
 
 import { create } from 'zustand'
+import type { HoneyServerChannel } from './settingStore'
 
 interface ModalState {
     isOpenDownloadDataModal: boolean;
@@ -9,6 +10,8 @@ interface ModalState {
     isOpenSettingModal: boolean;
     isOpenHoneyDownloadModal: boolean;
     isOpenHoneyUpdateModal: boolean;
+    honeyModalChannel: HoneyServerChannel;
+    honeyModalVersion: string;
     setIsOpenDownloadDataModal: (modal: boolean) => void;
     setIsOpenUpdateDataModal: (modal: boolean) => void;
     setIsOpenSelfUpdateModal: (modal: boolean) => void;
@@ -16,6 +19,8 @@ interface ModalState {
     setIsOpenSettingModal: (modal: boolean) => void;
     setIsOpenHoneyDownloadModal: (modal: boolean) => void;
     setIsOpenHoneyUpdateModal: (modal: boolean) => void;
+    openHoneyDownloadModal: (channel: HoneyServerChannel) => void;
+    openHoneyUpdateModal: (channel: HoneyServerChannel, version: string) => void;
 }
 
 const useModalStore = create<ModalState>((set) => ({
@@ -26,6 +31,8 @@ const useModalStore = create<ModalState>((set) => ({
     isOpenSettingModal: false,
     isOpenHoneyDownloadModal: false,
     isOpenHoneyUpdateModal: false,
+    honeyModalChannel: "test",
+    honeyModalVersion: "",
     setIsOpenDownloadDataModal: (modal: boolean) => set({ isOpenDownloadDataModal: modal }),
     setIsOpenUpdateDataModal: (modal: boolean) => set({ isOpenUpdateDataModal: modal }),
     setIsOpenSelfUpdateModal: (modal: boolean) => set({ isOpenSelfUpdateModal: modal }),
@@ -33,6 +40,8 @@ const useModalStore = create<ModalState>((set) => ({
     setIsOpenSettingModal: (modal: boolean) => set({ isOpenSettingModal: modal }),
     setIsOpenHoneyDownloadModal: (modal: boolean) => set({ isOpenHoneyDownloadModal: modal }),
     setIsOpenHoneyUpdateModal: (modal: boolean) => set({ isOpenHoneyUpdateModal: modal }),
+    openHoneyDownloadModal: (channel: HoneyServerChannel) => set({ honeyModalChannel: channel, honeyModalVersion: "", isOpenHoneyDownloadModal: true }),
+    openHoneyUpdateModal: (channel: HoneyServerChannel, version: string) => set({ honeyModalChannel: channel, honeyModalVersion: version, isOpenHoneyUpdateModal: true }),
 }));
 
 export default useModalStore;

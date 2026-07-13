@@ -5,7 +5,7 @@ import { FSService } from '@bindings/cyrene-launcher/internal/fs-service';
 import { March7thHoneyService } from '@bindings/cyrene-launcher/internal/march7thhoney-service';
 import { toast } from 'react-toastify';
 import path from 'path-browserify'
-import useSettingStore, { DEFAULT_PATCH_URL, LOCAL_SERVER_URL } from '@/stores/settingStore';
+import useSettingStore, { DEFAULT_PATCH_URL, honeyChannelFromTarget, LOCAL_SERVER_URL, type HoneyServerChannel } from '@/stores/settingStore';
 import useModalStore from '@/stores/modalStore';
 import useLauncherStore from '@/stores/launcherStore';
 import useAccountStore from '@/stores/accountStore';
@@ -18,7 +18,7 @@ import {
     GENSHIN_INJECTOR_PATH,
     GENSHIN_SERVER_MANIFEST,
     GENSHIN_SERVER_ROOT,
-    HONEY_SERVER_EXE,
+    honeyServerExe,
     sleep,
     UpdateGenshinServer,
     UpdateHoneyServer,
@@ -35,7 +35,7 @@ export default function LauncherPage() {
         genshinGamePath, genshinGameDir, genshinServerDir, genshinServerVersion,
         setGenshinGamePath, setGenshinGameDir, setGenshinServerDir,
         gameDir, background, gameProfile,
-        serverTarget, patchTargetUrl, proxyPort, honeyServerVersion,
+        serverTarget, patchTargetUrl, proxyPort, honeyTestServerVersion, honeyProdServerVersion,
         rsaPatch, rsaKey, webRedirect, webHosts,
     } = useSettingStore()
     const { user, setSkipped } = useAccountStore()
@@ -46,9 +46,10 @@ export default function LauncherPage() {
     const backgroundTimerRef = useRef<number | null>(null)
     const {
         isOpenDownloadDataModal, isOpenUpdateDataModal, isOpenSelfUpdateModal,
-        isOpenHoneyDownloadModal, isOpenHoneyUpdateModal,
+        isOpenHoneyDownloadModal, isOpenHoneyUpdateModal, honeyModalChannel, honeyModalVersion,
         setIsOpenDownloadDataModal, setIsOpenUpdateDataModal, setIsOpenSelfUpdateModal,
         setIsOpenHoneyDownloadModal, setIsOpenHoneyUpdateModal,
+        openHoneyDownloadModal, openHoneyUpdateModal,
     } = useModalStore()
     const {
         isLoading, downloadType, serverReady, isDownloading,
@@ -60,6 +61,10 @@ export default function LauncherPage() {
     const isGenshin = gameProfile === "genshin"
     const isStarRail = gameProfile === "starrail"
     const genshinServerRoot = genshinServerDir || GENSHIN_SERVER_ROOT
+    const selectedHoneyChannel = honeyChannelFromTarget(serverTarget)
+    const honeyServerVersionFor = (channel: HoneyServerChannel) => channel === "prod" ? honeyProdServerVersion : honeyTestServerVersion
+    const honeyDirectoryFor = (channel: HoneyServerChannel) => channel === "prod" ? "server_prod" : "server"
+    const honeyChannelLabel = (channel: HoneyServerChannel) => t(`setting.server_channel_${channel}`)
 
     useEffect(() => {
         if (background === currentBackgroundRef.current) return
@@ -182,21 +187,21 @@ export default function LauncherPage() {
         checkStartUp()
     }, [isGenshin]);
 
-    // Local server: when "local" is selected (and on startup, since serverTarget persists), prompt download if missing, else auto-check for updates.
+    // Local server: prompt download if missing, otherwise auto-check for updates.
     useEffect(() => {
-        if (isGenshin || serverTarget !== "local") return
+        if (isGenshin || !selectedHoneyChannel) return
         let cancelled = false
         ;(async () => {
-            const exists = await FSService.FileExists(HONEY_SERVER_EXE)
+            const exists = await FSService.FileExists(honeyServerExe(selectedHoneyChannel))
             if (cancelled) return
-            if (!exists) { setIsOpenHoneyDownloadModal(true); return }
-            const data = await CheckUpdateHoneyServer(honeyServerVersion)
+            if (!exists) { openHoneyDownloadModal(selectedHoneyChannel); return }
+            const data = await CheckUpdateHoneyServer(selectedHoneyChannel, honeyServerVersionFor(selectedHoneyChannel))
             if (cancelled || !data.isUpdate) return
             setUpdateData({ ...useLauncherStore.getState().updateData, server: { isUpdate: true, isExists: true, version: data.version } })
-            setIsOpenHoneyUpdateModal(true)
+            openHoneyUpdateModal(selectedHoneyChannel, data.version)
         })()
         return () => { cancelled = true }
-    }, [serverTarget, gameProfile])
+    }, [serverTarget, gameProfile, honeyTestServerVersion, honeyProdServerVersion])
 
     const handlePickFile = async () => {
         try {
@@ -290,15 +295,15 @@ export default function LauncherPage() {
             let target = DEFAULT_PATCH_URL
             if (serverTarget === "custom") {
                 target = patchTargetUrl || DEFAULT_PATCH_URL
-            } else if (serverTarget === "local") {
+            } else if (selectedHoneyChannel) {
                 if (!user) {
                     toast.error(t("account.login_required"))
                     setSkipped(false)
                     return
                 }
-                const [sok, serr] = await March7thHoneyService.StartLocalServer()
+                const [sok, serr] = await March7thHoneyService.StartLocalServer(selectedHoneyChannel)
                 if (!sok) {
-                    if (serr === "server_not_found") { setIsOpenHoneyDownloadModal(true); return }
+                    if (serr === "server_not_found") { openHoneyDownloadModal(selectedHoneyChannel); return }
                     const msg =
                         serr === "not_logged_in" ? t("account.login_required") :
                         serr === "server_not_ready" ? t("home.toast_local_server_not_ready") :
@@ -335,11 +340,15 @@ export default function LauncherPage() {
     }
 
     const handleOpenServerFolder = async () => {
-        const [ok, err] = await March7thHoneyService.OpenLocalServerFolder()
+        if (!selectedHoneyChannel) {
+            toast.error(t("home.toast_not_local_server_mode"))
+            return
+        }
+        const [ok, err] = await March7thHoneyService.OpenLocalServerFolder(selectedHoneyChannel)
         if (ok) return
         const msg =
-            err === "server_folder_missing" ? t("home.toast_server_folder_missing") :
-            err === "server_folder_empty" ? t("home.toast_server_folder_empty") :
+            err === "server_folder_missing" ? t("home.toast_server_folder_missing", { directory: honeyDirectoryFor(selectedHoneyChannel) }) :
+            err === "server_folder_empty" ? t("home.toast_server_folder_empty", { directory: honeyDirectoryFor(selectedHoneyChannel) }) :
             t("home.toast_start_server_failed") + err
         toast.error(msg)
     }
@@ -399,16 +408,16 @@ export default function LauncherPage() {
         setDownloadType(""); setIsDownloading(false)
     }
 
-    const handleHoneyServer = async () => {
+    const handleHoneyServer = async (channel: HoneyServerChannel, requestedVersion = "") => {
         setIsDownloading(true)
         try {
-            let version = updateData.server.version
-            if (!version) { version = (await CheckUpdateHoneyServer(honeyServerVersion)).version }
-            if (!version) { toast.error(t("setting.honey_server_none")); return }
-            const ok = await UpdateHoneyServer(version)
+            let version = requestedVersion
+            if (!version) { version = (await CheckUpdateHoneyServer(channel, honeyServerVersionFor(channel))).version }
+            if (!version) { toast.error(t("setting.honey_server_none", { channel: honeyChannelLabel(channel) })); return }
+            const ok = await UpdateHoneyServer(version, channel)
             if (ok) setUpdateData({ ...updateData, server: { isUpdate: false, isExists: true, version } })
         } catch (err: any) {
-            toast.error("Local server update failed: " + err)
+            toast.error(t("home.toast_honey_update_failed", { channel: honeyChannelLabel(channel), error: String(err) }))
         } finally {
             setDownloadType(""); setIsDownloading(false)
         }
@@ -617,7 +626,7 @@ export default function LauncherPage() {
             </div>
 
             {/* Download progress */}
-            {isDownloading && !updateData.launcher.isUpdate && (isGenshin || (isStarRail && serverTarget === "local")) && (
+            {isDownloading && !updateData.launcher.isUpdate && (isGenshin || (isStarRail && selectedHoneyChannel)) && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-10 w-[55vw] bg-white/80 backdrop-blur-xl border border-pink-200/60 rounded-2xl p-4 shadow-xl shadow-pink-100/50">
                     <div className="space-y-2">
                         <div className="flex justify-between items-center text-sm">
@@ -695,21 +704,21 @@ export default function LauncherPage() {
             <UpdateModal
                 isOpen={isOpenHoneyDownloadModal}
                 onClose={() => setIsOpenHoneyDownloadModal(false)}
-                title={t("home.modal_honey_download_title")}
-                message={t("home.modal_honey_download_msg")}
+                title={t("home.modal_honey_download_title", { channel: honeyChannelLabel(honeyModalChannel) })}
+                message={t("home.modal_honey_download_msg", { channel: honeyChannelLabel(honeyModalChannel) })}
                 buttons={[
                     { text: t("home.btn_no"),       onClick: () => setIsOpenHoneyDownloadModal(false), variant: "outline" },
-                    { text: t("home.btn_download"), onClick: async () => { setIsOpenHoneyDownloadModal(false); await handleHoneyServer() }, variant: "primary" }
+                    { text: t("home.btn_download"), onClick: async () => { setIsOpenHoneyDownloadModal(false); await handleHoneyServer(honeyModalChannel, honeyModalVersion) }, variant: "primary" }
                 ]}
             />
             <UpdateModal
                 isOpen={isOpenHoneyUpdateModal}
                 onClose={() => setIsOpenHoneyUpdateModal(false)}
-                title={t("home.modal_honey_update_title")}
-                message={t("home.modal_honey_update_msg")}
+                title={t("home.modal_honey_update_title", { channel: honeyChannelLabel(honeyModalChannel) })}
+                message={t("home.modal_honey_update_msg", { channel: honeyChannelLabel(honeyModalChannel) })}
                 buttons={[
                     { text: t("home.btn_no"),  onClick: () => setIsOpenHoneyUpdateModal(false), variant: "outline" },
-                    { text: t("home.btn_yes"), onClick: async () => { setIsOpenHoneyUpdateModal(false); await handleHoneyServer() }, variant: "primary" }
+                    { text: t("home.btn_yes"), onClick: async () => { setIsOpenHoneyUpdateModal(false); await handleHoneyServer(honeyModalChannel, honeyModalVersion) }, variant: "primary" }
                 ]}
             />
         </div>

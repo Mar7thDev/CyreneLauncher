@@ -103,8 +103,8 @@ func (m *March7thHoneyService) Start(gamePath, targetURL string, preferredPort i
 	}
 
 	env := map[string]string{
-		envProxyKey:     fmt.Sprintf("127.0.0.1:%d", port),
-		envEc2bKey:      ec2bPath,
+		envProxyKey: fmt.Sprintf("127.0.0.1:%d", port),
+		envEc2bKey:  ec2bPath,
 		// In-game register/webview redirect target: the patch rewrites the SDK
 		// webview URL to this base so the page loads from the configured server
 		// during remote play (instead of the build-time local default).
@@ -151,8 +151,8 @@ func (m *March7thHoneyService) ensureDLL() (string, error) {
 	return abs, nil
 }
 
-// StartLocalServer launches the bundled public server in its own console via `cmd /c start` (token/device id via env, no browser), probing the dispatch port for readiness; the user stops it by closing the window.
-func (m *March7thHoneyService) StartLocalServer() (bool, string) {
+// StartLocalServer launches the selected bundled server in its own console.
+func (m *March7thHoneyService) StartLocalServer(mode string) (bool, string) {
 	if portOpen(constant.LocalServerProbeAddr) {
 		return true, "" // already running
 	}
@@ -165,7 +165,11 @@ func (m *March7thHoneyService) StartLocalServer() (bool, string) {
 		return false, "not_logged_in"
 	}
 
-	exePath, err := filepath.Abs(constant.LocalServerExe)
+	_, exe, ok := localServerPaths(mode)
+	if !ok {
+		return false, "invalid_local_server_mode"
+	}
+	exePath, err := filepath.Abs(exe)
 	if err != nil {
 		return false, "resolve server path: " + err.Error()
 	}
@@ -203,9 +207,13 @@ func (m *March7thHoneyService) IsLocalServerRunning() bool {
 	return portOpen(constant.LocalServerProbeAddr)
 }
 
-// OpenLocalServerFolder opens the local-server folder, telling apart "missing" vs "empty" so the UI warns instead of opening a useless window.
-func (m *March7thHoneyService) OpenLocalServerFolder() (bool, string) {
-	dir, err := filepath.Abs(constant.LocalServerDir)
+// OpenLocalServerFolder opens the selected local-server folder.
+func (m *March7thHoneyService) OpenLocalServerFolder(mode string) (bool, string) {
+	dirPath, _, ok := localServerPaths(mode)
+	if !ok {
+		return false, "invalid_local_server_mode"
+	}
+	dir, err := filepath.Abs(dirPath)
 	if err != nil {
 		return false, "resolve server folder: " + err.Error()
 	}
@@ -222,6 +230,17 @@ func (m *March7thHoneyService) OpenLocalServerFolder() (bool, string) {
 	}
 	application.Get().Browser.OpenURL("file:///" + filepath.ToSlash(dir))
 	return true, ""
+}
+
+func localServerPaths(mode string) (dir string, exe string, ok bool) {
+	switch mode {
+	case constant.LocalServerTestMode:
+		return constant.LocalServerTestDir, constant.LocalServerTestExe, true
+	case constant.LocalServerProdMode:
+		return constant.LocalServerProdDir, constant.LocalServerProdExe, true
+	default:
+		return "", "", false
+	}
 }
 
 // portOpen reports whether something is accepting TCP connections on addr.
