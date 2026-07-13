@@ -2,16 +2,26 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type GameProfile = "starrail" | "genshin"
-export type ServerTarget = "hoyotoon" | "local" | "custom"
+export type ServerTarget = "hoyotoon" | "local_test" | "local_prod" | "custom"
+export type HoneyServerChannel = "test" | "prod"
 
 // March7thHoney server base URLs, shared by game launch and the console tab.
 export const DEFAULT_PATCH_URL = "https://march7th.hoyotoon.com"
 export const LOCAL_SERVER_URL = "http://127.0.0.1:21000"
 
+export function honeyChannelFromTarget(serverTarget: ServerTarget): HoneyServerChannel | null {
+    switch (serverTarget) {
+        case "local_test": return "test"
+        case "local_prod": return "prod"
+        default: return null
+    }
+}
+
 // Map a dropdown option to its private-server base URL — same mapping as game launch (pure).
 export function resolveServerBaseUrl(serverTarget: ServerTarget, patchTargetUrl: string): string {
     switch (serverTarget) {
-        case "local":  return LOCAL_SERVER_URL
+        case "local_test":
+        case "local_prod": return LOCAL_SERVER_URL
         case "custom": return (patchTargetUrl || "").trim() || DEFAULT_PATCH_URL
         default:       return DEFAULT_PATCH_URL // "hoyotoon"
     }
@@ -26,9 +36,10 @@ interface SettingState {
     genshinGameDir: string;
     genshinServerDir: string;
     genshinServerVersion: string;
-    // March7thHoney: installed local-server version (latest release tag), for update checks.
-    honeyServerVersion: string;
-    // March7thHoney: which server to play on — "hoyotoon" (remote), "local" (launcher-managed), or "custom" (patchTargetUrl).
+    // March7thHoney: installed local-server versions, tracked independently for update checks.
+    honeyTestServerVersion: string;
+    honeyProdServerVersion: string;
+    // March7thHoney: which server to play on — remote, either launcher-managed local channel, or custom.
     serverTarget: ServerTarget;
     // March7thHoney: custom target server URL for the MITM proxy (serverTarget="custom").
     patchTargetUrl: string;
@@ -58,7 +69,8 @@ interface SettingState {
     setGenshinGameDir: (newGameDir: string) => void;
     setGenshinServerDir: (newServerDir: string) => void;
     setGenshinServerVersion: (newServerVersion: string) => void;
-    setHoneyServerVersion: (v: string) => void;
+    setHoneyTestServerVersion: (v: string) => void;
+    setHoneyProdServerVersion: (v: string) => void;
     setServerTarget: (t: ServerTarget) => void;
     setPatchTargetUrl: (url: string) => void;
     setProxyPort: (port: number) => void;
@@ -79,7 +91,8 @@ const useSettingStore = create<SettingState>()(
             genshinGameDir: "",
             genshinServerDir: "",
             genshinServerVersion: "",
-            honeyServerVersion: "",
+            honeyTestServerVersion: "",
+            honeyProdServerVersion: "",
             serverTarget: "hoyotoon",
             patchTargetUrl: "",
             proxyPort: 8080,
@@ -106,7 +119,8 @@ const useSettingStore = create<SettingState>()(
             setGenshinGameDir: (newGameDir: string) => set({ genshinGameDir: newGameDir }),
             setGenshinServerDir: (newServerDir: string) => set({ genshinServerDir: newServerDir }),
             setGenshinServerVersion: (newServerVersion: string) => set({ genshinServerVersion: newServerVersion }),
-            setHoneyServerVersion: (v: string) => set({ honeyServerVersion: v }),
+            setHoneyTestServerVersion: (v: string) => set({ honeyTestServerVersion: v }),
+            setHoneyProdServerVersion: (v: string) => set({ honeyProdServerVersion: v }),
             setServerTarget: (t: ServerTarget) => set({ serverTarget: t }),
             setPatchTargetUrl: (url: string) => set({ patchTargetUrl: url }),
             setProxyPort: (port: number) => set({ proxyPort: port }),
@@ -118,6 +132,18 @@ const useSettingStore = create<SettingState>()(
         {
             name: 'setting-storage',
             storage: createJSONStorage(() => localStorage),
+            version: 1,
+            migrate: (persistedState) => {
+                const state = persistedState as Record<string, unknown>
+                const oldTarget = state.serverTarget
+                const legacyHoneyVersion = typeof state.honeyServerVersion === "string" ? state.honeyServerVersion : ""
+                return {
+                    ...state,
+                    serverTarget: oldTarget === "local" ? "local_test" : oldTarget,
+                    honeyTestServerVersion: typeof state.honeyTestServerVersion === "string" ? state.honeyTestServerVersion : legacyHoneyVersion,
+                    honeyProdServerVersion: typeof state.honeyProdServerVersion === "string" ? state.honeyProdServerVersion : "",
+                }
+            },
         }
     )
 );
