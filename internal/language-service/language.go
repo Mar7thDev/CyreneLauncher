@@ -40,7 +40,7 @@ func (l *LanguageService) GetLanguage(path string) (bool, string, string, string
 	if err != nil {
 		return false, "", "", err.Error()
 	}
-	dataEntry, fileEntry, err := DesignIndex.FindDataAndFileByTarget(-515329346)
+	dataEntry, fileEntry, err := DesignIndex.FindAllowedLanguage()
 	if err != nil {
 		return false, "", "", err.Error()
 	}
@@ -104,7 +104,7 @@ func (l *LanguageService) SetLanguage(path string, text, voice string) (bool, st
 	if err != nil {
 		return false, err.Error()
 	}
-	dataEntry, fileEntry, err := DesignIndex.FindDataAndFileByTarget(-515329346)
+	dataEntry, fileEntry, err := DesignIndex.FindAllowedLanguage()
 	if err != nil {
 		return false, err.Error()
 	}
