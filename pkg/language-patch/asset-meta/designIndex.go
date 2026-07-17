@@ -12,15 +12,24 @@ import (
 
 
 type DesignIndex struct {
-	UnkI64          int64
-	FileCount       int32
-	DesignDataCount int32
+	Magic           uint32
+	Version         uint32
+	FileCount       uint32
+	DesignDataCount uint32
 	FileList        []FileEntry
 }
 
 
 
-func (d *DesignIndex) FindDataAndFileByTarget(target int32) (DataEntry, FileEntry, error) {
+func (d *DesignIndex) FindAllowedLanguage() (DataEntry, FileEntry, error) {
+	targets := map[uint32]uint64{
+		3: 0xe148b2be,
+		4: 0xb804dbc76d81fb75,
+	}
+	target, ok := targets[d.Version]
+	if !ok {
+		return DataEntry{}, FileEntry{}, fmt.Errorf("unsupported DesignV version: %d", d.Version)
+	}
 	for _, file := range d.FileList {
 		for _, entry := range file.DataEntries {
 			if entry.NameHash == target {
@@ -42,7 +51,10 @@ func DesignIndexFromBytes(assetFolder string, indexHash string) (*DesignIndex, e
 
 	var d DesignIndex
 
-	if err := binary.Read(r, binary.BigEndian, &d.UnkI64); err != nil {
+	if err := binary.Read(r, binary.BigEndian, &d.Magic); err != nil {
+		return nil, err
+	}
+	if err := binary.Read(r, binary.BigEndian, &d.Version); err != nil {
 		return nil, err
 	}
 	if err := binary.Read(r, binary.BigEndian, &d.FileCount); err != nil {
@@ -52,9 +64,16 @@ func DesignIndexFromBytes(assetFolder string, indexHash string) (*DesignIndex, e
 		return nil, err
 	}
 
-	d.FileList = make([]FileEntry, 0, d.FileCount)
-	for i := int32(0); i < d.FileCount; i++ {
-		entry, err := FileEntryFromBytes(r)
+	if d.Magic != 0xff || d.FileCount > 4096 || d.DesignDataCount > 4_000_000 {
+		return nil, errors.New("invalid DesignV index")
+	}
+	if d.Version != 3 && d.Version != 4 {
+		return nil, fmt.Errorf("unsupported DesignV version: %d", d.Version)
+	}
+
+	d.FileList = make([]FileEntry, 0, int(d.FileCount))
+	for i := uint32(0); i < d.FileCount; i++ {
+		entry, err := FileEntryFromBytes(r, d.Version, d.DesignDataCount)
 		if err != nil {
 			return nil, err
 		}

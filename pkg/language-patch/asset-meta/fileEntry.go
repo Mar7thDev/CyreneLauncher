@@ -7,21 +7,23 @@ import (
 )
 
 type FileEntry struct {
-	NameHash     int32
+	NameHash     uint64
 	FileByteName string
-	Size         int64
-	DataCount    int32
+	Size         uint64
+	DataCount    uint32
 	DataEntries  []DataEntry
 	Lang         string
 	Unk          uint8
 }
 
-func FileEntryFromBytes(r io.Reader) (*FileEntry, error) {
+func FileEntryFromBytes(r io.Reader, indexVersion, maxDataCount uint32) (*FileEntry, error) {
 	var f FileEntry
 
-	if err := binary.Read(r, binary.BigEndian, &f.NameHash); err != nil {
+	nameHash, err := readNameHash(r, indexVersion)
+	if err != nil {
 		return nil, err
 	}
+	f.NameHash = nameHash
 
 	buf := make([]byte, 16)
 	if _, err := io.ReadFull(r, buf); err != nil {
@@ -35,10 +37,13 @@ func FileEntryFromBytes(r io.Reader) (*FileEntry, error) {
 	if err := binary.Read(r, binary.BigEndian, &f.DataCount); err != nil {
 		return nil, err
 	}
+	if f.DataCount > maxDataCount {
+		return nil, fmt.Errorf("invalid DesignV data count: %d", f.DataCount)
+	}
 
-	f.DataEntries = make([]DataEntry, 0, f.DataCount)
-	for i := int32(0); i < f.DataCount; i++ {
-		entry, err := DataEntryFromBytes(r)
+	f.DataEntries = make([]DataEntry, 0, int(f.DataCount))
+	for i := uint32(0); i < f.DataCount; i++ {
+		entry, err := DataEntryFromBytes(r, indexVersion)
 		if err != nil {
 			return nil, err
 		}
