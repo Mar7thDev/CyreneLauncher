@@ -15,6 +15,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 // redirectDomains lists the domain suffixes whose traffic the proxy intercepts
@@ -28,6 +29,23 @@ var redirectDomains = []string{
 	"bh3.com",
 	"honkaiimpact3.com",
 	"zenlesszonezero.com",
+}
+
+// Official asset CDNs: exact-matched hosts whose downloads must reach the real CDN, never the private server.
+var resourceCDNHosts = []string{
+	"autopatchcn.bhsr.com",      // HSR CN
+	"autopatchos.starrails.com", // HSR OS
+}
+
+// matchResourceCDN reports whether hostname is an official asset CDN that bypasses redirection.
+func matchResourceCDN(hostname string) bool {
+	h := strings.ToLower(hostname)
+	for _, d := range resourceCDNHosts {
+		if h == d {
+			return true
+		}
+	}
+	return false
 }
 
 // Proxy is a loopback forwarding proxy that the game routes its traffic through
@@ -225,10 +243,9 @@ func (p *Proxy) mitm(conn net.Conn, hostname string) {
 	}
 }
 
-// tunnel blindly copies bytes in both directions — used for CONNECT tunnels to
-// domains we don't intercept.
+// tunnel byte-copies both directions for CONNECT tunnels we do not intercept; the bounded dial avoids hanging the downloader.
 func (p *Proxy) tunnel(conn net.Conn, addr string) {
-	up, err := net.Dial("tcp", addr)
+	up, err := net.DialTimeout("tcp", addr, 30*time.Second)
 	if err != nil {
 		return
 	}
@@ -340,6 +357,10 @@ func (p *Proxy) forward(w io.Writer, req *http.Request, isTLS bool, mitmHost str
 func (p *Proxy) matchRedirect(hostname string) bool {
 	h := strings.ToLower(hostname)
 	if h == strings.ToLower(p.target.Hostname()) {
+		return false
+	}
+	// Resource CDNs bypass redirect so their downloads reach the real CDN.
+	if matchResourceCDN(h) {
 		return false
 	}
 	for _, d := range redirectDomains {
