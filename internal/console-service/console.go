@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"cyrene-launcher/pkg/constant"
 )
 
 // ConsoleService talks to a March7thHoney server's /console/* endpoints so the
@@ -16,7 +18,7 @@ import (
 // Authentication is per-player (UID + password), same as in-game chat.
 type ConsoleService struct{}
 
-const defaultServerURL = "https://march7th.hoyotoon.com"
+const defaultServerURL = constant.DefaultPatchTargetURL
 
 type execRequest struct {
 	Username string `json:"username"`

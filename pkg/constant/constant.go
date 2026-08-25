@@ -24,7 +24,15 @@ const GenshinServerManifest = "./server-packages/Columbina-GI/cyrene-manifest.js
 // The patch is implemented as a Go-native HTTPS MITM proxy (pkg/patch-proxy).
 // No DLL download or injection is required. The proxy intercepts miHoYo-domain
 // traffic and forwards it to DefaultPatchTargetURL (or a user-configured URL).
-const DefaultPatchTargetURL = "https://march7th.hoyotoon.com"
+
+// HoyoToonTargetURL is the upstream community server ("HoyoToon (Online)").
+const HoyoToonTargetURL = "https://march7th.hoyotoon.com"
+
+// KunPSTargetURL is the KunPS channel server ("KunPS (Online)"). This build is
+// the KunPS channel edition, so it is also the default target.
+const KunPSTargetURL = "http://210.16.175.19:520"
+
+const DefaultPatchTargetURL = KunPSTargetURL
 
 // SourceGenshin is the downloadable Genshin server package source.
 const SourceGenshin = "genshin"

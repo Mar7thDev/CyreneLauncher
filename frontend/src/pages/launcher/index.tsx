@@ -5,7 +5,7 @@ import { FSService } from '@bindings/cyrene-launcher/internal/fs-service';
 import { March7thHoneyService } from '@bindings/cyrene-launcher/internal/march7thhoney-service';
 import { toast } from 'react-toastify';
 import path from 'path-browserify'
-import useSettingStore, { DEFAULT_PATCH_URL, honeyChannelFromTarget, LOCAL_SERVER_URL, type HoneyServerChannel } from '@/stores/settingStore';
+import useSettingStore, { honeyChannelFromTarget, LOCAL_SERVER_URL, resolveServerBaseUrl, type HoneyServerChannel } from '@/stores/settingStore';
 import useModalStore from '@/stores/modalStore';
 import useLauncherStore from '@/stores/launcherStore';
 import useAccountStore from '@/stores/accountStore';
@@ -292,10 +292,8 @@ export default function LauncherPage() {
                 return
             }
 
-            let target = DEFAULT_PATCH_URL
-            if (serverTarget === "custom") {
-                target = patchTargetUrl || DEFAULT_PATCH_URL
-            } else if (selectedHoneyChannel) {
+            let target = resolveServerBaseUrl(serverTarget, patchTargetUrl)
+            if (selectedHoneyChannel) {
                 if (!user) {
                     toast.error(t("account.login_required"))
                     setSkipped(false)

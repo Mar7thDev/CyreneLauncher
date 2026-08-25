@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"cyrene-launcher/pkg/constant"
 )
 
 // HandbookService fetches the GM handbook from a March7thHoney server and
@@ -19,7 +21,7 @@ type HandbookService struct {
 	cache map[string]string
 }
 
-const defaultServerURL = "https://march7th.hoyotoon.com"
+const defaultServerURL = constant.DefaultPatchTargetURL
 
 func normalizeBase(serverURL string) string {
 	base := strings.TrimRight(strings.TrimSpace(serverURL), "/")

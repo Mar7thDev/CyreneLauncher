@@ -2,11 +2,13 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type GameProfile = "starrail" | "genshin"
-export type ServerTarget = "hoyotoon" | "local_test" | "local_prod" | "custom"
+export type ServerTarget = "kunps" | "hoyotoon" | "local_test" | "local_prod" | "custom"
 export type HoneyServerChannel = "test" | "prod"
 
 // March7thHoney server base URLs, shared by game launch and the console tab.
-export const DEFAULT_PATCH_URL = "https://march7th.hoyotoon.com"
+// KunPS is the channel server this build ships with, so it is also the default.
+export const KUNPS_SERVER_URL = "http://210.16.175.19:520"
+export const HOYOTOON_SERVER_URL = "https://march7th.hoyotoon.com"
 export const LOCAL_SERVER_URL = "http://127.0.0.1:21000"
 
 export function honeyChannelFromTarget(serverTarget: ServerTarget): HoneyServerChannel | null {
@@ -20,10 +22,11 @@ export function honeyChannelFromTarget(serverTarget: ServerTarget): HoneyServerC
 // Map a dropdown option to its private-server base URL — same mapping as game launch (pure).
 export function resolveServerBaseUrl(serverTarget: ServerTarget, patchTargetUrl: string): string {
     switch (serverTarget) {
+        case "hoyotoon": return HOYOTOON_SERVER_URL
         case "local_test":
         case "local_prod": return LOCAL_SERVER_URL
-        case "custom": return (patchTargetUrl || "").trim() || DEFAULT_PATCH_URL
-        default:       return DEFAULT_PATCH_URL // "hoyotoon"
+        case "custom": return (patchTargetUrl || "").trim() || KUNPS_SERVER_URL
+        default:       return KUNPS_SERVER_URL // "kunps"
     }
 }
 
@@ -93,7 +96,7 @@ const useSettingStore = create<SettingState>()(
             genshinServerVersion: "",
             honeyTestServerVersion: "",
             honeyProdServerVersion: "",
-            serverTarget: "hoyotoon",
+            serverTarget: "kunps",
             patchTargetUrl: "",
             proxyPort: 8080,
             rsaPatch: true,
@@ -132,10 +135,12 @@ const useSettingStore = create<SettingState>()(
         {
             name: 'setting-storage',
             storage: createJSONStorage(() => localStorage),
-            version: 1,
+            version: 2,
             migrate: (persistedState) => {
                 const state = persistedState as Record<string, unknown>
-                const oldTarget = state.serverTarget
+                // "hoyotoon" was the old default; on this channel build the default is KunPS,
+                // so the untouched old default migrates — local_*/custom stay as chosen.
+                const oldTarget = state.serverTarget === "hoyotoon" ? "kunps" : state.serverTarget
                 const legacyHoneyVersion = typeof state.honeyServerVersion === "string" ? state.honeyServerVersion : ""
                 return {
                     ...state,

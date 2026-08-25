@@ -1,6 +1,6 @@
 import { CheckUpdateHoneyServer, CheckUpdateLauncher } from "@/helper"
 import useModalStore from "@/stores/modalStore"
-import useSettingStore, { DEFAULT_PATCH_URL, honeyChannelFromTarget, type ServerTarget } from "@/stores/settingStore"
+import useSettingStore, { honeyChannelFromTarget, KUNPS_SERVER_URL, type ServerTarget } from "@/stores/settingStore"
 import useLauncherStore from "@/stores/launcherStore"
 import { toast } from "react-toastify"
 import { useTranslation } from "react-i18next"
@@ -94,6 +94,7 @@ export default function SettingModal({
                                         value={serverTarget}
                                         onChange={e => setServerTarget(e.target.value as ServerTarget)}
                                     >
+                                        <option value="kunps">{t("setting.server_target_kunps")}</option>
                                         <option value="hoyotoon">{t("setting.server_target_hoyotoon")}</option>
                                         <option value="local_test">{t("setting.server_target_local_test")}</option>
                                         <option value="local_prod">{t("setting.server_target_local_prod")}</option>
@@ -103,7 +104,7 @@ export default function SettingModal({
                                         <input
                                             type="text"
                                             className="input input-sm w-full mt-2 bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
-                                            placeholder={DEFAULT_PATCH_URL}
+                                            placeholder={KUNPS_SERVER_URL}
                                             value={patchTargetUrl}
                                             onChange={e => setPatchTargetUrl(e.target.value)}
                                         />
