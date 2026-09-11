@@ -17,7 +17,7 @@ function mapError(code: string): GateError {
 // Owns all account events; AccountButton only renders the store state.
 export default function LoginGate() {
     const { t } = useTranslation()
-    const { user, pending, checking, skipped, gateError, setUser, setPending, setChecking, setSkipped, setGateError } = useAccountStore()
+    const { user, pending, checking, skipped, gateError, skipEnabled, setUser, setPending, setChecking, setSkipped, setGateError, refreshSkipEnabled } = useAccountStore()
 
     // 每次打开 launcher 自动恢复登录态:连不上服务器则在 2 分钟内持续重试,期间显示带"暂不登录"的连接页,拿到 profile 即登录,未登录(401)则显示登录页。
     const restore = async () => {
@@ -39,6 +39,8 @@ export default function LoginGate() {
 
     useEffect(() => {
         restore()
+        // 是否提供"暂不登录"由网站设置决定;拿到新值之前先沿用上次缓存的结果。
+        refreshSkipEnabled()
 
         const offSuccess = Events.On("account:login:success", (event: any) => {
             setUser(event.data?.user ?? event.data)
@@ -124,9 +126,11 @@ export default function LoginGate() {
                     <div className="flex flex-col items-center gap-4" style={{ '--wails-draggable': 'no-drag' } as any}>
                         <p className="text-base-content/55 text-sm">{t("account.connecting")}</p>
                         <span className="loading loading-spinner loading-md text-pink-400" />
-                        <button onClick={handleSkip} className="btn btn-ghost btn-sm text-base-content/40">
-                            {t("account.skip")}
-                        </button>
+                        {skipEnabled && (
+                            <button onClick={handleSkip} className="btn btn-ghost btn-sm text-base-content/40">
+                                {t("account.skip")}
+                            </button>
+                        )}
                     </div>
                 ) : pending ? (
                     <div className="flex flex-col items-center gap-4" style={{ '--wails-draggable': 'no-drag' } as any}>
@@ -153,9 +157,11 @@ export default function LoginGate() {
                                 </button>
                             )}
                         </div>
-                        <button onClick={handleSkip} className="btn btn-ghost btn-sm text-base-content/40">
-                            {t("account.skip")}
-                        </button>
+                        {skipEnabled && (
+                            <button onClick={handleSkip} className="btn btn-ghost btn-sm text-base-content/40">
+                                {t("account.skip")}
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

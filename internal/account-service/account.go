@@ -59,6 +59,29 @@ func (a *AccountService) GetWebBaseURL() string {
 	return a.baseURL
 }
 
+// LauncherConfig is the website's client-side policy. It is served
+// unauthenticated at /api/launcher/config because the login gate needs it
+// before anybody is signed in.
+type LauncherConfig struct {
+	// SkipLoginEnabled reports whether the gate may offer "continue without
+	// signing in". Admins turn it off to make an account mandatory.
+	SkipLoginEnabled bool `json:"skip_login_enabled"`
+}
+
+// GetLauncherConfig reads that policy. The first return value reports whether
+// the answer is fresh: when the site is unreachable the frontend keeps the
+// value cached from its last successful fetch, so an admin who turned the skip
+// button off does not get it back on every client that goes offline. The
+// fallback only covers an install that has never reached the site.
+func (a *AccountService) GetLauncherConfig() (bool, LauncherConfig) {
+	cfg := LauncherConfig{SkipLoginEnabled: true} // website default
+	status, err := a.doJSON("GET", "/api/launcher/config", "", nil, &cfg)
+	if err != nil || status != http.StatusOK {
+		return false, LauncherConfig{SkipLoginEnabled: true}
+	}
+	return true, cfg
+}
+
 func (a *AccountService) IsLoggedIn() bool {
 	a.mu.Lock()
 	defer a.mu.Unlock()

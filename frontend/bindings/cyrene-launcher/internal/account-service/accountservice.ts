@@ -21,12 +21,26 @@ export function DeviceID(): $CancellablePromise<string> {
 }
 
 /**
+ * GetLauncherConfig reads that policy. The first return value reports whether
+ * the answer is fresh: when the site is unreachable the frontend keeps the
+ * value cached from its last successful fetch, so an admin who turned the skip
+ * button off does not get it back on every client that goes offline. The
+ * fallback only covers an install that has never reached the site.
+ */
+export function GetLauncherConfig(): $CancellablePromise<[boolean, $models.LauncherConfig]> {
+    return $Call.ByID(3793687554).then(($result: any) => {
+        $result[1] = $$createType0($result[1]);
+        return $result;
+    });
+}
+
+/**
  * GetProfile validates the stored token against the website and returns the
  * account profile. Called on app start to restore the session.
  */
 export function GetProfile(): $CancellablePromise<[boolean, $models.Profile, string]> {
     return $Call.ByID(941664977).then(($result: any) => {
-        $result[1] = $$createType0($result[1]);
+        $result[1] = $$createType1($result[1]);
         return $result;
     });
 }
@@ -63,4 +77,5 @@ export function StartLogin(): $CancellablePromise<[boolean, string]> {
 }
 
 // Private type creation functions
-const $$createType0 = $models.Profile.createFrom;
+const $$createType0 = $models.LauncherConfig.createFrom;
+const $$createType1 = $models.Profile.createFrom;

@@ -5,6 +5,36 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "@wailsio/runtime";
 
+/**
+ * LauncherConfig is the website's client-side policy. It is served
+ * unauthenticated at /api/launcher/config because the login gate needs it
+ * before anybody is signed in.
+ */
+export class LauncherConfig {
+    /**
+     * SkipLoginEnabled reports whether the gate may offer "continue without
+     * signing in". Admins turn it off to make an account mandatory.
+     */
+    "skip_login_enabled": boolean;
+
+    /** Creates a new LauncherConfig instance. */
+    constructor($$source: Partial<LauncherConfig> = {}) {
+        if (!("skip_login_enabled" in $$source)) {
+            this["skip_login_enabled"] = false;
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new LauncherConfig instance from a string or object.
+     */
+    static createFrom($$source: any = {}): LauncherConfig {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new LauncherConfig($$parsedSource as Partial<LauncherConfig>);
+    }
+}
+
 export class Profile {
     "id": string;
     "name": string;

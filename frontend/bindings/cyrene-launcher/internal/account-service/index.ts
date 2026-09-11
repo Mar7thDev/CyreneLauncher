@@ -7,5 +7,6 @@ export {
 };
 
 export {
+    LauncherConfig,
     Profile
 } from "./models.js";
