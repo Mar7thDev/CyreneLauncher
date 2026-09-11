@@ -105,7 +105,7 @@ export const BackgroundSelector = () => {
   const allBackgrounds = [...extraBackgrounds, ...Object.values(initialImages)]
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 w-full">
+    <div className="flex flex-col items-center justify-center gap-4">
       <div className="flex flex-col items-center gap-3">
         {([
           ...(SHOW_GENSHIN_PROFILE ? [{ id: "genshin" as const, icon: "game-genshin.png", label: t("home.game_profile_genshin") }] : []),
