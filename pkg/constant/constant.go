@@ -42,7 +42,7 @@ const DefaultPatchTargetURL = March7thTargetURL
 // SourceGenshin is the downloadable Genshin server package source.
 const SourceGenshin = "genshin"
 
-const CurrentLauncherVersion = "1.1.3"
+const CurrentLauncherVersion = "1.2.0"
 
 // === News module ===
 //
