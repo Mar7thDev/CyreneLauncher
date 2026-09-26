@@ -11,10 +11,10 @@ const LANG_MAP: Record<string, string> = { zh: "CHS", en: "EN", ja: "JP", ko: "K
 
 export default function ConsolePage() {
     const { t, i18n } = useTranslation();
-    const { serverTarget, patchTargetUrl } = useSettingStore();
+    const { serverTarget } = useSettingStore();
 
     // Resolve the server address from the Settings dropdown, same as game launch.
-    const serverUrl = resolveServerBaseUrl(serverTarget, patchTargetUrl);
+    const serverUrl = resolveServerBaseUrl(serverTarget);
 
     const [uid, setUid] = useState("");
     const [password, setPassword] = useState("");

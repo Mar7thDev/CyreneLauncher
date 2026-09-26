@@ -2,32 +2,26 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type GameProfile = "starrail" | "genshin"
-export type ServerTarget = "kunps" | "hoyotoon" | "local_test" | "local_prod" | "custom"
-export type HoneyServerChannel = "test" | "prod"
+export type ServerTarget = "march7th" | "hoyotoon" | "kunps"
+export type ServerRegion = "hk" | "eu" | "cn"
 
-// March7thHoney server base URLs, shared by game launch and the console tab.
-// KunPS is the channel server this build ships with, so it is also the default.
-export const KUNPS_SERVER_URL = "http://210.16.175.19:520"
-export const HOYOTOON_SERVER_URL = "https://march7th.hoyotoon.com"
-export const LOCAL_SERVER_URL = "http://127.0.0.1:21000"
+// The three March7thHoney server channels, in the order they are offered.
+// March7th.cc is the default; KunPS is the backup. Keep the URLs in sync with
+// pkg/constant/constant.go (console / handbook fall back to the Go default).
+export const SERVER_CHANNELS: readonly { id: ServerTarget; url: string; region: ServerRegion }[] = [
+    { id: "march7th", url: "https://march7th.cc:21443", region: "hk" },
+    { id: "hoyotoon", url: "https://march7th.hoyotoon.com", region: "eu" },
+    { id: "kunps", url: "http://210.16.175.19:520", region: "cn" },
+]
+export const DEFAULT_SERVER_TARGET: ServerTarget = "march7th"
 
-export function honeyChannelFromTarget(serverTarget: ServerTarget): HoneyServerChannel | null {
-    switch (serverTarget) {
-        case "local_test": return "test"
-        case "local_prod": return "prod"
-        default: return null
-    }
+export function isServerTarget(value: unknown): value is ServerTarget {
+    return SERVER_CHANNELS.some(c => c.id === value)
 }
 
-// Map a dropdown option to its private-server base URL — same mapping as game launch (pure).
-export function resolveServerBaseUrl(serverTarget: ServerTarget, patchTargetUrl: string): string {
-    switch (serverTarget) {
-        case "hoyotoon": return HOYOTOON_SERVER_URL
-        case "local_test":
-        case "local_prod": return LOCAL_SERVER_URL
-        case "custom": return (patchTargetUrl || "").trim() || KUNPS_SERVER_URL
-        default:       return KUNPS_SERVER_URL // "kunps"
-    }
+// Map a channel to its private-server base URL — same mapping as game launch (pure).
+export function resolveServerBaseUrl(serverTarget: ServerTarget): string {
+    return (SERVER_CHANNELS.find(c => c.id === serverTarget) ?? SERVER_CHANNELS[0]).url
 }
 
 interface SettingState {
@@ -39,13 +33,8 @@ interface SettingState {
     genshinGameDir: string;
     genshinServerDir: string;
     genshinServerVersion: string;
-    // March7thHoney: installed local-server versions, tracked independently for update checks.
-    honeyTestServerVersion: string;
-    honeyProdServerVersion: string;
-    // March7thHoney: which server to play on — remote, either launcher-managed local channel, or custom.
+    // March7thHoney: which server channel to play on.
     serverTarget: ServerTarget;
-    // March7thHoney: custom target server URL for the MITM proxy (serverTarget="custom").
-    patchTargetUrl: string;
     // March7thHoney: preferred loopback port for the proxy. 0 → random free port.
     proxyPort: number;
     // March7thHoney patch options. Defaults match the reference project.
@@ -72,10 +61,7 @@ interface SettingState {
     setGenshinGameDir: (newGameDir: string) => void;
     setGenshinServerDir: (newServerDir: string) => void;
     setGenshinServerVersion: (newServerVersion: string) => void;
-    setHoneyTestServerVersion: (v: string) => void;
-    setHoneyProdServerVersion: (v: string) => void;
     setServerTarget: (t: ServerTarget) => void;
-    setPatchTargetUrl: (url: string) => void;
     setProxyPort: (port: number) => void;
     setRsaPatch: (v: boolean) => void;
     setRsaKey: (v: string) => void;
@@ -94,10 +80,7 @@ const useSettingStore = create<SettingState>()(
             genshinGameDir: "",
             genshinServerDir: "",
             genshinServerVersion: "",
-            honeyTestServerVersion: "",
-            honeyProdServerVersion: "",
-            serverTarget: "kunps",
-            patchTargetUrl: "",
+            serverTarget: DEFAULT_SERVER_TARGET,
             proxyPort: 8080,
             rsaPatch: true,
             rsaKey: "",
@@ -122,10 +105,7 @@ const useSettingStore = create<SettingState>()(
             setGenshinGameDir: (newGameDir: string) => set({ genshinGameDir: newGameDir }),
             setGenshinServerDir: (newServerDir: string) => set({ genshinServerDir: newServerDir }),
             setGenshinServerVersion: (newServerVersion: string) => set({ genshinServerVersion: newServerVersion }),
-            setHoneyTestServerVersion: (v: string) => set({ honeyTestServerVersion: v }),
-            setHoneyProdServerVersion: (v: string) => set({ honeyProdServerVersion: v }),
-            setServerTarget: (t: ServerTarget) => set({ serverTarget: t }),
-            setPatchTargetUrl: (url: string) => set({ patchTargetUrl: url }),
+            setServerTarget: (t: ServerTarget) => set({ serverTarget: isServerTarget(t) ? t : DEFAULT_SERVER_TARGET }),
             setProxyPort: (port: number) => set({ proxyPort: port }),
             setRsaPatch: (v: boolean) => set({ rsaPatch: v }),
             setRsaKey: (v: string) => set({ rsaKey: v }),
@@ -135,19 +115,21 @@ const useSettingStore = create<SettingState>()(
         {
             name: 'setting-storage',
             storage: createJSONStorage(() => localStorage),
-            version: 2,
-            migrate: (persistedState) => {
-                const state = persistedState as Record<string, unknown>
-                // "hoyotoon" was the old default; on this channel build the default is KunPS,
-                // so the untouched old default migrates — local_*/custom stay as chosen.
-                const oldTarget = state.serverTarget === "hoyotoon" ? "kunps" : state.serverTarget
-                const legacyHoneyVersion = typeof state.honeyServerVersion === "string" ? state.honeyServerVersion : ""
-                return {
-                    ...state,
-                    serverTarget: oldTarget === "local" ? "local_test" : oldTarget,
-                    honeyTestServerVersion: typeof state.honeyTestServerVersion === "string" ? state.honeyTestServerVersion : legacyHoneyVersion,
-                    honeyProdServerVersion: typeof state.honeyProdServerVersion === "string" ? state.honeyProdServerVersion : "",
-                }
+            version: 3,
+            migrate: (persistedState, version) => {
+                const {
+                    patchTargetUrl: _url,
+                    honeyServerVersion: _v1,
+                    honeyTestServerVersion: _v2,
+                    honeyProdServerVersion: _v3,
+                    ...state
+                } = persistedState as Record<string, unknown>
+                // v3 keeps only the three channels. Local/custom targets are gone, and
+                // KunPS — the automatic default of the v2 KunPS edition — is now only the
+                // backup, so it moves to the new default. HoyoToon was always a choice.
+                let serverTarget = state.serverTarget
+                if (version < 3 && serverTarget === "kunps") serverTarget = DEFAULT_SERVER_TARGET
+                return { ...state, serverTarget: isServerTarget(serverTarget) ? serverTarget : DEFAULT_SERVER_TARGET }
             },
         }
     )

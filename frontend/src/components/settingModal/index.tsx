@@ -1,10 +1,10 @@
-import { CheckUpdateHoneyServer, CheckUpdateLauncher } from "@/helper"
+import { CheckUpdateLauncher } from "@/helper"
 import useModalStore from "@/stores/modalStore"
-import useSettingStore, { honeyChannelFromTarget, KUNPS_SERVER_URL, type ServerTarget } from "@/stores/settingStore"
+import useSettingStore, { SERVER_CHANNELS } from "@/stores/settingStore"
 import useLauncherStore from "@/stores/launcherStore"
 import { toast } from "react-toastify"
 import { useTranslation } from "react-i18next"
-import { ExternalLink } from "lucide-react"
+import { Check, ExternalLink, MapPin } from "lucide-react"
 
 const PROJECT_NAME = "Cyrene Launcher"
 const PROJECT_AUTHOR = "Firefly Shelter (original) · Cyrene (fork)"
@@ -19,21 +19,16 @@ export default function SettingModal({
 }) {
     if (!isOpen) return null
     const { t } = useTranslation()
-    const { setIsOpenSelfUpdateModal, openHoneyDownloadModal, openHoneyUpdateModal } = useModalStore()
+    const { setIsOpenSelfUpdateModal } = useModalStore()
     const {
         closingOption, setClosingOption,
         gameProfile,
-        serverTarget, setServerTarget, honeyTestServerVersion, honeyProdServerVersion,
-        patchTargetUrl, setPatchTargetUrl,
+        serverTarget, setServerTarget,
         proxyPort, setProxyPort,
         rsaPatch, setRsaPatch, rsaKey, setRsaKey,
         webRedirect, setWebRedirect, webHosts, setWebHosts,
     } = useSettingStore()
     const { setUpdateData, updateData, launcherVersion } = useLauncherStore()
-    const honeyChannel = honeyChannelFromTarget(serverTarget)
-    const honeyServerVersion = honeyChannel === "prod" ? honeyProdServerVersion : honeyTestServerVersion
-    const honeyChannelLabel = honeyChannel ? t(`setting.server_channel_${honeyChannel}`) : ""
-    const honeyDirectory = honeyChannel === "prod" ? "server_prod" : "server"
 
     const CheckUpdate = async () => {
         const launcherData = await CheckUpdateLauncher()
@@ -50,15 +45,6 @@ export default function SettingModal({
         setIsOpenSelfUpdateModal(true)
     }
 
-    const CheckHoneyUpdate = async () => {
-        if (!honeyChannel) return
-        const data = await CheckUpdateHoneyServer(honeyChannel, honeyServerVersion)
-        if (!data.version) { toast.error(t("setting.honey_server_none", { channel: honeyChannelLabel })); return }
-        if (!data.isUpdate) { toast.success(t("setting.honey_update_success", { channel: honeyChannelLabel })); return }
-        setUpdateData({ ...updateData, server: { isUpdate: true, isExists: data.isExists, version: data.version } })
-        onClose(); openHoneyUpdateModal(honeyChannel, data.version)
-    }
-    const DownloadHoney = () => { if (honeyChannel) { onClose(); openHoneyDownloadModal(honeyChannel) } }
 
     return (
         <div className="fixed inset-0 z-10 flex items-center justify-center bg-pink-50/30 backdrop-blur-md">
@@ -89,29 +75,38 @@ export default function SettingModal({
                                 <div>
                                     <h4 className="font-bold text-base mb-1">{t("setting.patch_url_title")}</h4>
                                     <p className="text-sm text-base-content/50 mb-2">{t("setting.patch_url_desc")}</p>
-                                    <select
-                                        className="select select-sm w-full bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
-                                        value={serverTarget}
-                                        onChange={e => setServerTarget(e.target.value as ServerTarget)}
-                                    >
-                                        <option value="kunps">{t("setting.server_target_kunps")}</option>
-                                        <option value="hoyotoon">{t("setting.server_target_hoyotoon")}</option>
-                                        <option value="local_test">{t("setting.server_target_local_test")}</option>
-                                        <option value="local_prod">{t("setting.server_target_local_prod")}</option>
-                                        <option value="custom">{t("setting.server_target_custom")}</option>
-                                    </select>
-                                    {serverTarget === "custom" && (
-                                        <input
-                                            type="text"
-                                            className="input input-sm w-full mt-2 bg-white border border-violet-200/60 rounded-lg text-sm focus:outline-none focus:border-violet-400"
-                                            placeholder={KUNPS_SERVER_URL}
-                                            value={patchTargetUrl}
-                                            onChange={e => setPatchTargetUrl(e.target.value)}
-                                        />
-                                    )}
-                                    <p className="text-xs text-base-content/40 mt-1">
-                                        {honeyChannel ? t("setting.server_target_local_hint", { directory: honeyDirectory }) : t("setting.patch_url_hint")}
-                                    </p>
+                                    <div className="flex flex-col gap-2" role="radiogroup">
+                                        {SERVER_CHANNELS.map(channel => {
+                                            const active = serverTarget === channel.id
+                                            return (
+                                                <button
+                                                    key={channel.id}
+                                                    type="button"
+                                                    role="radio"
+                                                    aria-checked={active}
+                                                    onClick={() => setServerTarget(channel.id)}
+                                                    className={`flex items-start gap-3 rounded-lg border p-2.5 text-left transition-colors ${active
+                                                        ? "border-violet-400 bg-violet-50"
+                                                        : "border-violet-200/60 bg-white hover:bg-violet-50/50"}`}
+                                                >
+                                                    <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${active ? "border-violet-500 bg-violet-500 text-white" : "border-violet-300"}`}>
+                                                        {active && <Check size={11} strokeWidth={3} />}
+                                                    </span>
+                                                    <span className="min-w-0 flex-1">
+                                                        <span className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                                                            {t(`setting.server_target_${channel.id}`)}
+                                                            <span className="inline-flex items-center gap-0.5 rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-medium text-sky-700">
+                                                                <MapPin size={10} />
+                                                                {t(`setting.server_region_${channel.region}`)}
+                                                            </span>
+                                                        </span>
+                                                        <span className="block text-xs text-base-content/50">{t(`setting.server_hint_${channel.id}`)}</span>
+                                                    </span>
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                    <p className="text-xs text-base-content/40 mt-1">{t("setting.patch_url_hint")}</p>
                                 </div>
 
                                 <div>
@@ -171,23 +166,6 @@ export default function SettingModal({
                                     )}
                                 </div>
                             </div>
-
-                            {/* Local server (download / update) */}
-                            {honeyChannel && (
-                                <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">
-                                    <h4 className="font-bold text-base mb-1">{t("setting.honey_server_title", { channel: honeyChannelLabel })}</h4>
-                                    <p className="text-sm text-base-content/50 mb-2">{t("setting.honey_server_desc", { channel: honeyChannelLabel })}</p>
-                                    <p className="text-xs text-base-content/40 mb-3">
-                                        {t("setting.honey_server_version")}: {honeyServerVersion || t("setting.honey_server_not_installed")}
-                                    </p>
-                                    <button
-                                        className="btn btn-sm bg-linear-to-r from-pink-500 to-sky-500 border-none text-white shadow-sm"
-                                        onClick={honeyServerVersion ? CheckHoneyUpdate : DownloadHoney}
-                                    >
-                                        {honeyServerVersion ? t("setting.honey_server_check_btn") : t("setting.honey_server_download_btn")}
-                                    </button>
-                                </div>
-                            )}
 
                             {/* Launcher Update */}
                             <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">

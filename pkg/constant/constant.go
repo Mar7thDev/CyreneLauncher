@@ -21,42 +21,26 @@ const GenshinServerManifest = "./server-packages/Columbina-GI/cyrene-manifest.js
 
 // === March7thHoney proxy mode ===
 //
-// The patch is implemented as a Go-native HTTPS MITM proxy (pkg/patch-proxy).
-// No DLL download or injection is required. The proxy intercepts miHoYo-domain
-// traffic and forwards it to DefaultPatchTargetURL (or a user-configured URL).
+// The patch is a Go-native HTTPS MITM proxy (pkg/patch-proxy) plus the embedded
+// CyreneHook.dll. The proxy intercepts miHoYo-domain traffic and forwards it to
+// the selected channel's server (DefaultPatchTargetURL when none is given).
 
-// HoyoToonTargetURL is the upstream community server ("HoyoToon (Online)").
-const HoyoToonTargetURL = "https://march7th.hoyotoon.com"
+// The three server channels offered in the settings (the frontend list in
+// frontend/src/stores/settingStore.ts must match):
+//
+//	March7th.cc — default, Hong Kong
+//	HoyoToon    — Europe
+//	KunPS       — backup, China
+const (
+	March7thTargetURL = "https://march7th.cc:21443"
+	HoyoToonTargetURL = "https://march7th.hoyotoon.com"
+	KunPSTargetURL    = "http://210.16.175.19:520"
+)
 
-// KunPSTargetURL is the KunPS channel server ("KunPS (Online)"). This build is
-// the KunPS channel edition, so it is also the default target.
-const KunPSTargetURL = "http://210.16.175.19:520"
-
-const DefaultPatchTargetURL = KunPSTargetURL
+const DefaultPatchTargetURL = March7thTargetURL
 
 // SourceGenshin is the downloadable Genshin server package source.
 const SourceGenshin = "genshin"
-
-// March7thHoney local-server channels use separate on-disk deployments.
-const (
-	LocalServerTestDir  = "./server"
-	LocalServerTestExe  = "./server/March7thHoney.exe"
-	LocalServerProdDir  = "./server_prod"
-	LocalServerProdExe  = "./server_prod/March7thHoney.exe"
-	LocalServerTestMode = "test"
-	LocalServerProdMode = "prod"
-)
-
-const LocalServerImageName = "March7thHoney.exe"
-const LocalServerProbeAddr = "127.0.0.1:21000"
-const LocalServerTargetURL = "http://127.0.0.1:21000"
-
-// March7thHoney test uses ordinary releases and production uses prod-* prereleases.
-const SourceHoneyTest = "honey_test"
-const SourceHoneyProd = "honey_prod"
-const HoneyServerGitUrl = "https://api.github.com/repos/Mar7thLover/March7thHoney-Public/releases"
-const HoneyServerAsset = "win-x64.zip"
-const HoneyServerProdTagPrefix = "prod-"
 
 const CurrentLauncherVersion = "1.1.3"
 
@@ -74,8 +58,9 @@ const (
 	HSRGameID             = "4ziysqXOQ8" // Honkai: Star Rail (global)
 )
 
-// WebBaseURL is the Cyrene website (account system, news, device login).
-const WebBaseURL = "https://cyrene.hoyotoon.com"
+// WebBaseURL is the Cyrene website (account system, news, device login). It
+// lives under a path prefix because the march7th.cc root is another site.
+const WebBaseURL = "https://march7th.cc/cyrene"
 
 // AnnouncementUrl returns the website's server announcements as a JSON
 // []NewsItem array (pinned first). Each entry becomes one card in the News

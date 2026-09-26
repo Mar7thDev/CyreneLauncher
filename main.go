@@ -96,7 +96,7 @@ func main() {
 			application.NewService(&newsService.NewsService{}),
 			application.NewService(&consoleService.ConsoleService{}),
 			application.NewService(&handbookService.HandbookService{}),
-			application.NewService(march7thHoneyService.New(dllBytes, acct)),
+			application.NewService(march7thHoneyService.New(dllBytes)),
 			application.NewService(acct),
 		},
 		Assets: application.AssetOptions{
