@@ -29,12 +29,12 @@ const GenshinServerManifest = "./server-packages/Columbina-GI/cyrene-manifest.js
 // frontend/src/stores/settingStore.ts must match):
 //
 //	March7th.cc — default, Hong Kong
-//	HoyoToon    — Europe
 //	KunPS       — backup, China
+//	Huaian      — backup, China
 const (
 	March7thTargetURL = "https://server.march7th.cc"
-	HoyoToonTargetURL = "https://march7th.hoyotoon.com"
 	KunPSTargetURL    = "http://210.16.175.19:520"
+	HuaianTargetURL   = "http://114.66.20.229:12345"
 )
 
 const DefaultPatchTargetURL = March7thTargetURL
@@ -42,7 +42,7 @@ const DefaultPatchTargetURL = March7thTargetURL
 // SourceGenshin is the downloadable Genshin server package source.
 const SourceGenshin = "genshin"
 
-const CurrentLauncherVersion = "1.2.1"
+const CurrentLauncherVersion = "1.2.2"
 
 // === News module ===
 //

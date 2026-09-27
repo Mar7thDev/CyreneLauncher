@@ -2,16 +2,16 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type GameProfile = "starrail" | "genshin"
-export type ServerTarget = "march7th" | "hoyotoon" | "kunps"
+export type ServerTarget = "march7th" | "kunps" | "huaian"
 export type ServerRegion = "hk" | "eu" | "cn"
 
 // The three March7thHoney server channels, in the order they are offered.
-// March7th.cc is the default; KunPS is the backup. Keep the URLs in sync with
+// March7th.cc is the default; KunPS and Huaian are backups. Keep the URLs in sync with
 // pkg/constant/constant.go (console / handbook fall back to the Go default).
 export const SERVER_CHANNELS: readonly { id: ServerTarget; url: string; region: ServerRegion }[] = [
     { id: "march7th", url: "https://server.march7th.cc", region: "hk" },
-    { id: "hoyotoon", url: "https://march7th.hoyotoon.com", region: "eu" },
     { id: "kunps", url: "http://210.16.175.19:520", region: "cn" },
+    { id: "huaian", url: "http://114.66.20.229:12345", region: "cn" },
 ]
 export const DEFAULT_SERVER_TARGET: ServerTarget = "march7th"
 
@@ -115,7 +115,7 @@ const useSettingStore = create<SettingState>()(
         {
             name: 'setting-storage',
             storage: createJSONStorage(() => localStorage),
-            version: 3,
+            version: 4,
             migrate: (persistedState, version) => {
                 const {
                     patchTargetUrl: _url,
@@ -129,6 +129,7 @@ const useSettingStore = create<SettingState>()(
                 // backup, so it moves to the new default. HoyoToon was always a choice.
                 let serverTarget = state.serverTarget
                 if (version < 3 && serverTarget === "kunps") serverTarget = DEFAULT_SERVER_TARGET
+                // v4: the HoyoToon server was shut down; its users move to the default.
                 return { ...state, serverTarget: isServerTarget(serverTarget) ? serverTarget : DEFAULT_SERVER_TARGET }
             },
         }

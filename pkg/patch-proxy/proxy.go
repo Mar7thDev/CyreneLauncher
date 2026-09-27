@@ -56,7 +56,7 @@ type Proxy struct {
 }
 
 // New creates a Proxy that forwards intercepted traffic to targetURL.
-// targetURL must be an absolute URL with a host (e.g. "https://march7th.hoyotoon.com").
+// targetURL must be an absolute URL with a host (e.g. "https://server.march7th.cc").
 // opts controls optional RSA key patching and webpage URL rewriting.
 func New(targetURL string, opts PatchOptions) (*Proxy, error) {
 	u, err := url.Parse(targetURL)
