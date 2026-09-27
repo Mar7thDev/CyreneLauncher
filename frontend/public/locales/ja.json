@@ -55,7 +55,7 @@
         "genshin_settings_empty": "まだ設定項目はありません。",
         "patch_url_title": "サーバー",
         "patch_url_desc": "ゲームの接続先サーバーを選択します。",
-        "patch_url_hint": "アカウントとセーブデータはサーバーごとに別です。March7th.cc のゲームアカウントはウェブサイト（march7th.cc/cyrene）で作成します。",
+        "patch_url_hint": "アカウントとセーブデータはサーバーごとに別です。March7th.cc のゲームアカウントはウェブサイト（cyrene.march7th.cc）で作成します。",
         "server_target_march7th": "March7th.cc（デフォルト）",
         "server_target_hoyotoon": "HoyoToon",
         "server_target_kunps": "KunPS（予備）",

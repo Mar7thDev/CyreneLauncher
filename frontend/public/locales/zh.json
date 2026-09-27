@@ -55,7 +55,7 @@
         "genshin_settings_empty": "暂无可配置项。",
         "patch_url_title": "服务器",
         "patch_url_desc": "选择游戏要连接的服务器。",
-        "patch_url_hint": "各服务器的账号和存档互不相通。March7th.cc 的游戏账号在网站（march7th.cc/cyrene）上创建。",
+        "patch_url_hint": "各服务器的账号和存档互不相通。March7th.cc 的游戏账号在网站（cyrene.march7th.cc）上创建。",
         "server_target_march7th": "March7th.cc（默认）",
         "server_target_hoyotoon": "HoyoToon",
         "server_target_kunps": "KunPS（备用）",

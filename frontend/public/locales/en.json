@@ -55,7 +55,7 @@
         "genshin_settings_empty": "No options yet.",
         "patch_url_title": "Server",
         "patch_url_desc": "Choose which server the game connects to.",
-        "patch_url_hint": "Each server has its own accounts and saves. March7th.cc game accounts are created on the website (march7th.cc/cyrene).",
+        "patch_url_hint": "Each server has its own accounts and saves. March7th.cc game accounts are created on the website (cyrene.march7th.cc).",
         "server_target_march7th": "March7th.cc (Default)",
         "server_target_hoyotoon": "HoyoToon",
         "server_target_kunps": "KunPS (Backup)",

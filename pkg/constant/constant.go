@@ -32,7 +32,7 @@ const GenshinServerManifest = "./server-packages/Columbina-GI/cyrene-manifest.js
 //	HoyoToon    — Europe
 //	KunPS       — backup, China
 const (
-	March7thTargetURL = "https://march7th.cc:21443"
+	March7thTargetURL = "https://server.march7th.cc"
 	HoyoToonTargetURL = "https://march7th.hoyotoon.com"
 	KunPSTargetURL    = "http://210.16.175.19:520"
 )
@@ -42,7 +42,7 @@ const DefaultPatchTargetURL = March7thTargetURL
 // SourceGenshin is the downloadable Genshin server package source.
 const SourceGenshin = "genshin"
 
-const CurrentLauncherVersion = "1.2.0"
+const CurrentLauncherVersion = "1.2.1"
 
 // === News module ===
 //
@@ -58,9 +58,8 @@ const (
 	HSRGameID             = "4ziysqXOQ8" // Honkai: Star Rail (global)
 )
 
-// WebBaseURL is the Cyrene website (account system, news, device login). It
-// lives under a path prefix because the march7th.cc root is another site.
-const WebBaseURL = "https://march7th.cc/cyrene"
+// WebBaseURL is the Cyrene website (account system, news, device login).
+const WebBaseURL = "https://cyrene.march7th.cc"
 
 // AnnouncementUrl returns the website's server announcements as a JSON
 // []NewsItem array (pinned first). Each entry becomes one card in the News

@@ -55,7 +55,7 @@
         "genshin_settings_empty": "아직 설정 항목이 없습니다.",
         "patch_url_title": "서버",
         "patch_url_desc": "게임이 접속할 서버를 선택하세요.",
-        "patch_url_hint": "계정과 세이브는 서버마다 따로입니다. March7th.cc 게임 계정은 웹사이트(march7th.cc/cyrene)에서 만듭니다.",
+        "patch_url_hint": "계정과 세이브는 서버마다 따로입니다. March7th.cc 게임 계정은 웹사이트(cyrene.march7th.cc)에서 만듭니다.",
         "server_target_march7th": "March7th.cc (기본)",
         "server_target_hoyotoon": "HoyoToon",
         "server_target_kunps": "KunPS (백업)",

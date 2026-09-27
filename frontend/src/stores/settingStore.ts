@@ -9,7 +9,7 @@ export type ServerRegion = "hk" | "eu" | "cn"
 // March7th.cc is the default; KunPS is the backup. Keep the URLs in sync with
 // pkg/constant/constant.go (console / handbook fall back to the Go default).
 export const SERVER_CHANNELS: readonly { id: ServerTarget; url: string; region: ServerRegion }[] = [
-    { id: "march7th", url: "https://march7th.cc:21443", region: "hk" },
+    { id: "march7th", url: "https://server.march7th.cc", region: "hk" },
     { id: "hoyotoon", url: "https://march7th.hoyotoon.com", region: "eu" },
     { id: "kunps", url: "http://210.16.175.19:520", region: "cn" },
 ]

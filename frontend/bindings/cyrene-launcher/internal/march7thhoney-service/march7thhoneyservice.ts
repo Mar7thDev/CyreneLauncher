@@ -18,7 +18,7 @@ import * as patchproxy$0 from "../../pkg/patch-proxy/models.js";
 /**
  * Start launches gamePath with the local proxy + CyreneHook injection.
  * 
- * targetURL is the selected channel's server base URL (e.g. "https://march7th.cc:21443").
+ * targetURL is the selected channel's server base URL (e.g. "https://server.march7th.cc").
  * An empty string uses constant.DefaultPatchTargetURL.
  * 
  * preferredPort is the loopback port the proxy tries to bind. 0 (or an
