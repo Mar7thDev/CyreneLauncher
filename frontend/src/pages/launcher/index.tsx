@@ -31,7 +31,7 @@ export default function LauncherPage() {
         genshinGamePath, genshinGameDir, genshinServerDir, genshinServerVersion,
         setGenshinGamePath, setGenshinGameDir, setGenshinServerDir,
         gameDir, background, gameProfile,
-        serverTarget, proxyPort,
+        serverTarget, customServerUrl, proxyPort,
         rsaPatch, rsaKey, webRedirect, webHosts,
     } = useSettingStore()
     const { t } = useTranslation()
@@ -264,7 +264,11 @@ export default function LauncherPage() {
                 return
             }
 
-            const target = resolveServerBaseUrl(serverTarget)
+            const target = resolveServerBaseUrl(serverTarget, customServerUrl)
+            if (!target) {
+                toast.error(t(customServerUrl.trim() ? "setting.server_custom_invalid" : "setting.server_custom_empty"))
+                return
+            }
             const [ok, err] = await March7thHoneyService.Start(gamePath, target, proxyPort, {
                 rsaPatch, rsaKey, webRedirect, webHosts,
             })

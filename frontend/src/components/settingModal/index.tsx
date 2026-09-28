@@ -1,10 +1,10 @@
 import { CheckUpdateLauncher } from "@/helper"
 import useModalStore from "@/stores/modalStore"
-import useSettingStore, { SERVER_CHANNELS } from "@/stores/settingStore"
+import useSettingStore, { normalizeServerUrl, SERVER_CHANNELS } from "@/stores/settingStore"
 import useLauncherStore from "@/stores/launcherStore"
 import { toast } from "react-toastify"
 import { useTranslation } from "react-i18next"
-import { Check, ExternalLink, MapPin } from "lucide-react"
+import { Check, ExternalLink, Link2, MapPin } from "lucide-react"
 
 const PROJECT_NAME = "Cyrene Launcher"
 const PROJECT_AUTHOR = "Firefly Shelter (original) · Cyrene (fork)"
@@ -23,7 +23,7 @@ export default function SettingModal({
     const {
         closingOption, setClosingOption,
         gameProfile,
-        serverTarget, setServerTarget,
+        serverTarget, setServerTarget, customServerUrl, setCustomServerUrl,
         proxyPort, setProxyPort,
         rsaPatch, setRsaPatch, rsaKey, setRsaKey,
         webRedirect, setWebRedirect, webHosts, setWebHosts,
@@ -105,6 +105,45 @@ export default function SettingModal({
                                                 </button>
                                             )
                                         })}
+                                        <button
+                                            type="button"
+                                            role="radio"
+                                            aria-checked={serverTarget === "custom"}
+                                            onClick={() => setServerTarget("custom")}
+                                            className={`flex items-start gap-3 rounded-lg border p-2.5 text-left transition-colors ${serverTarget === "custom"
+                                                ? "border-violet-400 bg-violet-50"
+                                                : "border-violet-200/60 bg-white hover:bg-violet-50/50"}`}
+                                        >
+                                            <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${serverTarget === "custom" ? "border-violet-500 bg-violet-500 text-white" : "border-violet-300"}`}>
+                                                {serverTarget === "custom" && <Check size={11} strokeWidth={3} />}
+                                            </span>
+                                            <span className="min-w-0 flex-1">
+                                                <span className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                                                    {t("setting.server_target_custom")}
+                                                    <Link2 size={12} className="text-violet-400" />
+                                                </span>
+                                                <span className="block text-xs text-base-content/50">{t("setting.server_hint_custom")}</span>
+                                            </span>
+                                        </button>
+                                        {serverTarget === "custom" && (
+                                            <div>
+                                                <input
+                                                    type="text"
+                                                    spellCheck={false}
+                                                    className={`input input-sm w-full bg-white border rounded-lg text-sm focus:outline-none ${customServerUrl.trim() && !normalizeServerUrl(customServerUrl)
+                                                        ? "border-red-300 focus:border-red-400"
+                                                        : "border-violet-200/60 focus:border-violet-400"}`}
+                                                    placeholder="http://127.0.0.1:21000"
+                                                    value={customServerUrl}
+                                                    onChange={e => setCustomServerUrl(e.target.value)}
+                                                />
+                                                {!normalizeServerUrl(customServerUrl) && (
+                                                    <p className="text-xs text-red-500 mt-1">
+                                                        {customServerUrl.trim() ? t("setting.server_custom_invalid") : t("setting.server_custom_empty")}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                     <p className="text-xs text-base-content/40 mt-1">{t("setting.patch_url_hint")}</p>
                                 </div>

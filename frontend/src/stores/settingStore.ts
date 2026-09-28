@@ -2,13 +2,15 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type GameProfile = "starrail" | "genshin"
-export type ServerTarget = "march7th" | "kunps" | "huaian"
+export type PresetServerTarget = "march7th" | "kunps" | "huaian"
+// "custom" connects to the user-entered customServerUrl instead of a preset channel.
+export type ServerTarget = PresetServerTarget | "custom"
 export type ServerRegion = "hk" | "eu" | "cn"
 
-// The three March7thHoney server channels, in the order they are offered.
+// The three preset March7thHoney server channels, in the order they are offered.
 // March7th.cc is the default; KunPS and Huaian are backups. Keep the URLs in sync with
 // pkg/constant/constant.go (console / handbook fall back to the Go default).
-export const SERVER_CHANNELS: readonly { id: ServerTarget; url: string; region: ServerRegion }[] = [
+export const SERVER_CHANNELS: readonly { id: PresetServerTarget; url: string; region: ServerRegion }[] = [
     { id: "march7th", url: "https://server.march7th.cc", region: "hk" },
     { id: "kunps", url: "http://210.16.175.19:520", region: "cn" },
     { id: "huaian", url: "http://114.66.20.229:12345", region: "cn" },
@@ -16,11 +18,27 @@ export const SERVER_CHANNELS: readonly { id: ServerTarget; url: string; region: 
 export const DEFAULT_SERVER_TARGET: ServerTarget = "march7th"
 
 export function isServerTarget(value: unknown): value is ServerTarget {
-    return SERVER_CHANNELS.some(c => c.id === value)
+    return value === "custom" || SERVER_CHANNELS.some(c => c.id === value)
+}
+
+// Normalize a user-entered server address to "scheme://host[:port][/path]".
+// A missing scheme means http://. Returns "" when the address is not a usable http(s) URL.
+export function normalizeServerUrl(raw: string): string {
+    const trimmed = raw.trim()
+    if (!trimmed) return ""
+    try {
+        const u = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ? trimmed : `http://${trimmed}`)
+        if ((u.protocol !== "http:" && u.protocol !== "https:") || !u.hostname) return ""
+        return u.origin + u.pathname.replace(/\/+$/, "")
+    } catch {
+        return ""
+    }
 }
 
 // Map a channel to its private-server base URL — same mapping as game launch (pure).
-export function resolveServerBaseUrl(serverTarget: ServerTarget): string {
+// For the custom channel this is "" when the entered address is invalid.
+export function resolveServerBaseUrl(serverTarget: ServerTarget, customServerUrl: string): string {
+    if (serverTarget === "custom") return normalizeServerUrl(customServerUrl)
     return (SERVER_CHANNELS.find(c => c.id === serverTarget) ?? SERVER_CHANNELS[0]).url
 }
 
@@ -35,6 +53,8 @@ interface SettingState {
     genshinServerVersion: string;
     // March7thHoney: which server channel to play on.
     serverTarget: ServerTarget;
+    // March7thHoney: server address used when serverTarget is "custom".
+    customServerUrl: string;
     // March7thHoney: preferred loopback port for the proxy. 0 → random free port.
     proxyPort: number;
     // March7thHoney patch options. Defaults match the reference project.
@@ -62,6 +82,7 @@ interface SettingState {
     setGenshinServerDir: (newServerDir: string) => void;
     setGenshinServerVersion: (newServerVersion: string) => void;
     setServerTarget: (t: ServerTarget) => void;
+    setCustomServerUrl: (url: string) => void;
     setProxyPort: (port: number) => void;
     setRsaPatch: (v: boolean) => void;
     setRsaKey: (v: string) => void;
@@ -81,6 +102,7 @@ const useSettingStore = create<SettingState>()(
             genshinServerDir: "",
             genshinServerVersion: "",
             serverTarget: DEFAULT_SERVER_TARGET,
+            customServerUrl: "",
             proxyPort: 8080,
             rsaPatch: true,
             rsaKey: "",
@@ -106,6 +128,7 @@ const useSettingStore = create<SettingState>()(
             setGenshinServerDir: (newServerDir: string) => set({ genshinServerDir: newServerDir }),
             setGenshinServerVersion: (newServerVersion: string) => set({ genshinServerVersion: newServerVersion }),
             setServerTarget: (t: ServerTarget) => set({ serverTarget: isServerTarget(t) ? t : DEFAULT_SERVER_TARGET }),
+            setCustomServerUrl: (url: string) => set({ customServerUrl: url }),
             setProxyPort: (port: number) => set({ proxyPort: port }),
             setRsaPatch: (v: boolean) => set({ rsaPatch: v }),
             setRsaKey: (v: string) => set({ rsaKey: v }),
@@ -115,10 +138,10 @@ const useSettingStore = create<SettingState>()(
         {
             name: 'setting-storage',
             storage: createJSONStorage(() => localStorage),
-            version: 4,
+            version: 5,
             migrate: (persistedState, version) => {
                 const {
-                    patchTargetUrl: _url,
+                    patchTargetUrl,
                     honeyServerVersion: _v1,
                     honeyTestServerVersion: _v2,
                     honeyProdServerVersion: _v3,
@@ -128,9 +151,20 @@ const useSettingStore = create<SettingState>()(
                 // KunPS — the automatic default of the v2 KunPS edition — is now only the
                 // backup, so it moves to the new default. HoyoToon was always a choice.
                 let serverTarget = state.serverTarget
+                let customServerUrl = typeof state.customServerUrl === "string" ? state.customServerUrl : ""
                 if (version < 3 && serverTarget === "kunps") serverTarget = DEFAULT_SERVER_TARGET
+                // v5: the custom URL is back. A v2 custom choice keeps its old patchTargetUrl;
+                // without one it falls back to the default like before.
+                if (version < 3 && serverTarget === "custom") {
+                    if (typeof patchTargetUrl === "string" && normalizeServerUrl(patchTargetUrl)) customServerUrl = patchTargetUrl
+                    else serverTarget = DEFAULT_SERVER_TARGET
+                }
                 // v4: the HoyoToon server was shut down; its users move to the default.
-                return { ...state, serverTarget: isServerTarget(serverTarget) ? serverTarget : DEFAULT_SERVER_TARGET }
+                return {
+                    ...state,
+                    serverTarget: isServerTarget(serverTarget) ? serverTarget : DEFAULT_SERVER_TARGET,
+                    customServerUrl,
+                }
             },
         }
     )

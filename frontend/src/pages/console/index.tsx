@@ -11,10 +11,12 @@ const LANG_MAP: Record<string, string> = { zh: "CHS", en: "EN", ja: "JP", ko: "K
 
 export default function ConsolePage() {
     const { t, i18n } = useTranslation();
-    const { serverTarget } = useSettingStore();
+    const { serverTarget, customServerUrl } = useSettingStore();
 
     // Resolve the server address from the Settings dropdown, same as game launch.
-    const serverUrl = resolveServerBaseUrl(serverTarget);
+    // "" means the custom channel has no valid address yet.
+    const serverUrl = resolveServerBaseUrl(serverTarget, customServerUrl);
+    const serverUrlError = customServerUrl.trim() ? "setting.server_custom_invalid" : "setting.server_custom_empty";
 
     const [uid, setUid] = useState("");
     const [password, setPassword] = useState("");
@@ -55,6 +57,10 @@ export default function ConsolePage() {
         const uidNum = Number(uid.trim());
         if (!Number.isInteger(uidNum) || uidNum <= 0) {
             toast.error(t("console.err_uid"));
+            return;
+        }
+        if (!serverUrl) {
+            toast.error(t(serverUrlError));
             return;
         }
         setConnecting(true);
@@ -107,6 +113,7 @@ export default function ConsolePage() {
         setHbResults([]);
         setHbSearched(false);
 
+        if (!serverUrl) return;
         let cancelled = false;
         (async () => {
             try {
@@ -161,6 +168,10 @@ export default function ConsolePage() {
         const uidNum = Number(uid.trim());
         if (!Number.isInteger(uidNum) || uidNum <= 0) {
             toast.error(t("console.err_uid"));
+            return;
+        }
+        if (!serverUrl) {
+            toast.error(t(serverUrlError));
             return;
         }
         setResetting(true);
