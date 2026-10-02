@@ -25,24 +25,22 @@ const GenshinServerManifest = "./server-packages/Columbina-GI/cyrene-manifest.js
 // CyreneHook.dll. The proxy intercepts miHoYo-domain traffic and forwards it to
 // the selected channel's server (DefaultPatchTargetURL when none is given).
 
-// The three server channels offered in the settings (the frontend list in
+// The server channels offered in the settings (the frontend list in
 // frontend/src/stores/settingStore.ts must match):
 //
-//	March7th.cc — default, Hong Kong
-//	KunPS       — backup, China
-//	Huaian      — backup, China
+//	KunPS  — default, China
+//	Huaian — backup, China
 const (
-	March7thTargetURL = "https://server.march7th.cc"
-	KunPSTargetURL    = "http://210.16.175.19:520"
-	HuaianTargetURL   = "http://114.66.20.229:12345"
+	KunPSTargetURL  = "http://210.16.175.19:520"
+	HuaianTargetURL = "http://114.66.20.229:2000"
 )
 
-const DefaultPatchTargetURL = March7thTargetURL
+const DefaultPatchTargetURL = KunPSTargetURL
 
 // SourceGenshin is the downloadable Genshin server package source.
 const SourceGenshin = "genshin"
 
-const CurrentLauncherVersion = "1.2.2"
+const CurrentLauncherVersion = "1.2.3"
 
 // === News module ===
 //

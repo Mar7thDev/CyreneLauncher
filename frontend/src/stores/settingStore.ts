@@ -2,20 +2,19 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type GameProfile = "starrail" | "genshin"
-export type PresetServerTarget = "march7th" | "kunps" | "huaian"
+export type PresetServerTarget = "kunps" | "huaian"
 // "custom" connects to the user-entered customServerUrl instead of a preset channel.
 export type ServerTarget = PresetServerTarget | "custom"
 export type ServerRegion = "hk" | "eu" | "cn"
 
-// The three preset March7thHoney server channels, in the order they are offered.
-// March7th.cc is the default; KunPS and Huaian are backups. Keep the URLs in sync with
+// The preset March7thHoney server channels, in the order they are offered.
+// KunPS is the default; Huaian is the backup. Keep the URLs in sync with
 // pkg/constant/constant.go (console / handbook fall back to the Go default).
 export const SERVER_CHANNELS: readonly { id: PresetServerTarget; url: string; region: ServerRegion }[] = [
-    { id: "march7th", url: "https://server.march7th.cc", region: "hk" },
     { id: "kunps", url: "http://210.16.175.19:520", region: "cn" },
-    { id: "huaian", url: "http://114.66.20.229:12345", region: "cn" },
+    { id: "huaian", url: "http://114.66.20.229:2000", region: "cn" },
 ]
-export const DEFAULT_SERVER_TARGET: ServerTarget = "march7th"
+export const DEFAULT_SERVER_TARGET: ServerTarget = "kunps"
 
 export function isServerTarget(value: unknown): value is ServerTarget {
     return value === "custom" || SERVER_CHANNELS.some(c => c.id === value)
@@ -138,7 +137,7 @@ const useSettingStore = create<SettingState>()(
         {
             name: 'setting-storage',
             storage: createJSONStorage(() => localStorage),
-            version: 5,
+            version: 6,
             migrate: (persistedState, version) => {
                 const {
                     patchTargetUrl,
@@ -160,6 +159,7 @@ const useSettingStore = create<SettingState>()(
                     else serverTarget = DEFAULT_SERVER_TARGET
                 }
                 // v4: the HoyoToon server was shut down; its users move to the default.
+                // v6: the March7th.cc channel was removed; its users move to the default (KunPS).
                 return {
                     ...state,
                     serverTarget: isServerTarget(serverTarget) ? serverTarget : DEFAULT_SERVER_TARGET,
