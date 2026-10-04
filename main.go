@@ -79,7 +79,7 @@ func main() {
 	// → service reports a clear error when the user tries to launch.
 	dllBytes, _ := tools.ReadFile("assets/CyreneHook.dll")
 
-	// Shared account service: the local-server launch hands its login token to honey.
+	// Shared account service: the local-server launch hands its login token (if any) to honey.
 	acct := accountService.New(constant.WebBaseURL)
 
 	// Create application
@@ -96,7 +96,7 @@ func main() {
 			application.NewService(&newsService.NewsService{}),
 			application.NewService(&consoleService.ConsoleService{}),
 			application.NewService(&handbookService.HandbookService{}),
-			application.NewService(march7thHoneyService.New(dllBytes)),
+			application.NewService(march7thHoneyService.New(dllBytes, acct)),
 			application.NewService(acct),
 		},
 		Assets: application.AssetOptions{

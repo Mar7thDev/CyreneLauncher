@@ -19,7 +19,7 @@ import (
 )
 
 var lastServerArchivePath string
-var lastServerArchiveSource string // only "genshin" today
+var lastServerArchiveSource string // "genshin" | "honey_test" | "honey_prod" — picks the UnzipServer destination
 
 // GetLatestServerVersion resolves the newest downloadable package for a source.
 func (g *GitService) GetLatestServerVersion(source string) (bool, string, string) {
@@ -33,6 +33,18 @@ func (g *GitService) GetLatestServerVersion(source string) (bool, string, string
 			return false, "", "no Columbina-GI launcher runtime package found"
 		}
 		return true, asset.Name, ""
+	case constant.SourceHoneyTest:
+		tag, ok := g.getLatestReleaseTagWithAsset(constant.HoneyServerGitUrl, constant.HoneyServerAsset)
+		if !ok {
+			return false, "", "no March7thHoney test release asset found"
+		}
+		return true, tag, ""
+	case constant.SourceHoneyProd:
+		tag, ok := g.getLatestHoneyProductionReleaseTag(constant.HoneyServerGitUrl, constant.HoneyServerAsset)
+		if !ok {
+			return false, "", "no March7thHoney production release asset found"
+		}
+		return true, tag, ""
 	default:
 		return false, "", "unknown server source: " + source
 	}
@@ -80,6 +92,55 @@ func (g *GitService) DownloadServerProgress(source string, version string) (bool
 			time.Sleep(300 * time.Millisecond)
 		}
 		return false, "failed to rename tmp file after retries"
+	case constant.SourceHoneyTest, constant.SourceHoneyProd:
+		tag := version
+		if tag == "" {
+			var ok bool
+			if source == constant.SourceHoneyTest {
+				tag, ok = g.getLatestReleaseTagWithAsset(constant.HoneyServerGitUrl, constant.HoneyServerAsset)
+			} else {
+				tag, ok = g.getLatestHoneyProductionReleaseTag(constant.HoneyServerGitUrl, constant.HoneyServerAsset)
+			}
+			if !ok {
+				return false, "no March7thHoney release asset found"
+			}
+		}
+		asset, ok := g.getReleaseAsset(tag, constant.HoneyServerGitUrl, constant.HoneyServerAsset)
+		if !ok {
+			return false, "March7thHoney asset not found for " + tag
+		}
+		downloadURL := asset.BrowserDownloadURL
+		if downloadURL == "" {
+			downloadURL = fmt.Sprintf(
+				"https://github.com/Mar7thLover/March7thHoney-Public/releases/download/%s/%s",
+				tag,
+				constant.HoneyServerAsset,
+			)
+		}
+		if err := os.MkdirAll(constant.TempUrl, 0755); err != nil {
+			return false, err.Error()
+		}
+		saveFile := filepath.Join(constant.TempUrl, constant.HoneyServerAsset)
+		os.Remove(saveFile)
+		os.Remove(saveFile + ".tmp")
+		tmpPath, err := g.downloadFileParallel(saveFile, downloadURL, 4, func(percent float64, speed string) {
+			application.Get().Event.Emit("download:server", map[string]interface{}{
+				"percent": fmt.Sprintf("%.2f", percent),
+				"speed":   speed,
+			})
+		})
+		if err != nil {
+			return false, err.Error()
+		}
+		for i := 0; i < 3; i++ {
+			if err := os.Rename(tmpPath, saveFile); err == nil {
+				lastServerArchivePath = saveFile
+				lastServerArchiveSource = source
+				return true, ""
+			}
+			time.Sleep(300 * time.Millisecond)
+		}
+		return false, "failed to rename tmp file after retries"
 	default:
 		return false, "unknown server source: " + source
 	}
@@ -87,6 +148,17 @@ func (g *GitService) DownloadServerProgress(source string, version string) (bool
 
 func (g *GitService) UnzipServer() {
 	if lastServerArchivePath == "" {
+		return
+	}
+	if lastServerArchiveSource == constant.SourceHoneyTest || lastServerArchiveSource == constant.SourceHoneyProd {
+		dest := constant.LocalServerTestDir
+		if lastServerArchiveSource == constant.SourceHoneyProd {
+			dest = constant.LocalServerProdDir
+		}
+		// Overwrite-update keeps each channel's Config/Database and activation.token; just overlay new files.
+		if err := g.unzipParallel(lastServerArchivePath, dest); err == nil {
+			os.Remove(lastServerArchivePath)
+		}
 		return
 	}
 	os.RemoveAll(constant.GenshinServerBundleDir)

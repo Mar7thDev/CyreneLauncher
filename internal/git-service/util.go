@@ -2,6 +2,7 @@ package gitService
 
 import (
 	"archive/zip"
+	"cyrene-launcher/pkg/constant"
 	"cyrene-launcher/pkg/models"
 	"encoding/json"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
@@ -176,6 +178,11 @@ func (g *GitService) getLatestReleaseTagWithAsset(url, fileName string) (string,
 	return g.getLatestReleaseTagWithAssetMatching(url, fileName, isOrdinaryRelease)
 }
 
+// getLatestHoneyProductionReleaseTag selects the newest prod-* prerelease with the requested asset.
+func (g *GitService) getLatestHoneyProductionReleaseTag(url, fileName string) (string, bool) {
+	return g.getLatestReleaseTagWithAssetMatching(url, fileName, isHoneyProductionRelease)
+}
+
 func (g *GitService) getLatestReleaseTagWithAssetMatching(url, fileName string, matches func(*models.ReleaseType) bool) (string, bool) {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -208,6 +215,10 @@ func findLatestReleaseTagWithAsset(releases []*models.ReleaseType, fileName stri
 
 func isOrdinaryRelease(release *models.ReleaseType) bool {
 	return !release.Draft && !release.Prerelease
+}
+
+func isHoneyProductionRelease(release *models.ReleaseType) bool {
+	return !release.Draft && release.Prerelease && strings.HasPrefix(release.TagName, constant.HoneyServerProdTagPrefix)
 }
 
 func (g *GitService) unzipParallel(src string, dest string) error {

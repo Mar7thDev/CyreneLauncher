@@ -16,6 +16,20 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 import * as patchproxy$0 from "../../pkg/patch-proxy/models.js";
 
 /**
+ * IsLocalServerRunning reports whether the local server is up.
+ */
+export function IsLocalServerRunning(): $CancellablePromise<boolean> {
+    return $Call.ByID(166262603);
+}
+
+/**
+ * OpenLocalServerFolder opens the selected local-server folder.
+ */
+export function OpenLocalServerFolder(mode: string): $CancellablePromise<[boolean, string]> {
+    return $Call.ByID(2613507552, mode);
+}
+
+/**
  * Start launches gamePath with the local proxy + CyreneHook injection.
  * 
  * targetURL is the selected channel's server base URL (e.g. "https://server.march7th.cc").
@@ -28,4 +42,12 @@ import * as patchproxy$0 from "../../pkg/patch-proxy/models.js";
  */
 export function Start(gamePath: string, targetURL: string, preferredPort: number, opts: patchproxy$0.PatchOptions): $CancellablePromise<[boolean, string]> {
     return $Call.ByID(3347991480, gamePath, targetURL, preferredPort, opts);
+}
+
+/**
+ * StartLocalServer launches the selected local server ("test" | "prod") in its
+ * own console. A server already listening on the local port counts as started.
+ */
+export function StartLocalServer(mode: string): $CancellablePromise<[boolean, string]> {
+    return $Call.ByID(720074128, mode);
 }

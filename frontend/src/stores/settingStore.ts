@@ -2,19 +2,32 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type GameProfile = "starrail" | "genshin"
-export type PresetServerTarget = "local" | "kunps"
+export type PresetServerTarget = "local_test" | "local_prod" | "kunps"
 // "custom" connects to the user-entered customServerUrl instead of a preset channel.
 export type ServerTarget = PresetServerTarget | "custom"
 export type ServerRegion = "local" | "hk" | "eu" | "cn"
+// The launcher-managed local March7thHoney server builds.
+export type HoneyServerChannel = "test" | "prod"
 
 // The preset March7thHoney server channels, in the order they are offered.
-// The local server (this machine) is the default; KunPS is the backup. Keep the URLs in sync with
+// The local test server is the default, the local production server and KunPS are
+// alternatives. Both local channels are downloaded and started by the launcher and
+// listen on the same port. Keep the URLs in sync with
 // pkg/constant/constant.go (console / handbook fall back to the Go default).
 export const SERVER_CHANNELS: readonly { id: PresetServerTarget; url: string; region: ServerRegion }[] = [
-    { id: "local", url: "http://localhost:21000", region: "local" },
+    { id: "local_test", url: "http://localhost:21000", region: "local" },
+    { id: "local_prod", url: "http://localhost:21000", region: "local" },
     { id: "kunps", url: "http://210.16.175.19:520", region: "cn" },
 ]
-export const DEFAULT_SERVER_TARGET: ServerTarget = "local"
+export const DEFAULT_SERVER_TARGET: ServerTarget = "local_test"
+
+export function honeyChannelFromTarget(serverTarget: ServerTarget): HoneyServerChannel | null {
+    switch (serverTarget) {
+        case "local_test": return "test"
+        case "local_prod": return "prod"
+        default: return null
+    }
+}
 
 export function isServerTarget(value: unknown): value is ServerTarget {
     return value === "custom" || SERVER_CHANNELS.some(c => c.id === value)
@@ -54,6 +67,9 @@ interface SettingState {
     serverTarget: ServerTarget;
     // March7thHoney: server address used when serverTarget is "custom".
     customServerUrl: string;
+    // March7thHoney: installed local-server versions (GitHub release tags), tracked per channel.
+    honeyTestServerVersion: string;
+    honeyProdServerVersion: string;
     // March7thHoney: preferred loopback port for the proxy. 0 → random free port.
     proxyPort: number;
     // March7thHoney patch options. Defaults match the reference project.
@@ -82,6 +98,8 @@ interface SettingState {
     setGenshinServerVersion: (newServerVersion: string) => void;
     setServerTarget: (t: ServerTarget) => void;
     setCustomServerUrl: (url: string) => void;
+    setHoneyTestServerVersion: (v: string) => void;
+    setHoneyProdServerVersion: (v: string) => void;
     setProxyPort: (port: number) => void;
     setRsaPatch: (v: boolean) => void;
     setRsaKey: (v: string) => void;
@@ -102,6 +120,8 @@ const useSettingStore = create<SettingState>()(
             genshinServerVersion: "",
             serverTarget: DEFAULT_SERVER_TARGET,
             customServerUrl: "",
+            honeyTestServerVersion: "",
+            honeyProdServerVersion: "",
             proxyPort: 8080,
             rsaPatch: true,
             rsaKey: "",
@@ -128,6 +148,8 @@ const useSettingStore = create<SettingState>()(
             setGenshinServerVersion: (newServerVersion: string) => set({ genshinServerVersion: newServerVersion }),
             setServerTarget: (t: ServerTarget) => set({ serverTarget: isServerTarget(t) ? t : DEFAULT_SERVER_TARGET }),
             setCustomServerUrl: (url: string) => set({ customServerUrl: url }),
+            setHoneyTestServerVersion: (v: string) => set({ honeyTestServerVersion: v }),
+            setHoneyProdServerVersion: (v: string) => set({ honeyProdServerVersion: v }),
             setProxyPort: (port: number) => set({ proxyPort: port }),
             setRsaPatch: (v: boolean) => set({ rsaPatch: v }),
             setRsaKey: (v: string) => set({ rsaKey: v }),
@@ -141,14 +163,11 @@ const useSettingStore = create<SettingState>()(
             migrate: (persistedState, version) => {
                 const {
                     patchTargetUrl,
-                    honeyServerVersion: _v1,
-                    honeyTestServerVersion: _v2,
-                    honeyProdServerVersion: _v3,
+                    honeyServerVersion,
                     ...state
                 } = persistedState as Record<string, unknown>
-                // v3 keeps only the three channels. Local/custom targets are gone, and
-                // KunPS — the automatic default of the v2 KunPS edition — is now only the
-                // backup, so it moves to the new default. HoyoToon was always a choice.
+                // KunPS — the automatic default of the v2 KunPS edition — is only a
+                // backup since v3, so it moves to the default.
                 let serverTarget = state.serverTarget
                 let customServerUrl = typeof state.customServerUrl === "string" ? state.customServerUrl : ""
                 if (version < 3 && serverTarget === "kunps") serverTarget = DEFAULT_SERVER_TARGET
@@ -160,12 +179,17 @@ const useSettingStore = create<SettingState>()(
                 }
                 // v4: the HoyoToon server was shut down; its users move to the default.
                 // v6: the March7th.cc channel was removed; its users move to the default (KunPS).
-                // v7: the Huaian channel was removed; its users move to the new default (local).
-                // An explicit KunPS choice stays on KunPS.
+                // v7: the Huaian channel was removed; its users move to the new default (local test).
+                // An explicit KunPS choice stays on KunPS. The local test / prod channels are back,
+                // so a v2 local_test / local_prod choice (and the old single "local") stays local.
+                if (serverTarget === "local") serverTarget = "local_test"
+                const legacyHoneyVersion = typeof honeyServerVersion === "string" ? honeyServerVersion : ""
                 return {
                     ...state,
                     serverTarget: isServerTarget(serverTarget) ? serverTarget : DEFAULT_SERVER_TARGET,
                     customServerUrl,
+                    honeyTestServerVersion: typeof state.honeyTestServerVersion === "string" ? state.honeyTestServerVersion : legacyHoneyVersion,
+                    honeyProdServerVersion: typeof state.honeyProdServerVersion === "string" ? state.honeyProdServerVersion : "",
                 }
             },
         }

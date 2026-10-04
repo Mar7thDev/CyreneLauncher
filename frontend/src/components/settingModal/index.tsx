@@ -1,6 +1,6 @@
-import { CheckUpdateLauncher } from "@/helper"
+import { CheckUpdateHoneyServer, CheckUpdateLauncher } from "@/helper"
 import useModalStore from "@/stores/modalStore"
-import useSettingStore, { normalizeServerUrl, SERVER_CHANNELS } from "@/stores/settingStore"
+import useSettingStore, { honeyChannelFromTarget, normalizeServerUrl, SERVER_CHANNELS } from "@/stores/settingStore"
 import useLauncherStore from "@/stores/launcherStore"
 import { toast } from "react-toastify"
 import { useTranslation } from "react-i18next"
@@ -19,16 +19,20 @@ export default function SettingModal({
 }) {
     if (!isOpen) return null
     const { t } = useTranslation()
-    const { setIsOpenSelfUpdateModal } = useModalStore()
+    const { setIsOpenSelfUpdateModal, openHoneyDownloadModal, openHoneyUpdateModal } = useModalStore()
     const {
         closingOption, setClosingOption,
         gameProfile,
         serverTarget, setServerTarget, customServerUrl, setCustomServerUrl,
+        honeyTestServerVersion, honeyProdServerVersion,
         proxyPort, setProxyPort,
         rsaPatch, setRsaPatch, rsaKey, setRsaKey,
         webRedirect, setWebRedirect, webHosts, setWebHosts,
     } = useSettingStore()
     const { setUpdateData, updateData, launcherVersion } = useLauncherStore()
+    const honeyChannel = honeyChannelFromTarget(serverTarget)
+    const honeyServerVersion = honeyChannel === "prod" ? honeyProdServerVersion : honeyTestServerVersion
+    const honeyChannelLabel = honeyChannel ? t(`setting.server_channel_${honeyChannel}`) : ""
 
     const CheckUpdate = async () => {
         const launcherData = await CheckUpdateLauncher()
@@ -45,6 +49,15 @@ export default function SettingModal({
         setIsOpenSelfUpdateModal(true)
     }
 
+    const CheckHoneyUpdate = async () => {
+        if (!honeyChannel) return
+        const data = await CheckUpdateHoneyServer(honeyChannel, honeyServerVersion)
+        if (!data.version) { toast.error(t("setting.honey_server_none", { channel: honeyChannelLabel })); return }
+        if (!data.isUpdate) { toast.success(t("setting.honey_update_success", { channel: honeyChannelLabel })); return }
+        setUpdateData({ ...updateData, server: { isUpdate: true, isExists: data.isExists, version: data.version } })
+        onClose(); openHoneyUpdateModal(honeyChannel, data.version)
+    }
+    const DownloadHoney = () => { if (honeyChannel) { onClose(); openHoneyDownloadModal(honeyChannel) } }
 
     return (
         <div className="fixed inset-0 z-10 flex items-center justify-center bg-pink-50/30 backdrop-blur-md">
@@ -205,6 +218,23 @@ export default function SettingModal({
                                     )}
                                 </div>
                             </div>
+
+                            {/* Local server (download / update) */}
+                            {honeyChannel && (
+                                <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">
+                                    <h4 className="font-bold text-base mb-1">{t("setting.honey_server_title", { channel: honeyChannelLabel })}</h4>
+                                    <p className="text-sm text-base-content/50 mb-2">{t("setting.honey_server_desc", { channel: honeyChannelLabel })}</p>
+                                    <p className="text-xs text-base-content/40 mb-3">
+                                        {t("setting.honey_server_version")}: {honeyServerVersion || t("setting.honey_server_not_installed")}
+                                    </p>
+                                    <button
+                                        className="btn btn-sm bg-linear-to-r from-pink-500 to-sky-500 border-none text-white shadow-sm"
+                                        onClick={honeyServerVersion ? CheckHoneyUpdate : DownloadHoney}
+                                    >
+                                        {honeyServerVersion ? t("setting.honey_server_check_btn") : t("setting.honey_server_download_btn")}
+                                    </button>
+                                </div>
+                            )}
 
                             {/* Launcher Update */}
                             <div className="p-4 bg-base-200 rounded-xl border border-pink-200/50">

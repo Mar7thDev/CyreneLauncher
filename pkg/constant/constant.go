@@ -28,14 +28,36 @@ const GenshinServerManifest = "./server-packages/Columbina-GI/cyrene-manifest.js
 // The server channels offered in the settings (the frontend list in
 // frontend/src/stores/settingStore.ts must match):
 //
-//	Local — default, a server running on this machine
-//	KunPS — backup, China
+//	Local test — default, launcher-managed local server (test build)
+//	Local prod — launcher-managed local server (production build)
+//	KunPS      — backup, China
 const (
 	LocalTargetURL = "http://localhost:21000"
 	KunPSTargetURL = "http://210.16.175.19:520"
 )
 
 const DefaultPatchTargetURL = LocalTargetURL
+
+// The two local channels run a launcher-managed March7thHoney server, each
+// downloaded from GitHub into its own folder and started before the game.
+// Both listen on LocalServerProbeAddr (LocalTargetURL).
+const (
+	LocalServerTestDir   = "./server"
+	LocalServerTestExe   = "./server/March7thHoney.exe"
+	LocalServerProdDir   = "./server_prod"
+	LocalServerProdExe   = "./server_prod/March7thHoney.exe"
+	LocalServerTestMode  = "test"
+	LocalServerProdMode  = "prod"
+	LocalServerProbeAddr = "127.0.0.1:21000"
+)
+
+// March7thHoney test uses ordinary releases and production uses prod-* prereleases.
+const SourceHoneyTest = "honey_test"
+const SourceHoneyProd = "honey_prod"
+// per_page=100: prod-* prereleases sit beyond the API's default first page of 30.
+const HoneyServerGitUrl = "https://api.github.com/repos/Mar7thLover/March7thHoney-Public/releases?per_page=100"
+const HoneyServerAsset = "win-x64.zip"
+const HoneyServerProdTagPrefix = "prod-"
 
 // SourceGenshin is the downloadable Genshin server package source.
 const SourceGenshin = "genshin"
