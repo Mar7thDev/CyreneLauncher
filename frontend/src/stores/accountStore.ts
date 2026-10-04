@@ -2,6 +2,11 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { AccountService } from '@bindings/cyrene-launcher/internal/account-service';
 
+// Master switch for the account system. While false the login gate and the
+// header account button are not mounted, so the launcher never contacts the
+// website's account API (no session restore, sign-in or heartbeat).
+export const ACCOUNT_SYSTEM_ENABLED = false
+
 export interface AccountUser {
     id: string;
     name: string;

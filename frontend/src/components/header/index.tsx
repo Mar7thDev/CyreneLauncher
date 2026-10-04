@@ -5,6 +5,7 @@ import { Blend, BookOpen, Diff, Home, Info, Languages, Minus, Newspaper, Setting
 import { AppService } from "@bindings/cyrene-launcher/internal/app-service";
 import LanguageSwitcher from "../languageSwitcher";
 import AccountButton from "../accountButton";
+import { ACCOUNT_SYSTEM_ENABLED } from "@/stores/accountStore";
 import { useTranslation } from "react-i18next";
 import useSettingStore from "@/stores/settingStore";
 import useNewsStore, { hasUnreadServerNews } from "@/stores/newsStore";
@@ -196,7 +197,7 @@ export default function Header() {
                     className="flex items-center gap-1 bg-white/60 backdrop-blur-xl border border-white/80 rounded-xl shadow-sm shadow-pink-200/30"
                     style={{ '--wails-draggable': 'no-drag' } as any}
                 >
-                    <AccountButton />
+                    {ACCOUNT_SYSTEM_ENABLED && <AccountButton />}
                     <LanguageSwitcher />
                     {controlButtons.map((btn, i) => (
                         <div key={i} className="tooltip tooltip-bottom" data-tip={btn.tip}>

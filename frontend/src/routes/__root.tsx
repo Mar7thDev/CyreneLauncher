@@ -6,6 +6,7 @@ import SettingModal from '@/components/settingModal';
 import CloseModal from '@/components/closeModal';
 import Header from '@/components/header';
 import LoginGate from '@/components/loginGate';
+import { ACCOUNT_SYSTEM_ENABLED } from '@/stores/accountStore';
 import { motion, AnimatePresence } from 'motion/react'
 
 export const Route = createRootRoute({
@@ -38,7 +39,7 @@ function RootLayout() {
 
             <CloseModal isOpen={isOpenCloseModal} onClose={() => setIsOpenCloseModal(false)} />
             <SettingModal isOpen={isOpenSettingModal} onClose={() => setIsOpenSettingModal(false)} />
-            <LoginGate />
+            {ACCOUNT_SYSTEM_ENABLED && <LoginGate />}
             <ToastContainer />
         </>
     )
