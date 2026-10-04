@@ -28,19 +28,19 @@ const GenshinServerManifest = "./server-packages/Columbina-GI/cyrene-manifest.js
 // The server channels offered in the settings (the frontend list in
 // frontend/src/stores/settingStore.ts must match):
 //
-//	KunPS  — default, China
-//	Huaian — backup, China
+//	Local — default, a server running on this machine
+//	KunPS — backup, China
 const (
-	KunPSTargetURL  = "http://210.16.175.19:520"
-	HuaianTargetURL = "http://114.66.20.229:2000"
+	LocalTargetURL = "http://localhost:21000"
+	KunPSTargetURL = "http://210.16.175.19:520"
 )
 
-const DefaultPatchTargetURL = KunPSTargetURL
+const DefaultPatchTargetURL = LocalTargetURL
 
 // SourceGenshin is the downloadable Genshin server package source.
 const SourceGenshin = "genshin"
 
-const CurrentLauncherVersion = "1.2.3"
+const CurrentLauncherVersion = "1.2.4"
 
 // === News module ===
 //

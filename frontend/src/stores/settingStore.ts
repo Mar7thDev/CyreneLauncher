@@ -2,19 +2,19 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type GameProfile = "starrail" | "genshin"
-export type PresetServerTarget = "kunps" | "huaian"
+export type PresetServerTarget = "local" | "kunps"
 // "custom" connects to the user-entered customServerUrl instead of a preset channel.
 export type ServerTarget = PresetServerTarget | "custom"
-export type ServerRegion = "hk" | "eu" | "cn"
+export type ServerRegion = "local" | "hk" | "eu" | "cn"
 
 // The preset March7thHoney server channels, in the order they are offered.
-// KunPS is the default; Huaian is the backup. Keep the URLs in sync with
+// The local server (this machine) is the default; KunPS is the backup. Keep the URLs in sync with
 // pkg/constant/constant.go (console / handbook fall back to the Go default).
 export const SERVER_CHANNELS: readonly { id: PresetServerTarget; url: string; region: ServerRegion }[] = [
+    { id: "local", url: "http://localhost:21000", region: "local" },
     { id: "kunps", url: "http://210.16.175.19:520", region: "cn" },
-    { id: "huaian", url: "http://114.66.20.229:2000", region: "cn" },
 ]
-export const DEFAULT_SERVER_TARGET: ServerTarget = "kunps"
+export const DEFAULT_SERVER_TARGET: ServerTarget = "local"
 
 export function isServerTarget(value: unknown): value is ServerTarget {
     return value === "custom" || SERVER_CHANNELS.some(c => c.id === value)
@@ -137,7 +137,7 @@ const useSettingStore = create<SettingState>()(
         {
             name: 'setting-storage',
             storage: createJSONStorage(() => localStorage),
-            version: 6,
+            version: 7,
             migrate: (persistedState, version) => {
                 const {
                     patchTargetUrl,
@@ -160,6 +160,8 @@ const useSettingStore = create<SettingState>()(
                 }
                 // v4: the HoyoToon server was shut down; its users move to the default.
                 // v6: the March7th.cc channel was removed; its users move to the default (KunPS).
+                // v7: the Huaian channel was removed; its users move to the new default (local).
+                // An explicit KunPS choice stays on KunPS.
                 return {
                     ...state,
                     serverTarget: isServerTarget(serverTarget) ? serverTarget : DEFAULT_SERVER_TARGET,
