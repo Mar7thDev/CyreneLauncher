@@ -54,8 +54,14 @@ const (
 // March7thHoney test uses ordinary releases and production uses prod-* prereleases.
 const SourceHoneyTest = "honey_test"
 const SourceHoneyProd = "honey_prod"
+
+// The server packages are released on the open-source repository; the former
+// Mar7thDev/March7thHoney-Public repository is no longer updated.
 // per_page=100: prod-* prereleases sit beyond the API's default first page of 30.
-const HoneyServerGitUrl = "https://api.github.com/repos/Mar7thLover/March7thHoney-Public/releases?per_page=100"
+const HoneyServerGitUrl = "https://api.github.com/repos/Mar7thDev/March7thHoney/releases?per_page=100"
+
+// HoneyServerDownloadUrl is the fallback download URL (tag, asset) when the API omits browser_download_url.
+const HoneyServerDownloadUrl = "https://github.com/Mar7thDev/March7thHoney/releases/download/%s/%s"
 const HoneyServerAsset = "win-x64.zip"
 const HoneyServerProdTagPrefix = "prod-"
 

@@ -111,11 +111,7 @@ func (g *GitService) DownloadServerProgress(source string, version string) (bool
 		}
 		downloadURL := asset.BrowserDownloadURL
 		if downloadURL == "" {
-			downloadURL = fmt.Sprintf(
-				"https://github.com/Mar7thLover/March7thHoney-Public/releases/download/%s/%s",
-				tag,
-				constant.HoneyServerAsset,
-			)
+			downloadURL = fmt.Sprintf(constant.HoneyServerDownloadUrl, tag, constant.HoneyServerAsset)
 		}
 		if err := os.MkdirAll(constant.TempUrl, 0755); err != nil {
 			return false, err.Error()
