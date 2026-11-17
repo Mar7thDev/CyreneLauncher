@@ -1,10 +1,10 @@
 {
 	"fixed": {
-		"file_version": "1.2.5"
+		"file_version": "1.2.6"
 	},
 	"info": {
 		"0000": {
-			"ProductVersion": "1.2.5",
+			"ProductVersion": "1.2.6",
 			"CompanyName": "Cyrene",
 			"FileDescription": "Cyrene Launcher",
 			"LegalCopyright": "@ 2025, Cyrene",

@@ -68,7 +68,7 @@ const HoneyServerProdTagPrefix = "prod-"
 // SourceGenshin is the downloadable Genshin server package source.
 const SourceGenshin = "genshin"
 
-const CurrentLauncherVersion = "1.2.5"
+const CurrentLauncherVersion = "1.2.6"
 
 // === News module ===
 //
