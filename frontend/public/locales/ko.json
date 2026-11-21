@@ -88,6 +88,8 @@
     "home": {
         "header_title": "Cyrene Launcher",
         "tooltip_how_to": "도구 및 명령 사용법",
+        "tooltip_admin_panel": "서버 관리 패널",
+        "tooltip_player_panel": "플레이어 대시보드",
         "game_profile_genshin": "원신",
         "game_profile_starrail": "붕괴: 스타레일",
         "btn_select_genshin": "원신 폴더 선택",

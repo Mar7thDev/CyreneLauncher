@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Play, Menu, FolderOpen, MessageCircleQuestionMark, Download, PowerOff } from 'lucide-react';
+import { Play, Menu, FolderOpen, MessageCircleQuestionMark, Download, PowerOff, ShieldCheck, User } from 'lucide-react';
 import { AppService } from '@bindings/cyrene-launcher/internal/app-service';
 import { FSService } from '@bindings/cyrene-launcher/internal/fs-service';
 import { March7thHoneyService } from '@bindings/cyrene-launcher/internal/march7thhoney-service';
@@ -91,6 +91,14 @@ export default function LauncherPage() {
             { tooltip: "Firefly SRAnalysis", href: "https://sranalysis.punklorde.org", img: "https://sranalysis.punklorde.org/ff-sranalysis.png" },
             { tooltip: "Firefly SRTools",    href: "https://srtools.punklorde.org",    img: "https://srtools.punklorde.org/ff-srtool.png" },
             { tooltip: "Amazing's SRTools", href: "https://srtools.neonteam.dev",      img: "https://icons.duckduckgo.com/ip3/srtools.neonteam.dev.ico" },
+        ]
+        : []
+
+    const serverBaseUrl = isStarRail ? resolveServerBaseUrl(serverTarget, customServerUrl) : ""
+    const panelLinks = serverBaseUrl
+        ? [
+            { tooltip: t("home.tooltip_admin_panel"),  href: `${serverBaseUrl}/admin`,  icon: <ShieldCheck className="w-4 h-4" /> },
+            { tooltip: t("home.tooltip_player_panel"), href: `${serverBaseUrl}/player`, icon: <User className="w-4 h-4" /> },
         ]
         : []
 
@@ -465,7 +473,18 @@ export default function LauncherPage() {
                             </div>
                         ))}
 
-                        {widgetLinks.length > 0 && (
+                        {panelLinks.map((link, idx) => (
+                            <div key={idx} className="tooltip tooltip-left" data-tip={link.tooltip}>
+                                <button
+                                    className="btn btn-circle btn-sm bg-transparent hover:bg-pink-100/60 border-none text-base-content/60 hover:text-pink-500 transition-all"
+                                    onClick={() => openExternal(link.href)}
+                                >
+                                    {link.icon}
+                                </button>
+                            </div>
+                        ))}
+
+                        {(widgetLinks.length > 0 || panelLinks.length > 0) && (
                             <div className="w-full h-px bg-pink-200/40 my-0.5" />
                         )}
 

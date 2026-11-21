@@ -88,6 +88,8 @@
     "home": {
         "header_title": "Cyrene Launcher",
         "tooltip_how_to": "Cách sử dụng công cụ & lệnh",
+        "tooltip_admin_panel": "Bảng quản trị server",
+        "tooltip_player_panel": "Bảng người chơi",
         "game_profile_genshin": "Genshin Impact",
         "game_profile_starrail": "Honkai: Star Rail",
         "btn_select_genshin": "Chọn thư mục Genshin",

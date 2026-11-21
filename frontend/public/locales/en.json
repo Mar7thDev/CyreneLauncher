@@ -88,6 +88,8 @@
     "home": {
         "header_title": "Cyrene Launcher",
         "tooltip_how_to": "How to use all tools & commands",
+        "tooltip_admin_panel": "Server admin panel",
+        "tooltip_player_panel": "Player dashboard",
         "game_profile_genshin": "Genshin Impact",
         "game_profile_starrail": "Honkai: Star Rail",
         "btn_select_genshin": "Select Genshin folder",

@@ -88,6 +88,8 @@
     "home": {
         "header_title": "Cyrene Launcher",
         "tooltip_how_to": "ツールとコマンドの使い方",
+        "tooltip_admin_panel": "サーバー管理パネル",
+        "tooltip_player_panel": "プレイヤーダッシュボード",
         "game_profile_genshin": "原神",
         "game_profile_starrail": "崩壊：スターレイル",
         "btn_select_genshin": "原神フォルダを選択",
