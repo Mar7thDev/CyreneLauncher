@@ -23,8 +23,8 @@ import (
 	accountService "cyrene-launcher/internal/account-service"
 	"cyrene-launcher/pkg/constant"
 	"cyrene-launcher/pkg/injector"
+	"cyrene-launcher/pkg/models"
 	patchproxy "cyrene-launcher/pkg/patch-proxy"
-	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -37,27 +37,39 @@ import (
 )
 
 const (
-	dllStoragePath  = "./patch/CyreneHook.dll"
-	ec2bStoragePath = "./patch/ClientSecretKey.bin"
-	envProxyKey     = "CYRENE_PROXY"
-	envEc2bKey      = "CYRENE_EC2B_FILE"
-	envWebTargetKey = "CYRENE_WEB_TARGET"
+	dllStoragePath       = "./patch/CyreneHook.dll"
+	legacyDllStoragePath = "./patch/CyreneHook-legacy.dll"
+	ec2bStoragePath      = "./patch/ClientSecretKey.bin"
+	envProxyKey          = "CYRENE_PROXY"
+	envEc2bKey           = "CYRENE_EC2B_FILE"
+	envWebTargetKey      = "CYRENE_WEB_TARGET"
+)
+
+// The current CyreneHook.dll targets client newClientMinMajor.newClientMinMinor
+// and newer. Older game clients get the previous build kept as
+// assets/CyreneHook-legacy.dll.
+const (
+	newClientMinMajor = 4
+	newClientMinMinor = 7
 )
 
 // March7thHoneyService is constructed via New so the embedded CyreneHook.dll
 // bytes can be supplied from main.
 type March7thHoneyService struct {
-	dllBytes []byte
-	acct     *accountService.AccountService
+	dllBytes       []byte
+	legacyDllBytes []byte
+	acct           *accountService.AccountService
 }
 
 // New returns a service that will extract the given DLL bytes to
 // ./patch/CyreneHook.dll on first launch. dllBytes may be empty — in that
 // case the service refuses to launch (and reports a clear error to the UI).
+// legacyDllBytes is the previous build injected for game clients older than
+// newClientMinMajor.newClientMinMinor.
 // acct supplies the login token/device id handed to the local server, when
 // there is one.
-func New(dllBytes []byte, acct *accountService.AccountService) *March7thHoneyService {
-	return &March7thHoneyService{dllBytes: dllBytes, acct: acct}
+func New(dllBytes, legacyDllBytes []byte, acct *accountService.AccountService) *March7thHoneyService {
+	return &March7thHoneyService{dllBytes: dllBytes, legacyDllBytes: legacyDllBytes, acct: acct}
 }
 
 // Start launches gamePath with the local proxy + CyreneHook injection.
@@ -74,7 +86,7 @@ func (m *March7thHoneyService) Start(gamePath, targetURL string, preferredPort i
 		targetURL = constant.DefaultPatchTargetURL
 	}
 
-	dllPath, err := m.ensureDLL()
+	dllPath, err := m.ensureClientDLL(gamePath)
 	if err != nil {
 		return false, err.Error()
 	}
@@ -128,14 +140,29 @@ func (m *March7thHoneyService) Start(gamePath, targetURL string, preferredPort i
 	return true, ""
 }
 
+// ensureClientDLL picks the hook DLL matching the game client's version and
+// extracts it to disk. The client version is read from
+// StarRail_Data/StreamingAssets/BinaryVersion.bytes next to the game exe;
+// when it cannot be determined, the current build is the default.
+func (m *March7thHoneyService) ensureClientDLL(gamePath string) (string, error) {
+	dllBytes, storagePath := m.dllBytes, dllStoragePath
+	if bv, err := models.ParseBinaryVersion(filepath.Join(filepath.Dir(gamePath),
+		"StarRail_Data", "StreamingAssets", "BinaryVersion.bytes")); err == nil &&
+		(bv.Major < newClientMinMajor || (bv.Major == newClientMinMajor && bv.Minor < newClientMinMinor)) {
+		dllBytes, storagePath = m.legacyDllBytes, legacyDllStoragePath
+	}
+	return ensureDLL(dllBytes, storagePath)
+}
+
 // ensureDLL writes the embedded DLL bytes to disk if missing, then returns
 // the absolute path. Returns an error if no DLL bytes were embedded.
-func (m *March7thHoneyService) ensureDLL() (string, error) {
-	if len(m.dllBytes) == 0 {
-		return "", errors.New("CyreneHook.dll is missing from this build — place a compiled DLL at assets/CyreneHook.dll and rebuild")
+func ensureDLL(dllBytes []byte, storagePath string) (string, error) {
+	if len(dllBytes) == 0 {
+		name := filepath.Base(storagePath)
+		return "", fmt.Errorf("%s is missing from this build — place a compiled DLL at assets/%s and rebuild", name, name)
 	}
 
-	abs, err := filepath.Abs(dllStoragePath)
+	abs, err := filepath.Abs(storagePath)
 	if err != nil {
 		return "", fmt.Errorf("resolve dll path: %w", err)
 	}
@@ -143,10 +170,10 @@ func (m *March7thHoneyService) ensureDLL() (string, error) {
 		return "", fmt.Errorf("mkdir patch dir: %w", err)
 	}
 
-	if info, err := os.Stat(abs); err == nil && info.Size() == int64(len(m.dllBytes)) {
+	if info, err := os.Stat(abs); err == nil && info.Size() == int64(len(dllBytes)) {
 		return abs, nil
 	}
-	if err := os.WriteFile(abs, m.dllBytes, 0644); err != nil {
+	if err := os.WriteFile(abs, dllBytes, 0644); err != nil {
 		return "", fmt.Errorf("write dll: %w", err)
 	}
 	return abs, nil
