@@ -30,11 +30,7 @@ const GenshinServerManifest = "./server-packages/Columbina-GI/cyrene-manifest.js
 //
 //	Local test — default, launcher-managed local server (test build)
 //	Local prod — launcher-managed local server (production build)
-//	KunPS      — backup, China
-const (
-	LocalTargetURL = "http://localhost:21000"
-	KunPSTargetURL = "http://210.16.175.19:520"
-)
+const LocalTargetURL = "http://localhost:21000"
 
 const DefaultPatchTargetURL = LocalTargetURL
 
