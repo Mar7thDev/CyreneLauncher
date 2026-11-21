@@ -3,6 +3,11 @@ package gitService
 import (
 	"cyrene-launcher/pkg/constant"
 	"cyrene-launcher/pkg/models"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -49,5 +54,72 @@ func TestHoneyProductionChannelRequiresProdPrerelease(t *testing.T) {
 
 	if tag, ok := findLatestReleaseTagWithAsset(releases, constant.HoneyServerAsset, isHoneyProductionRelease); ok || tag != "" {
 		t.Fatalf("production channel selected %q (ok=%t), want no release", tag, ok)
+	}
+}
+
+func TestDownloadFileParallelRejectsIncompleteAsset(t *testing.T) {
+	const payload = "0123456789abcdefghijklmnopqrstuv"
+	tests := []struct {
+		name     string
+		response func(http.ResponseWriter, string, string)
+	}{
+		{name: "complete"},
+		{name: "failed range", response: func(w http.ResponseWriter, _ string, _ string) {
+			http.Error(w, "unavailable", http.StatusServiceUnavailable)
+		}},
+		{name: "truncated range", response: func(w http.ResponseWriter, contentRange, part string) {
+			w.Header().Set("Content-Range", contentRange)
+			w.WriteHeader(http.StatusPartialContent)
+			fmt.Fprint(w, part[:len(part)-1])
+		}},
+		{name: "wrong range", response: func(w http.ResponseWriter, _ string, part string) {
+			w.Header().Set("Content-Range", "bytes 0-7/32")
+			w.WriteHeader(http.StatusPartialContent)
+			fmt.Fprint(w, part)
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method == http.MethodHead {
+					w.Header().Set("Content-Length", fmt.Sprint(len(payload)))
+					return
+				}
+				var start, end int
+				if _, err := fmt.Sscanf(r.Header.Get("Range"), "bytes=%d-%d", &start, &end); err != nil {
+					http.Error(w, "expected byte range", http.StatusBadRequest)
+					return
+				}
+				part := payload[start : end+1]
+				contentRange := fmt.Sprintf("bytes %d-%d/%d", start, end, len(payload))
+				if start == 8 && tt.response != nil {
+					tt.response(w, contentRange, part)
+					return
+				}
+				w.Header().Set("Content-Range", contentRange)
+				w.WriteHeader(http.StatusPartialContent)
+				fmt.Fprint(w, part)
+			}))
+			defer server.Close()
+
+			path := filepath.Join(t.TempDir(), "win-x64.zip")
+			tmpPath, err := (&GitService{}).downloadFileParallel(path, server.URL, 4, nil)
+			if tt.response != nil {
+				if err == nil {
+					t.Fatal("invalid download reported success")
+				}
+				if _, err := os.Stat(path + ".tmp"); !os.IsNotExist(err) {
+					t.Fatalf("incomplete download still exists: %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			data, err := os.ReadFile(tmpPath)
+			if err != nil || string(data) != payload {
+				t.Fatalf("downloaded %q, error %v", data, err)
+			}
+		})
 	}
 }

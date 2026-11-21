@@ -84,23 +84,38 @@ func (g *GitService) downloadFileParallel(filePath, url string, numParts int, on
 	if err != nil {
 		return "", fmt.Errorf("failed to get head: %w", err)
 	}
+	resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("bad status: %s", resp.Status)
 	}
 
 	size := resp.ContentLength
-	tmpPath = filePath + ".tmp"
+	if size <= 0 || numParts <= 0 {
+		return "", fmt.Errorf("invalid download size %d or part count %d", size, numParts)
+	}
+	if size < int64(numParts) {
+		numParts = int(size)
+	}
 
-	out, err := os.Create(tmpPath)
+	out, err := os.Create(filePath + ".tmp")
 	if err != nil {
 		return "", fmt.Errorf("failed to create tmp file: %w", err)
 	}
-	defer out.Close()
+	defer func() {
+		if closeErr := out.Close(); err == nil && closeErr != nil {
+			err = closeErr
+		}
+		if err != nil {
+			os.Remove(out.Name())
+			tmpPath = ""
+		}
+	}()
 
 	counter := NewWriteCounter(size, onEmit)
 	partSize := size / int64(numParts)
 	var wg sync.WaitGroup
-	var mu sync.Mutex
+	var firstFailure sync.Once
+	var downloadErr error
 
 	for i := 0; i < numParts; i++ {
 		start := int64(i) * partSize
@@ -109,42 +124,61 @@ func (g *GitService) downloadFileParallel(filePath, url string, numParts int, on
 			end = size - 1
 		}
 
-		_ = start
-		_ = end
-
 		wg.Go(func() {
-			req, _ := http.NewRequest("GET", url, nil)
-			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, end))
-			resp, err := http.DefaultClient.Do(req)
-			if err != nil {
-				return
-			}
-			defer resp.Body.Close()
-
-			buf := make([]byte, 32*1024)
-			var written int64
-			for {
-				n, err := resp.Body.Read(buf)
-				if n > 0 {
-					mu.Lock()
-					out.Seek(start+written, 0)
-					out.Write(buf[:n])
-					mu.Unlock()
-					written += int64(n)
-					counter.Add(n)
-				}
-				if err == io.EOF {
-					break
-				}
-				if err != nil {
-					break
-				}
+			writer := downloadWriter{io.NewOffsetWriter(out, start), counter}
+			if err := downloadRange(url, start, end, size, writer); err != nil {
+				firstFailure.Do(func() {
+					downloadErr = fmt.Errorf("download bytes %d-%d: %w", start, end, err)
+				})
 			}
 		})
 	}
 
 	wg.Wait()
-	return tmpPath, nil
+	return out.Name(), downloadErr
+}
+
+type downloadWriter struct {
+	io.Writer
+	counter *WriteCounter
+}
+
+func (w downloadWriter) Write(p []byte) (int, error) {
+	n, err := w.Writer.Write(p)
+	w.counter.Add(n)
+	return n, err
+}
+
+func downloadRange(url string, start, end, size int64, writer io.Writer) error {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, end))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusPartialContent {
+		return fmt.Errorf("expected partial content, got %s", resp.Status)
+	}
+	expectedRange := fmt.Sprintf("bytes %d-%d/%d", start, end, size)
+	if actualRange := resp.Header.Get("Content-Range"); actualRange != expectedRange {
+		return fmt.Errorf("expected Content-Range %q, got %q", expectedRange, actualRange)
+	}
+	if _, err := io.CopyN(writer, resp.Body, end-start+1); err != nil {
+		return err
+	}
+	var extra [1]byte
+	if _, err := io.ReadFull(resp.Body, extra[:]); err != io.EOF {
+		if err == nil {
+			return fmt.Errorf("response exceeded Content-Range %q", expectedRange)
+		}
+		return err
+	}
+	return nil
 }
 
 // --- Helper getReleaseAsset ---
