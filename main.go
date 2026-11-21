@@ -74,13 +74,9 @@ func main() {
 	// and the system tray.
 	iconBytes, _ := tools.ReadFile("assets/appicon.png")
 
-	// CyreneHook.dll: in-process hook DLL injected into the game in
-	// March7thHoney mode (built from HSR-Patch). CyreneHook-legacy.dll is the
-	// previous build, injected for game clients too old for the current one.
-	// Missing file → empty bytes → service reports a clear error when the
-	// user tries to launch.
+	// HSR-Patch builds the hook DLL used by March7thHoney mode. The DLL
+	// resolves the game client's IL2CPP layout during initialization.
 	dllBytes, _ := tools.ReadFile("assets/CyreneHook.dll")
-	legacyDllBytes, _ := tools.ReadFile("assets/CyreneHook-legacy.dll")
 
 	// Shared account service: the local-server launch hands its login token (if any) to honey.
 	acct := accountService.New(constant.WebBaseURL)
@@ -99,7 +95,7 @@ func main() {
 			application.NewService(&newsService.NewsService{}),
 			application.NewService(&consoleService.ConsoleService{}),
 			application.NewService(&handbookService.HandbookService{}),
-			application.NewService(march7thHoneyService.New(dllBytes, legacyDllBytes, acct)),
+			application.NewService(march7thHoneyService.New(dllBytes, acct)),
 			application.NewService(acct),
 		},
 		Assets: application.AssetOptions{
