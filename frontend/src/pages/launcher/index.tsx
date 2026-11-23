@@ -629,7 +629,7 @@ export default function LauncherPage() {
                         onClick={handleStartCurrentGame}
                     >
                         <Play className="w-5 h-5" />
-                        {isLoading ? t("home.btn_selecting") : gameRunning ? t("home.btn_game_running") : isMarch7thCloud ? t("home.btn_start_cloud") : t("home.btn_start_game")}
+                        {isLoading ? t("home.btn_selecting") : gameRunning ? t("home.btn_game_running") : t("home.btn_start_game")}
                     </motion.button>
                 )}
             </div>

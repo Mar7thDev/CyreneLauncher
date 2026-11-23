@@ -1,11 +1,17 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Minus, X } from "lucide-react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { ArrowRight, Minus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { Events } from "@wailsio/runtime";
 import { AccountService } from "@bindings/cyrene-launcher/internal/account-service";
 import { AppService } from "@bindings/cyrene-launcher/internal/app-service";
 import useAccountStore, { type GateError } from "@/stores/accountStore";
+import useSettingStore from "@/stores/settingStore";
+
+const FALLBACK_BACKGROUND = "bg-17.jpg"
+const drag = { '--wails-draggable': 'drag' } as CSSProperties
+const noDrag = { '--wails-draggable': 'no-drag' } as CSSProperties
+const inputClass = "input h-11 w-full rounded-lg border border-base-300 bg-white text-sm shadow-none placeholder:text-base-content/35 focus:border-primary/60 focus:outline-none focus:ring-4 focus:ring-primary/10"
 
 function mapError(code: string): GateError {
     if (code.includes("banned")) return "banned";
@@ -19,6 +25,7 @@ function mapError(code: string): GateError {
 export default function LoginGate() {
     const { t } = useTranslation()
     const { user, pending, checking, skipped, gateError, setUser, setPending, setChecking, setSkipped, setGateError } = useAccountStore()
+    const background = useSettingStore((s) => s.background) || FALLBACK_BACKGROUND
     const [submitting, setSubmitting] = useState(false)
     const attempt = useRef(0)
 
@@ -118,77 +125,94 @@ export default function LoginGate() {
         gateError === "offline" ? "account.offline" :
         gateError === "failed" ? "account.login_failed" : gateError ? `account.${gateError}` : ""
 
+    // The artwork the user picked for the home page fills the window; the sign-in form sits in a
+    // plain panel on the right so the transition into the launcher keeps the same picture.
     return (
-        <div
-            className="fixed inset-0 z-100 flex flex-col bg-gradient-to-br from-pink-50 via-violet-50 to-sky-50"
-            style={{ '--wails-draggable': 'drag' } as any}
-        >
-            <div className="flex justify-end gap-1 p-2" style={{ '--wails-draggable': 'no-drag' } as any}>
-                <button
-                    onClick={() => AppService.MinimizeApp()}
-                    className="btn btn-ghost btn-sm btn-circle hover:bg-pink-100"
-                >
-                    <Minus className="w-4 h-4" />
-                </button>
-                <button
-                    onClick={() => AppService.CloseApp()}
-                    className="btn btn-ghost btn-sm btn-circle hover:bg-pink-100"
-                >
-                    <X className="w-4 h-4" />
-                </button>
-            </div>
+        <div className="fixed inset-0 z-100 flex bg-base-200" style={drag}>
+            <img
+                src={background}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_BACKGROUND }}
+            />
 
-            <div className="flex flex-1 flex-col items-center justify-center gap-5 -mt-10 px-6">
-                <img src="/appicon.png" alt="" className="w-20 h-20 rounded-2xl shadow-xl shadow-pink-200/60" />
-                <h1 className="text-3xl font-bold">
-                    <span className="bg-clip-text text-transparent bg-linear-to-r from-pink-500 via-violet-500 to-sky-500">
-                        Cyrene Launcher
-                    </span>
-                </h1>
+            <aside className="relative ml-auto flex h-full w-[400px] flex-col border-l border-black/5 bg-white/95 shadow-[-16px_0_48px_rgba(30,20,40,0.12)] backdrop-blur-xl">
+                <div className="flex justify-end gap-1 p-3" style={noDrag}>
+                    <button
+                        onClick={() => AppService.MinimizeApp()}
+                        aria-label="Minimize"
+                        className="btn btn-ghost btn-sm btn-square text-base-content/45 hover:bg-base-200 hover:text-base-content"
+                    >
+                        <Minus className="h-4 w-4" />
+                    </button>
+                    <button
+                        onClick={() => AppService.CloseApp()}
+                        aria-label="Close"
+                        className="btn btn-ghost btn-sm btn-square text-base-content/45 hover:bg-base-200 hover:text-base-content"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
 
-                {checking ? (
-                    <div className="flex flex-col items-center gap-4" style={{ '--wails-draggable': 'no-drag' } as any}>
-                        <p className="text-base-content/55 text-sm">{t("account.connecting")}</p>
-                        <span className="loading loading-spinner loading-md text-pink-400" />
-                    </div>
-                ) : pending ? (
-                    <div className="flex flex-col items-center gap-4" style={{ '--wails-draggable': 'no-drag' } as any}>
-                        <p className="text-base-content/55 text-sm">{t("account.waiting")}</p>
-                        <span className="loading loading-spinner loading-md text-pink-400" />
-                        <button onClick={handleCancel} className="btn btn-ghost btn-sm text-base-content/50">
-                            {t("account.cancel")}
-                        </button>
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-center gap-4" style={{ '--wails-draggable': 'no-drag' } as any}>
-                        <p className="text-base-content/55 text-sm">{t("account.gate_hint")}</p>
-                        {errorKey && <p role="alert" className="text-error text-sm">{t(errorKey)}</p>}
-                        <form onSubmit={handlePassword} className="grid w-72 gap-2">
-                            <input name="identifier" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false}
-                                required maxLength={254} aria-label={t("account.identifier")} placeholder={t("account.identifier")} className="input w-full" />
-                            <input name="password" type="password" autoComplete="current-password" required maxLength={200}
-                                aria-label={t("account.password")} placeholder={t("account.password")} className="input w-full" />
-                            <button type="submit" disabled={submitting} className="btn btn-primary w-full">{t("account.password_sign_in")}</button>
-                        </form>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={handleLogin}
-                                disabled={submitting}
-                                className="btn btn-ghost btn-sm"
-                            >
-                                {t("account.browser_sign_in")}
-                            </button>
-                            {gateError === "offline" && (
-                                <button onClick={restore} className="btn btn-ghost text-base-content/55">
-                                    {t("account.retry")}
+                <div className="flex flex-1 flex-col justify-center px-11 pb-6">
+                    <img src="/appicon.png" alt="" className="h-12 w-12 rounded-xl ring-1 ring-black/5" />
+                    <h1 className="mt-5 text-[22px] font-semibold tracking-tight text-base-content">Cyrene Launcher</h1>
+                    <p className="mt-1 text-sm text-base-content/50">{t("account.gate_hint")}</p>
+
+                    <div className="mt-8" style={noDrag}>
+                        {checking ? (
+                            <div className="flex items-center gap-3 text-sm text-base-content/55">
+                                <span className="loading loading-spinner loading-sm text-base-content/40" />
+                                {t("account.connecting")}
+                            </div>
+                        ) : pending ? (
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center gap-3 text-sm text-base-content/65">
+                                    <span className="loading loading-spinner loading-sm text-base-content/40" />
+                                    {t("account.waiting")}
+                                </div>
+                                <button onClick={handleCancel} className="btn h-11 w-full rounded-lg border border-base-300 bg-white font-medium text-base-content shadow-none hover:bg-base-200">
+                                    {t("account.cancel")}
                                 </button>
-                            )}
-                        </div>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-3">
+                                {errorKey && (
+                                    <p role="alert" className="rounded-lg bg-error/8 px-3 py-2 text-sm text-error">{t(errorKey)}</p>
+                                )}
+                                <form onSubmit={handlePassword} className="flex flex-col gap-3">
+                                    <input name="identifier" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false}
+                                        required maxLength={254} aria-label={t("account.identifier")} placeholder={t("account.identifier")} className={inputClass} />
+                                    <input name="password" type="password" autoComplete="current-password" required maxLength={200}
+                                        aria-label={t("account.password")} placeholder={t("account.password")} className={inputClass} />
+                                    <button type="submit" disabled={submitting}
+                                        className="btn mt-1 h-11 w-full rounded-lg border-0 bg-base-content font-medium text-base-100 shadow-none hover:bg-base-content/85">
+                                        {submitting && <span className="loading loading-spinner loading-xs" />}
+                                        {t("account.password_sign_in")}
+                                    </button>
+                                </form>
+                                <button onClick={handleLogin} disabled={submitting}
+                                    className="btn h-11 w-full rounded-lg border border-base-300 bg-white font-medium text-base-content shadow-none hover:bg-base-200">
+                                    {t("account.browser_sign_in")}
+                                </button>
+                                {gateError === "offline" && (
+                                    <button onClick={restore} className="btn btn-ghost btn-sm self-start px-0 font-normal text-base-content/55 hover:bg-transparent hover:text-base-content">
+                                        {t("account.retry")}
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
-                )}
-                <button onClick={handleSkip} disabled={submitting} style={{ '--wails-draggable': 'no-drag' } as any}
-                    className="btn btn-ghost btn-sm text-base-content/60">{t("account.skip")}</button>
-            </div>
+                </div>
+
+                <div className="border-t border-base-200 px-11 py-5" style={noDrag}>
+                    <button onClick={handleSkip} disabled={submitting}
+                        className="group inline-flex items-center gap-1.5 text-sm text-base-content/50 transition-colors hover:text-base-content disabled:opacity-50">
+                        {t("account.skip")}
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </button>
+                </div>
+            </aside>
         </div>
     )
 }
