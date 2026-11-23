@@ -20,9 +20,6 @@ temp/
 frontend/dist
 frontend/node_modules
 frontend/.vite/
-accountclient/ui/*
-!accountclient/ui/.gitkeep
-accountclient/*.syso
 
 # Build artifacts
 build/linux/appimage/build
