@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"cyrene-launcher/pkg/constant"
+
 	"github.com/billgraziano/dpapi"
 )
 
@@ -16,7 +18,8 @@ func tokenPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(dir, "CyreneLauncher", "account.dat"), nil
+	// A new website origin must not receive a token issued by the former site.
+	return filepath.Join(dir, "CyreneLauncher", constant.WebHost, "account.dat"), nil
 }
 
 func saveToken(token string) error {

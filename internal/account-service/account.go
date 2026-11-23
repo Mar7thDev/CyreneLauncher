@@ -17,8 +17,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -50,7 +52,9 @@ type AccountService struct {
 func New(baseURL string) *AccountService {
 	return &AccountService{
 		baseURL: baseURL,
-		client:  &http.Client{Timeout: 15 * time.Second},
+		client: &http.Client{Timeout: 15 * time.Second, CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+			return http.ErrUseLastResponse
+		}},
 	}
 }
 
@@ -59,27 +63,45 @@ func (a *AccountService) GetWebBaseURL() string {
 	return a.baseURL
 }
 
-// LauncherConfig is the website's client-side policy. It is served
-// unauthenticated at /api/launcher/config because the login gate needs it
-// before anybody is signed in.
-type LauncherConfig struct {
-	// SkipLoginEnabled reports whether the gate may offer "continue without
-	// signing in". Admins turn it off to make an account mandatory.
-	SkipLoginEnabled bool `json:"skip_login_enabled"`
+type loginResult struct {
+	Token string  `json:"token"`
+	User  Profile `json:"user"`
+	Error string  `json:"error"`
 }
 
-// GetLauncherConfig reads that policy. The first return value reports whether
-// the answer is fresh: when the site is unreachable the frontend keeps the
-// value cached from its last successful fetch, so an admin who turned the skip
-// button off does not get it back on every client that goes offline. The
-// fallback only covers an install that has never reached the site.
-func (a *AccountService) GetLauncherConfig() (bool, LauncherConfig) {
-	cfg := LauncherConfig{SkipLoginEnabled: true} // website default
-	status, err := a.doJSON("GET", "/api/launcher/config", "", nil, &cfg)
-	if err != nil || status != http.StatusOK {
-		return false, LauncherConfig{SkipLoginEnabled: true}
+// LoginWithPassword authenticates against the account website, never the selected game server.
+func (a *AccountService) LoginWithPassword(identifier, password string) (bool, Profile, string) {
+	identifier = strings.TrimSpace(identifier)
+	if identifier == "" || password == "" {
+		return false, Profile{}, "bad_credentials"
 	}
-	return true, cfg
+	if a.baseURL != constant.WebBaseURL {
+		return false, Profile{}, "invalid_origin"
+	}
+	attempt := a.beginLogin()
+	if attempt == nil {
+		return false, Profile{}, "busy"
+	}
+	defer a.finishLogin(attempt)
+	host, _ := os.Hostname()
+	var res loginResult
+	status, err := a.doJSON("POST", "/api/launcher/login", "", map[string]string{
+		"identifier": identifier, "password": password, "hostname": host, "device_id": deviceID(),
+	}, &res)
+	if err != nil {
+		return false, Profile{}, "offline"
+	}
+	if status != http.StatusOK {
+		switch res.Error {
+		case "bad_credentials", "rate_limited", "account_banned", "account_pending":
+			return false, Profile{}, res.Error
+		}
+		return false, Profile{}, "failed"
+	}
+	if !a.acceptLogin(attempt, res) {
+		return false, Profile{}, "failed"
+	}
+	return true, res.User, ""
 }
 
 func (a *AccountService) IsLoggedIn() bool {
@@ -148,14 +170,10 @@ func (a *AccountService) GetProfile() (bool, Profile, string) {
 // The result arrives via the "account:login:success" / "account:login:failed"
 // events.
 func (a *AccountService) StartLogin() (bool, string) {
-	a.mu.Lock()
-	if a.cancelLogin != nil {
-		a.mu.Unlock()
+	cancel := a.beginLogin()
+	if cancel == nil {
 		return false, "login already in progress"
 	}
-	cancel := make(chan struct{})
-	a.cancelLogin = cancel
-	a.mu.Unlock()
 
 	hostname, _ := os.Hostname()
 	var code struct {
@@ -173,7 +191,7 @@ func (a *AccountService) StartLogin() (bool, string) {
 		"device_id": deviceID(),
 	}, &code)
 	if err != nil || status != http.StatusOK {
-		a.finishLogin()
+		a.finishLogin(cancel)
 		if err != nil {
 			return false, err.Error()
 		}
@@ -183,7 +201,13 @@ func (a *AccountService) StartLogin() (bool, string) {
 		return false, fmt.Sprintf("HTTP %d", status)
 	}
 
-	application.Get().Browser.OpenURL(code.VerificationURI)
+	approval, err := url.Parse(code.VerificationURI)
+	if err != nil || approval.Scheme != "https" || approval.Host != constant.WebHost || approval.User != nil ||
+		approval.Path != "/activate" || code.DeviceCode == "" {
+		a.finishLogin(cancel)
+		return false, "invalid approval response"
+	}
+	application.Get().Browser.OpenURL(approval.String())
 	go a.pollToken(code.DeviceCode, code.Interval, code.ExpiresIn, cancel)
 	return true, ""
 }
@@ -210,7 +234,7 @@ func (a *AccountService) Logout() (bool, string) {
 }
 
 func (a *AccountService) pollToken(deviceCode string, interval, expiresIn int, cancel chan struct{}) {
-	defer a.finishLogin()
+	defer a.finishLogin(cancel)
 	if interval <= 0 {
 		interval = 5
 	}
@@ -233,11 +257,7 @@ func (a *AccountService) pollToken(deviceCode string, interval, expiresIn int, c
 			return
 		}
 
-		var resp struct {
-			Error string  `json:"error"`
-			Token string  `json:"token"`
-			User  Profile `json:"user"`
-		}
+		var resp loginResult
 		status, err := a.doJSON("POST", "/api/launcher/device/token", "", map[string]string{
 			"device_code": deviceCode,
 		}, &resp)
@@ -247,15 +267,9 @@ func (a *AccountService) pollToken(deviceCode string, interval, expiresIn int, c
 
 		switch {
 		case status == http.StatusOK && resp.Token != "":
-			a.mu.Lock()
-			a.token = resp.Token
-			a.profile = &resp.User
-			a.mu.Unlock()
-			if err := saveToken(resp.Token); err != nil {
-				fmt.Println("account: failed to persist token:", err)
+			if a.acceptLogin(cancel, resp) {
+				application.Get().Event.Emit("account:login:success", map[string]any{"user": resp.User})
 			}
-			a.startHeartbeat()
-			application.Get().Event.Emit("account:login:success", map[string]any{"user": resp.User})
 			return
 		case resp.Error == "authorization_pending" || resp.Error == "slow_down":
 			continue
@@ -266,10 +280,37 @@ func (a *AccountService) pollToken(deviceCode string, interval, expiresIn int, c
 	}
 }
 
-func (a *AccountService) finishLogin() {
+func (a *AccountService) beginLogin() chan struct{} {
 	a.mu.Lock()
-	a.cancelLogin = nil
+	defer a.mu.Unlock()
+	if a.cancelLogin != nil {
+		return nil
+	}
+	a.cancelLogin = make(chan struct{})
+	return a.cancelLogin
+}
+
+func (a *AccountService) finishLogin(attempt chan struct{}) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.cancelLogin == attempt {
+		a.cancelLogin = nil
+	}
+}
+
+func (a *AccountService) acceptLogin(attempt chan struct{}, result loginResult) bool {
+	a.mu.Lock()
+	if a.cancelLogin != attempt || result.User.ID == "" || result.Token == "" {
+		a.mu.Unlock()
+		return false
+	}
+	a.token, a.profile = result.Token, &result.User
+	if err := saveToken(result.Token); err != nil {
+		fmt.Println("account: could not persist device session")
+	}
 	a.mu.Unlock()
+	a.startHeartbeat()
+	return true
 }
 
 func (a *AccountService) startHeartbeat() {

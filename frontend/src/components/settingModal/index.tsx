@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next"
 import { Check, ExternalLink, Link2, MapPin } from "lucide-react"
 
 const PROJECT_NAME = "Cyrene Launcher"
-const PROJECT_AUTHOR = "Firefly Shelter (original) · Cyrene (fork)"
 const PROJECT_REPO_URL = "https://git.kain.io.vn/Firefly-Shelter/Firefly_Launcher"
 
 export default function SettingModal({
@@ -289,10 +288,6 @@ export default function SettingModal({
                                     <div className="flex justify-between items-center">
                                         <span className="text-base-content/60">{t("setting.project_label")}</span>
                                         <span className="font-semibold text-transparent bg-clip-text bg-linear-to-r from-pink-500 to-sky-500">{PROJECT_NAME}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-base-content/60">{t("setting.author_label")}</span>
-                                        <span className="font-medium text-right text-xs">{PROJECT_AUTHOR}</span>
                                     </div>
                                     <a
                                         href={PROJECT_REPO_URL}

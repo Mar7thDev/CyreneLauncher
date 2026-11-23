@@ -2,23 +2,21 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type GameProfile = "starrail" | "genshin"
-export type PresetServerTarget = "local_test" | "local_prod"
+export type PresetServerTarget = "local_test" | "local_prod" | "march7th"
 // "custom" connects to the user-entered customServerUrl instead of a preset channel.
 export type ServerTarget = PresetServerTarget | "custom"
 export type ServerRegion = "local" | "hk" | "eu" | "cn"
 // The launcher-managed local March7thHoney server builds.
 export type HoneyServerChannel = "test" | "prod"
 
-// The preset March7thHoney server channels, in the order they are offered.
-// The local test server is the default and the local production server is the
-// alternative. Both local channels are downloaded and started by the launcher
-// and listen on the same port. Keep the URLs in sync with
-// pkg/constant/constant.go (console / handbook fall back to the Go default).
+// Both local channels are downloaded and started by the launcher. Their URL
+// matches LocalTargetURL in pkg/constant/constant.go.
 export const SERVER_CHANNELS: readonly { id: PresetServerTarget; url: string; region: ServerRegion }[] = [
+    { id: "march7th", url: "https://server.march7th.cc", region: "hk" },
     { id: "local_test", url: "http://localhost:21000", region: "local" },
     { id: "local_prod", url: "http://localhost:21000", region: "local" },
 ]
-export const DEFAULT_SERVER_TARGET: ServerTarget = "local_test"
+export const DEFAULT_SERVER_TARGET: PresetServerTarget = "march7th"
 
 export function honeyChannelFromTarget(serverTarget: ServerTarget): HoneyServerChannel | null {
     switch (serverTarget) {
@@ -50,7 +48,7 @@ export function normalizeServerUrl(raw: string): string {
 // For the custom channel this is "" when the entered address is invalid.
 export function resolveServerBaseUrl(serverTarget: ServerTarget, customServerUrl: string): string {
     if (serverTarget === "custom") return normalizeServerUrl(customServerUrl)
-    return (SERVER_CHANNELS.find(c => c.id === serverTarget) ?? SERVER_CHANNELS[0]).url
+    return SERVER_CHANNELS.find(c => c.id === serverTarget)?.url ?? ""
 }
 
 interface SettingState {
@@ -158,7 +156,7 @@ const useSettingStore = create<SettingState>()(
         {
             name: 'setting-storage',
             storage: createJSONStorage(() => localStorage),
-            version: 8,
+            version: 9,
             migrate: (persistedState, version) => {
                 const {
                     patchTargetUrl,
@@ -177,9 +175,7 @@ const useSettingStore = create<SettingState>()(
                     else serverTarget = DEFAULT_SERVER_TARGET
                 }
                 // v4: the HoyoToon server was shut down; its users move to the default.
-                // v6: the March7th.cc channel was removed; its users move to the default (KunPS).
-                // v7: the Huaian channel was removed; its users move to the new default (local test).
-                // v8: the KunPS channel was removed; its users move to the default (local test).
+                // v9 makes the cloud channel the fresh-install default, not an override of a saved choice.
                 // The local test / prod channels are back, so a v2 local_test / local_prod
                 // choice (and the old single "local") stays local.
                 if (serverTarget === "local") serverTarget = "local_test"

@@ -29,6 +29,8 @@ My goal is to create tools that are fast, efficient, and enjoyable to use.
 
 ## 📦 Installation
 
+In the March7th.cc edition, fresh installs select `https://server.march7th.cc`. Upgrades keep existing local and custom selections. Manage your game account and devices on your [profile](https://launcher.march7th.cc/profile).
+
 You can choose between:
 
 - ✅ **Portable** version (no install needed)
@@ -61,4 +63,3 @@ Cyrene Launcher is a fork built on the original work by [**AzenKain**](https://g
 MIT License — feel free to use and contribute.
 
 ---
-

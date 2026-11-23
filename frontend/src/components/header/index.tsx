@@ -103,7 +103,6 @@ export default function Header() {
                                     Cyrene Launcher
                                 </span>
                             </h1>
-                            <p className="text-base-content/50 text-xs">{t("header.by")}</p>
                         </div>
                     </div>
                 </Link>

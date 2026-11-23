@@ -29,6 +29,8 @@ Cyrene Launcher 使用以下技术构建：
 
 ## 📦 安装
 
+March7th.cc 版首次安装默认选中 `https://server.march7th.cc`；升级会保留原有本地服或自定义线路。游戏账号和已授权设备可在[个人页](https://launcher.march7th.cc/profile)管理。
+
 你可以选择：
 
 - ✅ **便携版**（无需安装）

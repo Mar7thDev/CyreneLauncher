@@ -26,6 +26,7 @@ import {
 import UpdateModal from '@/components/updateModal';
 import { BackgroundSelector } from '@/components/backgroudModal';
 import NewsWidget from '@/components/newsWidget';
+import { openAccountProfile } from '@/helper/accountSite';
 import { useTranslation } from 'react-i18next';
 
 export default function LauncherPage() {
@@ -95,10 +96,11 @@ export default function LauncherPage() {
         : []
 
     const serverBaseUrl = isStarRail ? resolveServerBaseUrl(serverTarget, customServerUrl) : ""
+    const isMarch7thCloud = isStarRail && serverTarget === "march7th"
     const panelLinks = serverBaseUrl
         ? [
-            { tooltip: t("home.tooltip_admin_panel"),  href: `${serverBaseUrl}/admin`,  icon: <ShieldCheck className="w-4 h-4" /> },
-            { tooltip: t("home.tooltip_player_panel"), href: `${serverBaseUrl}/player`, icon: <User className="w-4 h-4" /> },
+            ...(!isMarch7thCloud ? [{ tooltip: t("home.tooltip_admin_panel"), href: `${serverBaseUrl}/admin`, icon: <ShieldCheck className="w-4 h-4" /> }] : []),
+            { tooltip: t("home.tooltip_player_panel"), href: `${serverBaseUrl}${isMarch7thCloud ? "/player/index.html" : "/player"}`, icon: <User className="w-4 h-4" /> },
         ]
         : []
 
@@ -477,6 +479,7 @@ export default function LauncherPage() {
                             <div key={idx} className="tooltip tooltip-left" data-tip={link.tooltip}>
                                 <button
                                     className="btn btn-circle btn-sm bg-transparent hover:bg-pink-100/60 border-none text-base-content/60 hover:text-pink-500 transition-all"
+                                    aria-label={link.tooltip}
                                     onClick={() => openExternal(link.href)}
                                 >
                                     {link.icon}
@@ -533,6 +536,7 @@ export default function LauncherPage() {
                         <Menu className="w-5 h-5" />
                     </motion.div>
                     <ul tabIndex={0} className="dropdown-content menu bg-white/95 backdrop-blur-xl border border-pink-100 rounded-2xl z-20 w-52 p-2 shadow-xl shadow-pink-100/50 mb-2">
+                        {isMarch7thCloud && <li><button onClick={openAccountProfile}>{t("home.menu_cloud_account")}</button></li>}
                         <li>
                             <button onClick={handlePickCurrentGameFile}>
                                 {isGenshin ? t("home.menu_change_genshin_path") : t("home.menu_change_path")}
@@ -625,7 +629,7 @@ export default function LauncherPage() {
                         onClick={handleStartCurrentGame}
                     >
                         <Play className="w-5 h-5" />
-                        {isLoading ? t("home.btn_selecting") : gameRunning ? t("home.btn_game_running") : t("home.btn_start_game")}
+                        {isLoading ? t("home.btn_selecting") : gameRunning ? t("home.btn_game_running") : isMarch7thCloud ? t("home.btn_start_cloud") : t("home.btn_start_game")}
                     </motion.button>
                 )}
             </div>

@@ -25,13 +25,11 @@ const GenshinServerManifest = "./server-packages/Columbina-GI/cyrene-manifest.js
 // CyreneHook.dll. The proxy intercepts miHoYo-domain traffic and forwards it to
 // the selected channel's server (DefaultPatchTargetURL when none is given).
 
-// The server channels offered in the settings (the frontend list in
-// frontend/src/stores/settingStore.ts must match):
-//
-//	Local test — default, launcher-managed local server (test build)
-//	Local prod — launcher-managed local server (production build)
+// LocalTargetURL is shared by the launcher-managed test and production channels
+// in frontend/src/stores/settingStore.ts.
 const LocalTargetURL = "http://localhost:21000"
 
+// Missing targets from older callers stay local; remote profiles pass their URL explicitly.
 const DefaultPatchTargetURL = LocalTargetURL
 
 // The two local channels run a launcher-managed March7thHoney server, each
@@ -64,7 +62,7 @@ const HoneyServerProdTagPrefix = "prod-"
 // SourceGenshin is the downloadable Genshin server package source.
 const SourceGenshin = "genshin"
 
-const CurrentLauncherVersion = "1.2.9"
+const CurrentLauncherVersion = "1.3.0"
 
 // === News module ===
 //
@@ -80,8 +78,11 @@ const (
 	HSRGameID             = "4ziysqXOQ8" // Honkai: Star Rail (global)
 )
 
+// WebHost scopes the account token to the website that issued it.
+const WebHost = "launcher.march7th.cc"
+
 // WebBaseURL is the Cyrene website (account system, news, device login).
-const WebBaseURL = "https://cyrene.march7th.cc"
+const WebBaseURL = "https://" + WebHost
 
 // AnnouncementUrl returns the website's server announcements as a JSON
 // []NewsItem array (pinned first). Each entry becomes one card in the News
